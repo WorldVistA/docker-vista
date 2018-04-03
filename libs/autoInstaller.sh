@@ -70,6 +70,7 @@ usage()
       -s    Skip testing
       -w    Install RPMS XINETD scripts
       -y    Use YottaDB
+      -v    Build ViViaN Documentation
 
     NOTE:
     The Caché install only supports using .DAT files for the VistA DB, and
@@ -79,7 +80,11 @@ usage()
 EOF
 }
 
-while getopts ":ha:cbemdgi:p:sr:wy" option
+timestamp() {
+    date +"%Y-%m-%d-%H:%M:%S"
+}
+
+while getopts ":ha:cbemdgiv:p:sr:wy" option
 do
     case $option in
         h)
@@ -122,6 +127,9 @@ do
             ;;
         s)
             skipTests=true
+            ;;
+        v)
+            generateViVDox=true
             ;;
         w)
             installRPMS=true
@@ -179,6 +187,10 @@ fi
 
 if [ -z $installRPMS ]; then
     installRPMS=false;
+fi
+
+if [ -z $generateViVDox ]; then
+    generateViVDox=false;
 fi
 
 # Quit if no M environment viable
@@ -455,4 +467,53 @@ fi
 if $installgtm || $installYottaDB; then
     echo "Please wait while I fix the group permissions on the files..."
     chmod -R g+rw /home/$instance
+fi
+
+# Generate ViViaN Documentation
+if $generateViVDox; then
+    cp $scriptdir/Common/viv.conf /etc/httpd/conf.d
+    sh /opt/cachesys/${instance}/bin/start.sh &
+    mkdir -p /opt/VistA-docs
+    mkdir -p /opt/viv-out
+    pushd /opt
+    echo "Downloading OSEHRA VistA"
+    curl -fsSL --progress-bar https://foia-vista.osehra.org/VistA_Integration_Agreement/2018_January_22_IA_Listing_Descriptions.TXT -o ICRDescription.txt
+    #change from default to test capitalization changes
+    curl -fsSL --progress-bar https://github.com/josephsnyder/VistA/archive/fix_capitalizations.zip -o VistA-master.zip
+    unzip -q VistA-master.zip
+    rm VistA-master.zip
+    mv VistA-fix_capitalizations VistA
+    echo "Downloading OSEHRA VistA-M"
+    curl -fsSL --progress-bar https://github.com/OSEHRA/VistA-M/archive/master.zip -o VistA-M-master.zip
+    unzip -q VistA-M-master.zip
+    rm VistA-M-master.zip
+    mv VistA-M-master VistA-M
+
+    namespace=$(echo $instance |tr '[:lower:]' '[:upper:]')
+    #  Export first so the configuration can find the correct files to query for
+    echo "Starting VistAMComponentExtractor at:" $(timestamp)
+    python /opt/VistA/Scripts/VistAMComponentExtractor.py -S 1 -r ./VistA-M -o /tmp/ -l /tmp/ -CN $namespace
+    echo "Ending VistAMComponentExtractor at:" $(timestamp)
+    # Uncomment to debug VistAMComponentExtractor
+    # @TODO Make debugging a script option
+    # echo "Start of Log Dump:"
+    # cat /tmp/VistAPExpect.log
+    # echo "End of Log Dump"
+    find ./VistA-M -type f -print0 | xargs -0 dos2unix > /dev/null 2>&1
+    pushd VistA-docs
+    cp $scriptdir/ViViaN/CMakeCache.txt /opt/VistA-docs
+    /usr/bin/cmake .
+    # It would be nice to have the CTest command work, commenting it out for now
+    # TODO: Figure out the FileManGlobalDataParser issue
+    # =====================================================
+    echo "Starting CTest at:" $(timestamp)
+    /usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -E "WebPageGenerator"
+    /usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "WebPageGenerator"
+    echo "Ending CTest at:" $(timestamp)
+    # =====================================================
+    yum install -y httpd
+    cp /opt/vista/Common/viv.conf /etc/httpd/conf.d
+    ln -s /opt/viv-out/dox/* /var/www/html/
+    chown -R apache:apache /var/www/html
+    rm /etc/httpd/conf.d/welcome.conf
 fi

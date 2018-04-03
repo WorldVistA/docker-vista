@@ -2,21 +2,31 @@ FROM centos
 
 RUN echo "multilib_policy=best" >> /etc/yum.conf
 RUN yum  -y update && \
-	yum install -y gcc-c++ git xinetd perl curl python openssh-server openssh-clients expect man python-argparse sshpass wget make cmake dos2unix which unzip lsof net-tools|| true && \
-	yum install -y http://libslack.org/daemon/download/daemon-0.6.4-1.i686.rpm > /dev/null && \
-	package-cleanup --cleandupes && \
-	yum  -y clean all
+    yum install -y gcc-c++ git xinetd perl curl python openssh-server openssh-clients expect man python-argparse sshpass wget make cmake dos2unix which unzip lsof net-tools graphviz java-1.8.0-openjdk-devel || true && \
+    yum install -y http://libslack.org/daemon/download/daemon-0.6.4-1.i686.rpm > /dev/null && \
+    package-cleanup --cleandupes && \
+    yum  -y clean all
+
+RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && \
+    python get-pip.py && \
+    pip install xlrd
 
 RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa && \
     ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa && \
     ssh-keygen -t ecdsa -N "" -f /etc/ssh/ssh_host_ecdsa_key && \
     ssh-keygen -t ed25519 -N "" -f /etc/ssh/ssh_host_ed25519_key && \
     sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
-	sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
-	echo 'root:docker' | chpasswd
+    sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
+    echo 'root:docker' | chpasswd
 
 WORKDIR /opt/vista
-ADD . /opt/vista/
+ADD ./libs /opt/vista/
+
+ARG name_space=osehra
+ARG postInstallScript=""
+ARG flags="-c -b -s"
+ENV instance_name=$name_space
+ENV install_flags="$flags -i ${instance_name} ${postInstallScript}"
 
 # OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)
 #RUN ./autoInstaller.sh -y -b -e -m && \
@@ -50,6 +60,7 @@ ADD . /opt/vista/
 # EXPOSE 22 9100 9101 9430
 
 # Caché Install with local DAT file
-RUN ./autoInstaller.sh -c -b -s -i pla -p ./Common/pvPostInstall.sh
-ENTRYPOINT /opt/cachesys/pla/bin/start.sh
+RUN ./autoInstaller.sh ${install_flags}
+# ENTRYPOINT /opt/cachesys/${instance_name}/bin/start.sh
+ENTRYPOINT /opt/vista/entrypoint.sh ${install_flags}
 EXPOSE 22 8001 9430 8080 57772

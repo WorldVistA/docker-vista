@@ -84,7 +84,7 @@ basedir=/opt/cachesys/$instance
 usermod root -G cachegrp$instance
 
 # unzip the cachekit in a temp directory
-cachekit=$(ls -1 /opt/vista/cache-*.tar.gz)
+cachekit=$(ls -1 /opt/vista/cache-files/cache-*.tar.gz)
 echo "Using cache installer: $cachekit"
 tempdir=/tmp/cachekit
 mkdir $tempdir
@@ -115,8 +115,8 @@ fi
 ccontrol stop CACHE quietly
 
 popd
-if [ -e /opt/vista/cache.key ]; then
-    cp /opt/vista/cache.key $basedir/mgr
+if [ -e /opt/vista/cache-files/cache.key ]; then
+    cp /opt/vista/cache-files/cache.key $basedir/mgr
 fi
 
 # Perform subsitutions in cpf file and copy to destination
@@ -127,9 +127,9 @@ cp $basedir/cache.cpf-new $basedir/cache.cpf
 
 # Move CACHE.dat
 mkdir -p $basedir/vista
-if [ -e /opt/vista/CACHE.DAT ]; then
+if [ -e /opt/vista/cache-files/CACHE.DAT ]; then
     echo "Moving CACHE.DAT..."
-    mv -v /opt/vista/CACHE.DAT $basedir/vista/CACHE.DAT
+    mv -v /opt/vista/cache-files/CACHE.DAT $basedir/vista/CACHE.DAT
     chown root:cachegrp$instance $basedir/vista/CACHE.DAT
     chmod ug+rw $basedir/vista/CACHE.DAT
     chmod ug+rw $basedir/vista
