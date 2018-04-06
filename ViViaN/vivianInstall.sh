@@ -76,7 +76,7 @@ echo "Ending VistAMComponentExtractor at:" $(timestamp)
 # cat /tmp/VistAPExpect.log
 # echo "End of Log Dump"
 find ./VistA-M -type f -print0 | xargs -0 dos2unix > /dev/null 2>&1
-find ./VistA-M -type -f -print0 -name "MPIPSIM*.m" | xargs -0 rm
+find ./VistA-M -type f -print0 -name "MPIPSIM*.m" | xargs -0 rm
 pushd VistA-docs
 cp $scriptdir/ViViaN/CMakeCache.txt /opt/VistA-docs
 /usr/bin/cmake .
