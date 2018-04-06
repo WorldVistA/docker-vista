@@ -47,7 +47,8 @@ curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && \
     pip install xlrd reportlab
 # cp $scriptdir/ViViaN/viv.conf /etc/httpd/conf.d
 basedir=/opt/cachesys/$instance
-echo 'exec /usr/sbin/apachectl -DFOREGROUND' >> $basedir/bin/start.sh
+awk -v n=5 -v s='echo "Starting Apache"' 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
+awk -v n=6 -v s="exec /usr/sbin/apachectl -DFOREGROUND" 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
 
 sh $basedir/bin/start.sh &
 mkdir -p /opt/VistA-docs
