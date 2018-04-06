@@ -2,14 +2,10 @@ FROM centos
 
 RUN echo "multilib_policy=best" >> /etc/yum.conf
 RUN yum  -y update && \
-    yum install -y gcc-c++ git xinetd perl curl python openssh-server openssh-clients expect man python-argparse sshpass wget make cmake dos2unix which unzip lsof net-tools graphviz java-1.8.0-openjdk-devel || true && \
+    yum install -y gcc-c++ git xinetd perl curl python openssh-server openssh-clients expect man python-argparse sshpass wget make cmake dos2unix which unzip lsof net-tools || true && \
     yum install -y http://libslack.org/daemon/download/daemon-0.6.4-1.i686.rpm > /dev/null && \
     package-cleanup --cleandupes && \
     yum  -y clean all
-
-RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && \
-    python get-pip.py && \
-    pip install xlrd
 
 RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa && \
     ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa && \
@@ -20,12 +16,22 @@ RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa && \
     echo 'root:docker' | chpasswd
 
 WORKDIR /opt/vista
-ADD ./libs /opt/vista/
+# Add each folder individually to improve rebuild times
+ADD ./Cache /opt/vista/Cache
+ADD ./cache-files /opt/vista/cache-files
+ADD ./Common /opt/vista/Common
+ADD ./Dashboard /opt/vista/Dashboard
+ADD ./EWD /opt/vista/EWD
+ADD ./GTM /opt/vista/GTM
+ADD ./tests /opt/vista/tests
+ADD ./test.cmake /opt/vista/
+ADD ./ViViaN /opt/vista/ViViaN
+ADD ./*.sh /opt/vista/
 
-ARG name_space=osehra
-ARG postInstallScript=""
-ARG flags="-c -b -s"
-ENV instance_name=$name_space
+ARG instance=osehra
+ARG postInstallScript="-p ./Common/ovydbPostInstall.sh"
+ARG flags="-y -b -e -m"
+ENV instance_name=$instance
 ENV install_flags="$flags -i ${instance_name} ${postInstallScript}"
 
 # OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)
@@ -59,8 +65,6 @@ ENV install_flags="$flags -i ${instance_name} ${postInstallScript}"
 # ENTRYPOINT /home/rpms/bin/start.sh
 # EXPOSE 22 9100 9101 9430
 
-# Caché Install with local DAT file
 RUN ./autoInstaller.sh ${install_flags}
-# ENTRYPOINT /opt/cachesys/${instance_name}/bin/start.sh
-ENTRYPOINT /opt/vista/entrypoint.sh ${install_flags}
+ENTRYPOINT /opt/cachesys/${instance_name}/bin/start.sh
 EXPOSE 22 8001 9430 8080 57772
