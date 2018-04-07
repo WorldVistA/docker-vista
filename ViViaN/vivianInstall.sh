@@ -41,7 +41,7 @@ if [[ -z $scriptdir ]]; then
     scriptdir=/opt/vista
 fi
 
-yum install -y httpd graphviz java-1.8.0-openjdk-devel
+yum install -y httpd graphviz java-1.8.0-openjdk-devel php
 curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && \
     python get-pip.py && \
     pip install xlrd reportlab
