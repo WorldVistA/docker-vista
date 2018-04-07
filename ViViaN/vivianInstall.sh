@@ -47,8 +47,14 @@ curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && \
     pip install xlrd reportlab
 # cp $scriptdir/ViViaN/viv.conf /etc/httpd/conf.d
 basedir=/opt/cachesys/$instance
+
+# Add apache to start.sh
 awk -v n=5 -v s='echo "Starting Apache"' 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
-awk -v n=6 -v s="exec /usr/sbin/apachectl -DFOREGROUND" 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
+awk -v n=6 -v s="/usr/sbin/apachectl" 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
+
+# Fix start.sh permissions
+chown cacheusr$instance:cachegrp$instance $basedir/bin/start.sh
+chmod +x $basedir/bin/start.sh
 
 sh $basedir/bin/start.sh &
 mkdir -p /opt/VistA-docs
@@ -76,7 +82,7 @@ echo "Ending VistAMComponentExtractor at:" $(timestamp)
 # cat /tmp/VistAPExpect.log
 # echo "End of Log Dump"
 find ./VistA-M -type f -print0 | xargs -0 dos2unix > /dev/null 2>&1
-find ./VistA-M -type f -print0 -name "MPIPSIM*.m" | xargs -0 rm
+find ./VistA-M -type f -name "MPIPSIM*.m" -print0 | xargs -0 rm
 pushd VistA-docs
 cp $scriptdir/ViViaN/CMakeCache.txt /opt/VistA-docs
 /usr/bin/cmake .
@@ -84,7 +90,8 @@ cp $scriptdir/ViViaN/CMakeCache.txt /opt/VistA-docs
 # TODO: Figure out the FileManGlobalDataParser issue
 # =====================================================
 echo "Starting CTest at:" $(timestamp)
-/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -E "WebPageGenerator"
+/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -E "WebPageGenerator|FileManGlobalDataParser"
+/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "FileManGlobalDataParser"
 /usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "WebPageGenerator"
 echo "Ending CTest at:" $(timestamp)
 # =====================================================
