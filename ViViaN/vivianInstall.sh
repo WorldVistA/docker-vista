@@ -90,7 +90,8 @@ cp $scriptdir/ViViaN/CMakeCache.txt /opt/VistA-docs
 # TODO: Figure out the FileManGlobalDataParser issue
 # =====================================================
 echo "Starting CTest at:" $(timestamp)
-/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -E "WebPageGenerator|FileManGlobalDataParser"
+/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "XINDEX"
+/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -E "WebPageGenerator|FileManGlobalDataParser|XINDEX"
 /usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "FileManGlobalDataParser"
 /usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "WebPageGenerator"
 echo "Ending CTest at:" $(timestamp)

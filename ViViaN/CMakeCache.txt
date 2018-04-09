@@ -71,7 +71,7 @@ CVSCOMMAND:FILEPATH=CVSCOMMAND-NOTFOUND
 CVS_UPDATE_OPTIONS:STRING=-d -A -P
 
 //Maximum time allowed before CTest will kill the test.
-DART_TESTING_TIMEOUT:STRING=2500
+DART_TESTING_TIMEOUT:STRING=5000
 
 //Use this option to generate VistA documentation (ViViaN and DOX)
 DOCUMENT_VISTA:BOOL=ON
