@@ -123,7 +123,7 @@ Java_JAVAH_EXECUTABLE:FILEPATH=/bin/javah
 Java_JAVA_EXECUTABLE:FILEPATH=/bin/java
 
 //Use a local links for DOX page connections
-LOCAL_DOX_LINKS:BOOL=FALSE
+LOCAL_DOX_LINKS:BOOL=TRUE
 
 //Command to build the project
 MAKECOMMAND:STRING=/usr/bin/gmake -i

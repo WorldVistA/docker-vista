@@ -34,6 +34,18 @@ ARG flags="-y -b -e -m"
 ENV instance_name=$instance
 ENV install_flags="$flags -i ${instance_name} ${postInstallScript}"
 
+RUN dos2unix /opt/vista/* && \
+    dos2unix /opt/vista/Cache/* && \
+    dos2unix /opt/vista/Cache/etc/init.d/* && \
+    dos2unix /opt/vista/Common/* && \
+    dos2unix /opt/vista/Dashboard/* && \
+    dos2unix /opt/vista/EWD/* && \
+    dos2unix /opt/vista/EWD/etc/init.d/* && \
+    dos2unix /opt/vista/GTM/* && \
+    dos2unix /opt/vista/GTM/bin/* && \
+    dos2unix /opt/vista/GTM/etc/init.d/* && \
+    dos2unix /opt/vista/ViViaN/*
+
 # OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)
 #RUN ./autoInstaller.sh -y -b -e -m && \
 #	rm -rf /home/osehra/Dashboard
