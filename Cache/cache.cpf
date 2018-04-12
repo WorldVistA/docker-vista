@@ -31,6 +31,7 @@ Global_XUTL=CACHETEMP
 Routine_%=FOIA
 Routine_%DT=FOIA
 Routine_%DTC=FOIA
+Routine_%XUCI=FOIA
 Routine_%KIDS=FOIA
 Routine_%RCR=FOIA
 Routine_%Serenj*=FOIA
@@ -46,9 +47,9 @@ SystemName=
 VirtualAddressInterface=
 
 [Journal]
-AlternateDirectory=/opt/cachesys/vehu/mgr/journal/
+AlternateDirectory=/opt/cachesys/foia/mgr/journal/
 BackupsBeforePurge=2
-CurrentDirectory=/opt/cachesys/vehu/mgr/journal/
+CurrentDirectory=/opt/cachesys/foia/mgr/journal/
 DaysBeforePurge=2
 FileSizeLimit=1024
 FreezeOnError=0

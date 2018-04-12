@@ -31,7 +31,40 @@ Pre-built images using this repository are available on [docker hub](https://hub
     docker run -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 -d -P --name=osehravista krmassociates/osehravista-qewd
     ```
 
-## Build Steps
+## Docker Build
+
+### Build Options
+
+#### name_space
+Default: `oshera`
+
+The `name_space` argument allows you to define the instance Name Space and directory inside the docker container.
+
+Example:
+    ```
+    docker build --build-arg name_space=vxvista -t vxvista .
+    ```
+
+#### postInstallScript
+Default: `NULL`
+
+The `postInstallScript` argument allows you to define a post install shell script that you want to run.
+
+Example:
+    ```
+    docker build --build-arg postInstallScript="-p ./Common/vxvistaPostInstall.sh" -t vxvista .
+
+#### flags
+Default: `-c -b -s`
+
+The `flags` argument allows you to adjust which flags you want to send to the autoInstaller.sh.
+
+Example:
+    ```
+    docker build --build-arg flags="-y -b -s -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip" -t vxvista .
+    ```
+
+### Build Commands
 1) Build the docker image
     ```
     docker build -t osehra .

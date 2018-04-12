@@ -70,6 +70,7 @@ usage()
       -s    Skip testing
       -w    Install RPMS XINETD scripts
       -y    Use YottaDB
+      -v    Build ViViaN Documentation
 
     NOTE:
     The Caché install only supports using .DAT files for the VistA DB, and
@@ -79,7 +80,7 @@ usage()
 EOF
 }
 
-while getopts ":ha:cbemdgi:p:sr:wy" option
+while getopts ":ha:cbemdgi:vp:sr:wy" option
 do
     case $option in
         h)
@@ -122,6 +123,9 @@ do
             ;;
         s)
             skipTests=true
+            ;;
+        v)
+            generateViVDox=true
             ;;
         w)
             installRPMS=true
@@ -179,6 +183,10 @@ fi
 
 if [ -z $installRPMS ]; then
     installRPMS=false;
+fi
+
+if [ -z $generateViVDox ]; then
+    generateViVDox=false;
 fi
 
 # Quit if no M environment viable
@@ -442,11 +450,22 @@ fi
 
 # Post install hook
 if $postInstall; then
+  if $installgtm || $installYottaDB; then
     su $instance -c "source $basedir/etc/env && pushd $scriptdir && $postInstallScript && popd"
+  elif $installcache; then
+    pushd $scriptdir
+    $postInstallScript $instance
+    popd
+  fi
 fi
 
 # Ensure group permissions are correct
 if $installgtm || $installYottaDB; then
     echo "Please wait while I fix the group permissions on the files..."
     chmod -R g+rw /home/$instance
+fi
+
+# Generate ViViaN Documentation
+if $generateViVDox; then
+    $scriptdir/ViViaN/vivianInstall.sh -i $instance -s $scriptdir
 fi
