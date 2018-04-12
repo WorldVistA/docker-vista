@@ -60,9 +60,9 @@ sh $basedir/bin/start.sh &
 mkdir -p /opt/VistA-docs
 mkdir -p /opt/viv-out
 pushd /opt
-echo "Downloading OSEHRA VistA"
+echo "Acquiring DBIA/ICR Information from https://foia-vista.osehra.org/VistA_Integration_Agreement/"
 curl -fsSL --progress-bar https://foia-vista.osehra.org/VistA_Integration_Agreement/2018_January_22_IA_Listing_Descriptions.TXT -o ICRDescription.txt
-#change from default to test capitalization changes
+echo "Downloading OSEHRA VistA Testing Repository"
 curl -fsSL --progress-bar https://github.com/OSEHRA/VistA/archive/master.zip -o VistA-master.zip
 unzip -q VistA-master.zip
 rm VistA-master.zip
@@ -86,17 +86,20 @@ find ./VistA-M -type f -name "MPIPSIM*.m" -print0 | xargs -0 rm
 pushd VistA-docs
 cp $scriptdir/ViViaN/CMakeCache.txt /opt/VistA-docs
 /usr/bin/cmake .
-# It would be nice to have the CTest command work, commenting it out for now
-# TODO: Figure out the FileManGlobalDataParser issue
 # =====================================================
 echo "Starting CTest at:" $(timestamp)
+echo "Installing XINDEX patch"
 /usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "XINDEX"
+echo "Executing data-gathering tasks"
 /usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -E "WebPageGenerator|FileManGlobalDataParser|XINDEX"
+echo "Parsing VistA Globals"
 /usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "FileManGlobalDataParser"
+echo "Generating ViViaN and DOX HTML"
 /usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "WebPageGenerator"
 echo "Ending CTest at:" $(timestamp)
 # =====================================================
 # Clone ViViaN repository
+echo "Cloning ViViaN Repository"
 curl -fsSL --progress-bar https://github.com/OSEHRA-Sandbox/Product-Management/archive/master.zip -o vivian-master.zip
 unzip -q vivian-master.zip
 rm vivian-master.zip
