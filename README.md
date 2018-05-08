@@ -144,6 +144,14 @@ Caché Install with local DAT file. You need to supply your own CACHE.DAT and CA
     docker build --build-arg flags="-c -b -s" --build-arg instance="cachevista" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cachevista .
     docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -d -P --name=cache cachevista
 
+### Building ViViAn and Dox with Docker
+
+Utilizing the "-v" argument flag, the system will attempt to execute the tasks which will
+install a MUMPS environment, execute tasks to gather data and generate HTML pages, then
+set up a web server on the container to display the data.  These steps have been
+documented as part of the OSEHRA/VistA repository found [here](https://github.com/OSEHRA/VistA/blob/master/Documentation/generateDockerViViaNAndDox.rst)
+
+
 ## Roll-and-Scroll Access for non Caché installs
 
 1) Tied VistA user:

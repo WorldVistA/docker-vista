@@ -9,11 +9,12 @@ usage()
       -h    Show this message
       -s    Script Directory
       -i    Instance name (Namespace/Database for Caché)
+      -y    Building a non-Cache instance
 
 EOF
 }
 
-while getopts ":hi:s" option
+while getopts ":hi:s:y:" option
 do
     case $option in
         h)
@@ -25,6 +26,9 @@ do
             ;;
         i)
             instance=$(echo $OPTARG |tr '[:upper:]' '[:lower:]')
+            ;;
+        y)
+            nonCache=$OPTARG
             ;;
     esac
 done
@@ -41,40 +45,67 @@ if [[ -z $scriptdir ]]; then
     scriptdir=/opt/vista
 fi
 
+if [[ -z $nonCache ]]; then
+    nonCache=false
+fi
+
 yum install -y httpd graphviz java-1.8.0-openjdk-devel php
 curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && \
     python get-pip.py && \
     pip install xlrd reportlab
 # cp $scriptdir/ViViaN/viv.conf /etc/httpd/conf.d
-basedir=/opt/cachesys/$instance
+
+if ! $nonCache; then
+  basedir=/opt/cachesys/$instance
+
+  # Fix start.sh permissions
+  chown cacheusr$instance:cachegrp$instance $basedir/bin/start.sh
+  chmod +x $basedir/bin/start.sh
+
+  sh $basedir/bin/start.sh &
+else
+  basedir=/home/$instance
+fi
 
 # Add apache to start.sh
 awk -v n=5 -v s='echo "Starting Apache"' 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
 awk -v n=6 -v s="/usr/sbin/apachectl" 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
 
-# Fix start.sh permissions
-chown cacheusr$instance:cachegrp$instance $basedir/bin/start.sh
-chmod +x $basedir/bin/start.sh
-
-sh $basedir/bin/start.sh &
 mkdir -p /opt/VistA-docs
 mkdir -p /opt/viv-out
 pushd /opt
 echo "Acquiring DBIA/ICR Information from https://foia-vista.osehra.org/VistA_Integration_Agreement/"
 curl -fsSL --progress-bar https://foia-vista.osehra.org/VistA_Integration_Agreement/2018_January_22_IA_Listing_Descriptions.TXT -o ICRDescription.txt
 echo "Downloading OSEHRA VistA Testing Repository"
-curl -fsSL --progress-bar https://github.com/OSEHRA/VistA/archive/master.zip -o VistA-master.zip
+curl -fsSL --progress-bar https://github.com/josephsnyder/VistA/archive/fix_menus_dir_creation.zip -o VistA-master.zip
 unzip -q VistA-master.zip
 rm VistA-master.zip
-mv VistA-master VistA
+mv VistA-fix_menus_dir_creation VistA
 echo "Generating VistA-M-like directory"
 mkdir -p /opt/VistA-M/Packages
 cp /opt/VistA/Packages.csv /opt/VistA-M/
 
+if $nonCache; then
+  connectionArg="-S 2 -ro $basedir/r/"
+  source /home/$instance/etc/env
+else
+  echo "
+  //Path to Cache ccontrol
+CCONTROL_EXECUTABLE:FILEPATH=/usr/bin/ccontrol
+
+//Cache instance name
+VISTA_CACHE_INSTANCE:STRING=cache
+
+//Cache namespace to store VistA
+VISTA_CACHE_NAMESPACE:STRING=OSEHRA" >> $scriptdir/ViViaN/CMakeCache.txt
+  connectionArg="-S 1 -CN $namespace"
+fi
+
+echo $connectionArg
 namespace=$(echo $instance |tr '[:lower:]' '[:upper:]')
 #  Export first so the configuration can find the correct files to query for
 echo "Starting VistAMComponentExtractor at:" $(timestamp)
-python /opt/VistA/Scripts/VistAMComponentExtractor.py -S 1 -r /opt/VistA-M/ -o /tmp/ -l /tmp/ -CN $namespace
+python /opt/VistA/Scripts/VistAMComponentExtractor.py $connectionArg -r /opt/VistA-M/ -o /tmp/ -l /tmp/
 echo "Ending VistAMComponentExtractor at:" $(timestamp)
 # Uncomment to debug VistAMComponentExtractor
 # @TODO Make debugging a script option
