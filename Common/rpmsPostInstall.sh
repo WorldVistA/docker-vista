@@ -36,3 +36,5 @@ cp ./Common/rpmsPostInstall.m $basedir/r/
 pushd ~/tmp/
 $gtm_dist/mumps -run ^rpmsPostInstall
 popd # now in /opt/vista
+
+./Common/removeVistaSource.sh

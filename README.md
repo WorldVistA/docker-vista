@@ -35,14 +35,14 @@ Pre-built images using this repository are available on [docker hub](https://hub
 
 ### Build Options
 
-#### name_space
+#### instance
 Default: `oshera`
 
-The `name_space` argument allows you to define the instance Name Space and directory inside the docker container.
+The `instance` argument allows you to define the instance Name Space and directory inside the docker container.
 
 Example:
     ```
-    docker build --build-arg name_space=vxvista -t vxvista .
+    docker build --build-arg instance=vxvista -t vxvista .
     ```
 
 #### postInstallScript
@@ -62,6 +62,48 @@ The `flags` argument allows you to adjust which flags you want to send to the au
 Example:
     ```
     docker build --build-arg flags="-y -b -s -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip" -t vxvista .
+    ```
+
+### entry
+Default: `/home`
+
+The `entry` argument allows you to adjust where docker looks for the entryfile.
+
+Example:
+    ```
+    docker build --build-arg entry="/opt/cachesys" -t cache .
+    ```
+
+### Build Examples
+Default: "OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)"
+    ```
+    docker build -t osehra-vista .
+    ```
+
+WorldVistA (GTM, no boostrap, skip testing):
+    ```
+    docker build --build-arg flags="-g -b -s -a https://github.com/glilly/wvehr2-dewdrop/archive/master.zip" --build-arg instance="worldvista" --build-arg postInstallScript="-p ./Common/removeVistaSource.sh" -t worldvista .
+    ```
+
+vxVistA (YottaDB, no boostrap, skip testing, and do post-install as well):
+    ```
+    docker build --build-arg flags="-y -b -s -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip" --build-arg instance="vxvista" --build-arg postInstallScript="-p ./Common/vxvistaPostInstall.sh" -t vxvista .
+    ```
+
+VEHU (GTM, no bootstrap, skip testing, Panorama)
+    ```
+    docker build --build-arg flags="-g -b -s -m -a https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" --build-arg postInstallScript="-p ./Common/removeVistaSource.sh" -t vehu .
+    ```
+
+RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
+    ```
+    docker build --build-arg flags="-w -y -b -s -a https://github.com/shabiel/FOIA-RPMS/archive/master.zip" --build-arg instance="rpms" --build-arg postInstallScript="-p ./Common/rpmsPostInstall.sh" -t rpms .
+    ```
+
+Caché Install with local DAT file
+ * Note: You need to supply your own CACHE.DAT and CACHE.key.  These files need to be added to the cache-files directories.
+    ```
+    docker build --build-arg flags="-c -b -s" --build-arg instance="cache" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cache .
     ```
 
 ### Build Commands
@@ -84,12 +126,12 @@ The initial docker container startup will take a bit of time as it needs to perf
 Also, many options (EWD, Panorama, etc) are not valid for Caché installs and will be ignored.
 
 1) Copy the Caché installer (kit) to the root of this repository
-2) Copy your cache.key to the root of this repository
-3) Copy your CACHE.DAT to the root of this repository
+2) Copy your cache.key to the cache-files directory of this repository
+3) Copy your CACHE.DAT to the cache-files directory of this repository
 4) Make sure that the correct block is uncommented and other install blocks are commented
 5) Build the image
    ```
-   docker build -t cache .
+   docker build --build-arg flags="-c -b -s" --build-arg instance="cache" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cache .
    ```
 6) Run the image:
    ```

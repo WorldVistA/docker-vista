@@ -29,9 +29,11 @@ ADD ./ViViaN /opt/vista/ViViaN
 ADD ./*.sh /opt/vista/
 
 ARG instance=osehra
+ENV instance_name=$instance
 ARG postInstallScript="-p ./Common/ovydbPostInstall.sh"
 ARG flags="-y -b -e -m"
-ENV instance_name=$instance
+ARG entry="/home"
+ENV entry_path="${entry}/${instance_name}/bin/start.sh"
 ENV install_flags="$flags -i ${instance_name} ${postInstallScript}"
 
 RUN dos2unix /opt/vista/* && \
@@ -53,30 +55,31 @@ RUN dos2unix /opt/vista/* && \
 #EXPOSE 22 8001 9430 8080
 
 # WorldVistA (GTM, no boostrap, skip testing)
-#RUN ./autoInstaller.sh -g -b -s -i worldvista -a https://github.com/glilly/wvehr2-dewdrop/archive/master.zip && \
-#	rm -rf /usr/local/src/VistA-Source
+#RUN ./autoInstaller.sh -g -b -s -i worldvista -a https://github.com/glilly/wvehr2-dewdrop/archive/master.zip -p ./Common/removeVistaSource.sh && \
 #ENTRYPOINT /home/worldvista/bin/start.sh
 #EXPOSE 22 8001 9430
 
 # vxVistA (YottaDB, no boostrap, skip testing, and do post-install as well)
 #RUN ./autoInstaller.sh -y -b -s -i vxvista -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip -p ./Common/vxvistaPostInstall.sh && \
-#	rm -rf /usr/local/src/VistA-Source
 #ENTRYPOINT /home/vxvista/bin/start.sh
 #EXPOSE 22 8001 9430
 
 # VEHU (GTM, no bootstrap, skip testing, Panorama)
-#RUN ./autoInstaller.sh -g -b -s -i -m vehu -a https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip && \
-#	rm -rf /usr/local/src/VistA-Source
+#RUN ./autoInstaller.sh -g -b -s -i -m vehu -a https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip -p ./Common/removeVistaSource.sh && \
 #ENTRYPOINT /home/vehu/bin/start.sh
 #EXPOSE 22 8001 9430 8080
 
 # RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
 # RPMS does not have a GTM VL Entry Point. Removing 8001 for now.
 # RUN ./autoInstaller.sh -w -y -b -s -i rpms -a https://github.com/shabiel/FOIA-RPMS/archive/master.zip -p ./Common/rpmsPostInstall.sh && \
-# 	rm -rf /usr/local/src/VistA-Source
 # ENTRYPOINT /home/rpms/bin/start.sh
 # EXPOSE 22 9100 9101 9430
 
+# Caché Install with local DAT file
+# RUN ./autoInstaller.sh -c -b -s -i pla -p ./Common/pvPostInstall.sh
+# ENTRYPOINT /opt/cachesys/pla/bin/start.sh
+# EXPOSE 22 8001 9430 8080 57772
+
 RUN ./autoInstaller.sh ${install_flags}
-ENTRYPOINT /opt/cachesys/${instance_name}/bin/start.sh
-EXPOSE 22 8001 9430 8080 57772
+ENTRYPOINT ${entry_path}/bin/start.sh
+EXPOSE 22 8001 9100 9101 9430 8080 57772
