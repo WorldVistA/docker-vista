@@ -33,7 +33,7 @@ ENV instance_name=$instance
 ARG postInstallScript="-p ./Common/ovydbPostInstall.sh"
 ARG flags="-y -b -e -m"
 ARG entry="/home"
-ENV entry_path="${entry}/${instance_name}/bin/start.sh"
+ENV entry_path="${entry}/${instance_name}"
 ENV install_flags="$flags -i ${instance_name} ${postInstallScript}"
 
 RUN dos2unix /opt/vista/* && \
