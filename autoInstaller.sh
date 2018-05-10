@@ -301,14 +301,12 @@ if $installRPMS; then
 fi
 
 if $installgtm || $installYottaDB ; then
-    gtmInst=true
     cd GTM
     ./install.sh $installydbOptions
     ./createVistaInstance.sh -i $instance $createVistaInstanceOptions
 fi
 
 if $installcache; then
-    gtmInst=false
     cd Cache
     ./install.sh -i $instance
     # Create the VistA instance
@@ -341,30 +339,13 @@ if $installgtm || $installYottaDB; then
     echo "source $basedir/etc/env" >> $USER_HOME/.bashrc
 fi
 
-if ($installgtm || $installYottaDB); then
+if (($installgtm || $installYottaDB) && ! $generateViVDox); then
+
   # Build a dashboard and run the tests to verify installation
   # These use the Dashboard branch of the VistA repository
   # The dashboard will clone VistA and VistA-M repos
   # run this as the $instance user
-  if $generateViVDox; then
-      # unzip a zip of the single .DAT with a directory of routines
-      # and place them in the $basedir 
-      echo "Using local files found in ./GTM/"
-      cd $scriptdir
-      #
-      unzip -q ./GTM/VistA.zip -d /tmp/gtmout
-      pushd /tmp/gtmout/VistA
-      # Capture the eventual name
-      datFile="$basedir/g/"`ls *.dat`
-      #move all .dat files and routine files
-      mv /tmp/gtmout/VistA/*.dat $basedir/g/
-      mv /tmp/gtmout/VistA/r/* $basedir/r/
-      # execute GDE to change the default globals to the newly placed file
-      # and rundown the file to ensure that it can be accessed
-      echo "change -s DEFAULT -f=\"$datFile\"" | mumps -run GDE
-      mupip rundown -R DEFAULT
-      popd
-  elif $skipTests; then
+  if $skipTests; then
       echo "Cloning the VistA-M Repository"
       # Clone VistA-M repo
       cd /usr/local/src
@@ -478,7 +459,7 @@ fi
 if $postInstall; then
   if $installgtm || $installYottaDB; then
     su $instance -c "source $basedir/etc/env && pushd $scriptdir && $postInstallScript && popd"
-  elif $installcache; then  
+  elif $installcache; then
     pushd $scriptdir
     $postInstallScript $instance
     popd
@@ -493,5 +474,5 @@ fi
 
 # Generate ViViaN Documentation
 if $generateViVDox; then
-    $scriptdir/ViViaN/vivianInstall.sh -i $instance -s $scriptdir -y $gtmInst
+    $scriptdir/ViViaN/vivianInstall.sh -i $instance -s $scriptdir
 fi
