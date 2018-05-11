@@ -1,3 +1,3 @@
 #!/bin/bash
 
-rm -rf /home/osehra/Dashboard
+echo "docker" | su root -c "rm -rf /home/osehra/Dashboard"
