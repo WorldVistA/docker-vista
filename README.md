@@ -103,7 +103,7 @@ RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
 Caché Install with local DAT file
  * Note: You need to supply your own CACHE.DAT and CACHE.key.  These files need to be added to the cache-files directories.
     ```
-    docker build --build-arg flags="-c -b -s" --build-arg instance="cache" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cache .
+    docker build --build-arg flags="-c -b -s" --build-arg instance="cachevista" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cachevista .
     ```
 
 ### Build Commands
