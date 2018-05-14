@@ -18,15 +18,20 @@ Pre-built images using this repository are available on [docker hub](https://hub
 
 ### Running a Pre-built image
 1) Pull the image
+
     ```
     docker pull krmassociates/osehravista # subsitute worldvista or vxvista if you want one of those instead
     ```
+
 2) Run the image
   Non QEWD enabled images
+
     ```
     docker run -p 9430:9430 -p 8001:8001 -p 2222:22 -d -P --name=osehravista krmassociates/osehravista # subsitute worldvista or vxvista if you want one of those instead
     ```
+
   QEWD enabled images
+
     ```
     docker run -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 -d -P --name=osehravista krmassociates/osehravista-qewd
     ```
@@ -35,10 +40,13 @@ Pre-built images using this repository are available on [docker hub](https://hub
 
 ### Build Commands
 1) Build the docker image
+
     ```
     docker build -t osehra .
     ```
+
 2) Run the created image
+
     ```
     docker run -p 9430:9430 -p 8001:8001 -p 2222:22 -d -P --name=osehravista osehra
     ```
@@ -56,10 +64,13 @@ Also, many options (EWD, Panorama, etc) are not valid for Caché installs and wi
 2) Copy your cache.key to the cache-files directory of this repository
 3) Copy your CACHE.DAT to the cache-files directory of this repository
 4) Build the image
+
    ```
    docker build --build-arg flags="-c -b -s" --build-arg instance="cache" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cache .
    ```
-6) Run the image:
+
+5) Run the image:
+
    ```
    docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -d --name=cache cache
    ```
@@ -82,8 +93,10 @@ Default: `NULL`
 The `postInstallScript` argument allows you to define a post install shell script that you want to run.
 
 Example:
+
     ```
     docker build --build-arg postInstallScript="-p ./Common/vxvistaPostInstall.sh" -t vxvista .
+		```
 
 #### flags
 Default: `-c -b -s`
@@ -91,6 +104,7 @@ Default: `-c -b -s`
 The `flags` argument allows you to adjust which flags you want to send to the autoInstaller.sh.
 
 Example:
+
     ```
     docker build --build-arg flags="-y -b -s -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip" -t vxvista .
     ```
@@ -101,36 +115,42 @@ Default: `/home`
 The `entry` argument allows you to adjust where docker looks for the entryfile.
 
 Example:
+
     ```
     docker build --build-arg entry="/opt/cachesys" -t cache .
     ```
 
 ### Build Examples
 Default: "OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)"
+
     ```
     docker build -t osehra-vista .
 		docker run -d -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 --name=osehravista osehra-vista
     ```
 
 WorldVistA (GTM, no boostrap, skip testing):
+
     ```
     docker build --build-arg flags="-g -b -s -a https://github.com/glilly/wvehr2-dewdrop/archive/master.zip" --build-arg instance="worldvista" --build-arg postInstallScript="-p ./Common/removeVistaSource.sh" -t worldvista .
 		docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 --name=worldvista worldvista
     ```
 
 vxVistA (YottaDB, no boostrap, skip testing, and do post-install as well):
+
     ```
     docker build --build-arg flags="-y -b -s -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip" --build-arg instance="vxvista" --build-arg postInstallScript="-p ./Common/vxvistaPostInstall.sh" -t vxvista .
 		docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 --name=vxvista vxvista
     ```
 
 VEHU (GTM, no bootstrap, skip testing, Panorama)
+
     ```
     docker build --build-arg flags="-g -b -s -m -a https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" --build-arg postInstallScript="-p ./Common/removeVistaSource.sh" -t vehu .
 		docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 --name=vehu vehu
     ```
 
 RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
+
     ```
     docker build --build-arg flags="-w -y -b -s -a https://github.com/shabiel/FOIA-RPMS/archive/master.zip" --build-arg instance="rpms" --build-arg postInstallScript="-p ./Common/rpmsPostInstall.sh" -t rpms .
 		docker run -d -p 2222:22 -p 9100:9100 -p 9101:9101 --name=rpms rpms
@@ -138,6 +158,7 @@ RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
 
 Caché Install with local DAT file
  * Note: You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the cache-files directories.
+
     ```
     docker build --build-arg flags="-c -b -s" --build-arg instance="cachevista" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cachevista .
 		docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -d -P --name=cache cachevista
