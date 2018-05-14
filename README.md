@@ -139,8 +139,7 @@ RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
     docker build --build-arg flags="-w -y -b -s -a https://github.com/shabiel/FOIA-RPMS/archive/master.zip" --build-arg instance="rpms" --build-arg postInstallScript="-p ./Common/rpmsPostInstall.sh" -t rpms .
     docker run -d -p 2222:22 -p 9100:9100 -p 9101:9101 --name=rpms rpms
 
-Caché Install with local DAT file
- * Note: You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the cache-files directories.
+Caché Install with local DAT file. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the cache-files directories.
 
     docker build --build-arg flags="-c -b -s" --build-arg instance="cachevista" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cachevista .
     docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -d -P --name=cache cachevista
