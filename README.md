@@ -66,13 +66,13 @@ Also, many options (EWD, Panorama, etc) are not valid for Caché installs and wi
 4) Build the image
 
    ```
-   docker build --build-arg flags="-c -b -s" --build-arg instance="cache" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cache .
+   docker build --build-arg flags="-c -b -s" --build-arg instance="cachevista" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cachevista .
    ```
 
 5) Run the image:
 
    ```
-   docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -d --name=cache cache
+   docker run -p9430:9430 -p8001:8001 -p2222:22 -p57772:57772 -d --name=cache cachevista
    ```
 
 ### Build Options
