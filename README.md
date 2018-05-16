@@ -104,6 +104,22 @@ Example:
 
     docker build --build-arg flags="-y -b -s -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip" -t vxvista .
 
+##### available flags
+      -a    Alternate VistA-M repo (zip or git format) (Must be in OSEHRA format)
+      -r    Alternate VistA-M repo branch (git format only)
+      -b    Skip bootstrapping system (used for docker)
+      -c    Use Caché
+      -d    Create development directories (s & p) (GT.M and YottaDB only)
+      -e    Install QEWD (assumes development directories)
+      -m    Install Panorama (assumes development directories and QEWD)
+      -g    Use GT.M
+      -i    Instance name (Namespace/Database for Caché)
+      -p    Post install hook (path to script)
+      -s    Skip testing
+      -w    Install RPMS XINETD scripts
+      -y    Use YottaDB
+      -v    Build ViViaN Documentation
+      -x    Extract given M[UMPS] code (Caché only)
 ### entry
 Default: `/home`
 

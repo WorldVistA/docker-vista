@@ -13,7 +13,7 @@ usage()
 EOF
 }
 
-while getopts ":hi:s:" option
+while getopts ":h:x:i:s:" option
 do
     case $option in
         h)
@@ -25,6 +25,9 @@ do
             ;;
         i)
             instance=$(echo $OPTARG |tr '[:upper:]' '[:lower:]')
+            ;;
+        x)
+            extractOnly=$OPTARG
             ;;
     esac
 done
@@ -39,6 +42,9 @@ fi
 
 if [[ -z $scriptdir ]]; then
     scriptdir=/opt/vista
+fi
+if [[ -z $extractOnly ]]; then
+    extractOnly=false
 fi
 
 yum install -y httpd graphviz java-1.8.0-openjdk-devel php
@@ -119,6 +125,10 @@ echo "Ending VistAMComponentExtractor at:" $(timestamp)
 # echo "End of Log Dump"
 find ./VistA-M -type f -print0 | xargs -0 dos2unix > /dev/null 2>&1
 find ./VistA-M -type f -name "MPIPSIM*.m" -print0 | xargs -0 rm
+
+if $extractOnly; then
+  exit 0
+fi
 pushd VistA-docs
 cp $scriptdir/ViViaN/CMakeCache.txt /opt/VistA-docs
 /usr/bin/cmake .
