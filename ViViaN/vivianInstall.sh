@@ -13,7 +13,7 @@ usage()
 EOF
 }
 
-while getopts ":h:x:i:s:" option
+while getopts ":h:xi:s:" option
 do
     case $option in
         h)
@@ -27,7 +27,7 @@ do
             instance=$(echo $OPTARG |tr '[:upper:]' '[:lower:]')
             ;;
         x)
-            extractOnly=$OPTARG
+            extractOnly=true
             ;;
     esac
 done

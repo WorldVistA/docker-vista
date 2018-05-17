@@ -481,7 +481,12 @@ if $installgtm || $installYottaDB; then
     chmod -R g+rw /home/$instance
 fi
 
+extract=""
+if $extractOnly; then
+  extract="-x"
+fi
+
 # Generate ViViaN Documentation
 if $generateViVDox; then
-    $scriptdir/ViViaN/vivianInstall.sh -i $instance -s $scriptdir -x "$extractOnly"
+    $scriptdir/ViViaN/vivianInstall.sh -i $instance -s $scriptdir $extract
 fi
