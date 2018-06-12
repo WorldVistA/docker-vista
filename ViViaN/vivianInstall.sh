@@ -13,7 +13,7 @@ usage()
 EOF
 }
 
-while getopts ":hi:s" option
+while getopts ":hi:s:" option
 do
     case $option in
         h)
@@ -46,17 +46,54 @@ curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && \
     python get-pip.py && \
     pip install xlrd reportlab
 # cp $scriptdir/ViViaN/viv.conf /etc/httpd/conf.d
-basedir=/opt/cachesys/$instance
+
+if [[ -f /home/$instance/etc/env ]]; then
+  basedir=/home/$instance
+  connectionArg="-S 2 -ro $basedir/r/"
+  source /home/$instance/etc/env
+
+  # unzip a zip of the single .DAT with a directory of routines
+  # and place them in the $basedir
+  echo "Using local files found in ./GTM/"
+  cd $scriptdir
+  #
+  unzip -q ./GTM/VistA.zip -d /tmp/gtmout
+  pushd /tmp/gtmout/VistA/g/
+  # Capture the eventual name
+  datFile="$basedir/g/"`ls *.dat`
+  #move all .dat files and routine files
+  rm -rf $basedir/g
+  rm -rf $basedir/r/*.m
+  mv /tmp/gtmout/VistA/g $basedir
+  mv /tmp/gtmout/VistA/r/* $basedir/r
+  # execute GDE to change the default globals to the newly placed file
+  # and rundown the file to ensure that it can be accessed
+  echo "change -s DEFAULT -f=\"$datFile\"" | mumps -run GDE
+  mupip rundown -R DEFAULT
+  popd
+else
+  namespace=$(echo $instance |tr '[:lower:]' '[:upper:]')
+  basedir=/opt/cachesys/$instance
+  echo "
+//Path to Cache ccontrol
+CCONTROL_EXECUTABLE:FILEPATH=/usr/bin/ccontrol
+
+//Cache instance name
+VISTA_CACHE_INSTANCE:STRING=cache
+
+//Cache namespace to store VistA
+VISTA_CACHE_NAMESPACE:STRING=$namespace" >> $scriptdir/ViViaN/CMakeCache.txt
+  connectionArg="-S 1 -CN $namespace"
+  # Fix start.sh permissions
+  chown cacheusr$instance:cachegrp$instance $basedir/bin/start.sh
+  chmod +x $basedir/bin/start.sh
+  sh $basedir/bin/start.sh &
+fi
 
 # Add apache to start.sh
 awk -v n=5 -v s='echo "Starting Apache"' 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
 awk -v n=6 -v s="/usr/sbin/apachectl" 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
 
-# Fix start.sh permissions
-chown cacheusr$instance:cachegrp$instance $basedir/bin/start.sh
-chmod +x $basedir/bin/start.sh
-
-sh $basedir/bin/start.sh &
 mkdir -p /opt/VistA-docs
 mkdir -p /opt/viv-out
 pushd /opt
@@ -71,10 +108,9 @@ echo "Generating VistA-M-like directory"
 mkdir -p /opt/VistA-M/Packages
 cp /opt/VistA/Packages.csv /opt/VistA-M/
 
-namespace=$(echo $instance |tr '[:lower:]' '[:upper:]')
 #  Export first so the configuration can find the correct files to query for
 echo "Starting VistAMComponentExtractor at:" $(timestamp)
-python /opt/VistA/Scripts/VistAMComponentExtractor.py -S 1 -r /opt/VistA-M/ -o /tmp/ -l /tmp/ -CN $namespace
+python /opt/VistA/Scripts/VistAMComponentExtractor.py $connectionArg -r /opt/VistA-M/ -o /tmp/ -l /tmp/
 echo "Ending VistAMComponentExtractor at:" $(timestamp)
 # Uncomment to debug VistAMComponentExtractor
 # @TODO Make debugging a script option

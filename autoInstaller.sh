@@ -173,6 +173,10 @@ if [ -z $skipTests ]; then
     skipTests=false
 fi
 
+if [ -z $localVistA ]; then
+    localVistA=false
+fi
+
 if [ -z $installYottaDB ]; then
     installYottaDB=false
 fi
@@ -335,84 +339,87 @@ if $installgtm || $installYottaDB; then
     echo "source $basedir/etc/env" >> $USER_HOME/.bashrc
 fi
 
-# Build a dashboard and run the tests to verify installation
-# These use the Dashboard branch of the VistA repository
-# The dashboard will clone VistA and VistA-M repos
-# run this as the $instance user
-if $skipTests && ($installgtm || $installYottaDB); then
-    # Clone VistA-M repo
-    cd /usr/local/src
-    if [[ $repoPath == *.git ]]; then
-        if ! [ -z $branch ]; then
-            git clone --depth 1 $repoPath -b $branch VistA-Source
-        else
-            git clone --depth 1 $repoPath VistA-Source
-        fi
-    else
-        echo "Downloading "$repoPath
-        curl -fsSL --progress-bar $repoPath -o VistA-M-master.zip
-        unzip -q VistA-M-master.zip
-        rm VistA-M-master.zip
-        dir=$(ls -1)
-        mv $dir VistA-Source
-    fi
+if (($installgtm || $installYottaDB) && ! $generateViVDox); then
 
-    # Go back to the $basedir
-    cd $basedir
+  # Build a dashboard and run the tests to verify installation
+  # These use the Dashboard branch of the VistA repository
+  # The dashboard will clone VistA and VistA-M repos
+  # run this as the $instance user
+  if $skipTests; then
+      echo "Cloning the VistA-M Repository"
+      # Clone VistA-M repo
+      cd /usr/local/src
+      if [[ $repoPath == *.git ]]; then
+          if ! [ -z $branch ]; then
+              git clone --depth 1 $repoPath -b $branch VistA-Source
+          else
+              git clone --depth 1 $repoPath VistA-Source
+          fi
+      else
+          echo "Downloading "$repoPath
+          curl -fsSL --progress-bar $repoPath -o VistA-M-master.zip
+          unzip -q VistA-M-master.zip
+          rm VistA-M-master.zip
+          dir=$(ls -1)
+          mv $dir VistA-Source
+      fi
 
-    # Perform the import
-    su $instance -c "source $basedir/etc/env && $scriptdir/GTM/importVistA.sh"
+      # Go back to the $basedir
+      cd $basedir
 
-    # Get GT.M Optimized Routines from Kernel-GTM project and unzip
-    curl -fsSLO --progress-bar https://github.com/shabiel/Kernel-GTM/releases/download/XU-8.0-10001/virgin_install.zip
+      # Perform the import
+      su $instance -c "source $basedir/etc/env && $scriptdir/GTM/importVistA.sh"
 
-    # Unzip file, put routines, delete old objects
-    su $instance -c "unzip -qo virgin_install.zip -d $basedir/r/"
-    su $instance -c "unzip -l virgin_install.zip | awk '{print \$4}' | grep '\.m' | sed 's/.m/.o/' | xargs -i rm -fv r/$gtmver/{}"
-    su $instance -c "rm -fv r/$gtmver/_*.o"
+      # Get GT.M Optimized Routines from Kernel-GTM project and unzip
+      curl -fsSLO --progress-bar https://github.com/shabiel/Kernel-GTM/releases/download/XU-8.0-10001/virgin_install.zip
 
-    # Get the Auto-configurer for VistA/RPMS and run
-    curl -fsSLO https://raw.githubusercontent.com/shabiel/random-vista-utilities/master/KBANTCLN.m
-    su $instance -c "mv KBANTCLN.m $basedir/r/"
+      # Unzip file, put routines, delete old objects
+      su $instance -c "unzip -qo virgin_install.zip -d $basedir/r/"
+      su $instance -c "unzip -l virgin_install.zip | awk '{print \$4}' | grep '\.m' | sed 's/.m/.o/' | xargs -i rm -fv r/$gtmver/{}"
+      su $instance -c "rm -fv r/$gtmver/_*.o"
 
-    # Run the auto-configurer accepting the defaults
-    su $instance -c "source $basedir/etc/env && mumps -run START^KBANTCLN"
+      # Get the Auto-configurer for VistA/RPMS and run
+      curl -fsSLO https://raw.githubusercontent.com/shabiel/random-vista-utilities/master/KBANTCLN.m
+      su $instance -c "mv KBANTCLN.m $basedir/r/"
 
-    # Start Taskman
-    su $instance -c "source $basedir/etc/env && cd ~/tmp/ && mumps -run ^ZTMB"
-elif $installgtm || $installYottaDB; then
-    # Attempt to bypass huge git clone by getting the zip files and unzipping them where they go
-    su $instance -c "source $basedir/etc/env && mkdir -p $basedir/Dashboard"
-    cd $basedir/Dashboard
-    echo "Downloading OSEHRA VistA"
-    curl -fsSL --progress-bar https://github.com/OSEHRA/VistA/archive/master.zip -o VistA-master.zip
-    unzip -q VistA-master.zip
-    rm VistA-master.zip
-    mv VistA-master VistA
-    echo "Downloading OSEHRA VistA-M"
-    curl -fsSL --progress-bar https://github.com/OSEHRA/VistA-M/archive/master.zip -o VistA-M-master.zip
-    unzip -q VistA-M-master.zip
-    rm VistA-M-master.zip
-    mv VistA-M-master VistA-M
+      # Run the auto-configurer accepting the defaults
+      su $instance -c "source $basedir/etc/env && mumps -run START^KBANTCLN"
 
-    # create random string for build identification
-    # source: http://ubuntuforums.org/showthread.php?t=1775099&p=10901169#post10901169
-    export buildid=`tr -dc "[:alpha:]" < /dev/urandom | head -c 8`
+      # Start Taskman
+      su $instance -c "source $basedir/etc/env && cd ~/tmp/ && mumps -run ^ZTMB"
+  else
+      # Attempt to bypass huge git clone by getting the zip files and unzipping them where they go
+      su $instance -c "source $basedir/etc/env && mkdir -p $basedir/Dashboard"
+      cd $basedir/Dashboard
+      echo "Downloading OSEHRA VistA"
+      curl -fsSL --progress-bar https://github.com/OSEHRA/VistA/archive/master.zip -o VistA-master.zip
+      unzip -q VistA-master.zip
+      rm VistA-master.zip
+      mv VistA-master VistA
+      echo "Downloading OSEHRA VistA-M"
+      curl -fsSL --progress-bar https://github.com/OSEHRA/VistA-M/archive/master.zip -o VistA-M-master.zip
+      unzip -q VistA-M-master.zip
+      rm VistA-M-master.zip
+      mv VistA-M-master VistA-M
 
-    # Import VistA and run tests using OSEHRA automated testing framework
-    su $instance -c "source $basedir/etc/env && ctest -S $scriptdir/test.cmake -V"
-    # Tell users of their build id
-    echo "Your build id is: $buildid you will need this to identify your build on the VistA dashboard"
+      # create random string for build identification
+      # source: http://ubuntuforums.org/showthread.php?t=1775099&p=10901169#post10901169
+      export buildid=`tr -dc "[:alpha:]" < /dev/urandom | head -c 8`
 
-    # Compile routines
-    echo "Compiling routines"
-    cd $basedir/r/$gtmver
-    for routine in $basedir/r/*.m; do
-        mumps ${routine} >> $basedir/log/compile.log 2>&1
-    done
-    echo "Done compiling routines"
+      # Import VistA and run tests using OSEHRA automated testing framework
+      su $instance -c "source $basedir/etc/env && ctest -S $scriptdir/test.cmake -V"
+      # Tell users of their build id
+      echo "Your build id is: $buildid you will need this to identify your build on the VistA dashboard"
+
+      # Compile routines
+      echo "Compiling routines"
+      cd $basedir/r/$gtmver
+      for routine in $basedir/r/*.m; do
+          mumps ${routine} >> $basedir/log/compile.log 2>&1
+      done
+      echo "Done compiling routines"
+  fi
 fi
-
 # Enable journaling
 if $installgtm || $installYottaDB; then
     su $instance -c "source $basedir/etc/env && $basedir/bin/enableJournal.sh"

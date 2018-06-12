@@ -144,6 +144,51 @@ Caché Install with local DAT file. You need to supply your own CACHE.DAT and CA
     docker build --build-arg flags="-c -b -s" --build-arg instance="cachevista" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cachevista .
     docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -d -P --name=cache cachevista
 
+### Building ViViaN and DOX with Docker
+
+Utilizing the "-v" argument flag, the system will attempt to execute the tasks which will
+install a MUMPS environment, execute tasks to gather data, generate HTML pages, and finally
+set up a web server on the container to display the data.  The scripts are designed to
+take and process a M[UMPS] system that is supplied by the user in one of two formats.
+
+#### Files needed for building
+
+
+|     Platform      |                       Required Files                           |
+| :---------------: | -------------------------------------------------------------- |
+|   GT.M/YottaDB    | A .zip file which contains a folder named "VistA" which        |
+|                   | contains the GT.M  instance to generate pages from.            |
+|                   | It should contain folder named ``g`` of globals (.GLD and .DAT)|
+|                   | and a directory named ``r`` which contains the ``.m`` files    |
+|                   | for the routines.  It should be placed in the ``GTM`` directory|                                               |
+| ----------------- | -------------------------------------------------------------- |
+|     Caché         | The files used as part of the install will be used again       |
+|                   | You need to supply your own CACHE.DAT and CACHE.key and .tar.gz|
+|                   | installer for RHEL.  These files need to be added to the       |
+|                   | cache-files directories.                                       |
+
+
+The building of ViViaN is available to executed on all three of the platforms using the same
+arguments as above: ``-c`` for Caché, ``-y`` for YottaDB, and ``-g`` for GT.M.  Each of these
+options should be combined with the ``-v`` and ``-b`` options when the docker build command is
+instantiated.
+
+*At this point, the instance must be named "osehra".*
+
+For a Caché instance, the command would look as follows:
+
+    docker build --build-arg flags="-c -b -v" --build-arg instance="osehra" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" -t cacheviv .
+    docker run -p 9430:9430 -p 8001:8001 -p 8080:8080 -p 2222:22 -p 57772:57772 -p 3080:80 -d -P --name=cache cacheviv
+
+For a YottaDB instance, the command would look as follows:
+
+    docker build --build-arg flags="-y -b -v" --build-arg instance="osehra" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" -t yottaviv .
+    docker run -p 9430:9430 -p 8001:8001 -p 8080:8080 -p 2222:22 -p 57772:57772 -p 3080:80 -d -P --name=cache yottaviv
+
+Once the container is running, the ViViaN and DOX pages can be accessed via
+a web browser at http://localhost:3080/vivian and http://localhost:3080/vivian/files/dox
+
+
 ## Roll-and-Scroll Access for non Caché installs
 
 1) Tied VistA user:

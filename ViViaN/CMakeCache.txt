@@ -17,8 +17,7 @@
 //Path to a program.
 BZRCOMMAND:FILEPATH=BZRCOMMAND-NOTFOUND
 
-//Path to Cache ccontrol
-CCONTROL_EXECUTABLE:FILEPATH=/usr/bin/ccontrol
+
 
 //Enable/Disable color output during build.
 CMAKE_COLOR_MAKEFILE:BOOL=ON
@@ -98,9 +97,6 @@ GITCOMMAND:FILEPATH=/usr/bin/git
 //git command line client
 GIT_EXECUTABLE:FILEPATH=/usr/bin/git
 
-//GT.M Distribution Directory
-GTM_DIST:PATH=
-
 //Path to a program.
 HGCOMMAND:FILEPATH=HGCOMMAND-NOTFOUND
 
@@ -160,12 +156,6 @@ TEST_VISTA:BOOL=OFF
 //Value Computed by CMake
 VISTA_BINARY_DIR:STATIC=/opt/VistA-docs
 
-//Cache instance name
-VISTA_CACHE_INSTANCE:STRING=cache
-
-//Cache namespace to store VistA
-VISTA_CACHE_NAMESPACE:STRING=OSEHRA
-
 //Password for instance
 VISTA_CACHE_PASSWORD:STRING=
 
@@ -190,8 +180,6 @@ VISTA_TCP_PORT:STRING=9210
 BUILD_TESTING:INTERNAL=ON
 //ADVANCED property for variable: BZRCOMMAND
 BZRCOMMAND-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CCONTROL_EXECUTABLE
-CCONTROL_EXECUTABLE-ADVANCED:INTERNAL=1
 //This is the directory where this CMakeCache.txt was created
 CMAKE_CACHEFILE_DIR:INTERNAL=/opt/VistA-docs
 //Major version of cmake used to create the current loaded cache
