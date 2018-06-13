@@ -71,6 +71,7 @@ usage()
       -w    Install RPMS XINETD scripts
       -y    Use YottaDB
       -v    Build ViViaN Documentation
+      -x    Extract given M[UMPS] code
 
     NOTE:
     The Caché install only supports using .DAT files for the VistA DB, and
@@ -80,7 +81,7 @@ usage()
 EOF
 }
 
-while getopts ":ha:cbemdgi:vp:sr:wy" option
+while getopts ":ha:cbxemdgi:vp:sr:wy" option
 do
     case $option in
         h)
@@ -129,6 +130,10 @@ do
             ;;
         w)
             installRPMS=true
+            ;;
+        x)
+            generateViVDox=true
+            extractOnly=true
             ;;
         y)
             installYottaDB=true
@@ -191,6 +196,10 @@ fi
 
 if [ -z $generateViVDox ]; then
     generateViVDox=false;
+fi
+
+if [ -z $extractOnly ]; then
+    extractOnly=false;
 fi
 
 # Quit if no M environment viable
@@ -472,7 +481,12 @@ if $installgtm || $installYottaDB; then
     chmod -R g+rw /home/$instance
 fi
 
+extract=""
+if $extractOnly; then
+  extract="-x"
+fi
+
 # Generate ViViaN Documentation
 if $generateViVDox; then
-    $scriptdir/ViViaN/vivianInstall.sh -i $instance -s $scriptdir
+    $scriptdir/ViViaN/vivianInstall.sh -i $instance -s $scriptdir $extract
 fi

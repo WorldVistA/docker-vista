@@ -104,6 +104,7 @@ Example:
 
     docker build --build-arg flags="-y -b -s -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip" -t vxvista .
 
+To see the flags that are available, execute the command 'autoInstaller.sh -h'
 ### entry
 Default: `/home`
 
@@ -143,6 +144,22 @@ Caché Install with local DAT file. You need to supply your own CACHE.DAT and CA
 
     docker build --build-arg flags="-c -b -s" --build-arg instance="cachevista" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cachevista .
     docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -d -P --name=cache cachevista
+
+
+Caché Install with local DAT file to stop after exporting the code from the Cache instance. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the cache-files directories.
+
+    docker build --build-arg flags="-c -b -x" --build-arg instance="cachevista" --build-arg postInstallScript="-p ./Common/foiaPostInstall.sh" --build-arg entry="/opt/cachesys" -t cachevista .
+    docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -d -P --name=cache cachevista
+
+To capture the exported code from the container and remove the Docker objects, execute the following commands:
+
+    docker cp cache:/opt/VistA-M /tmp/ # no need to put a cp -r
+    docker stop cache
+    docker rm cache
+    docker rmi cachevista
+
+A [volume](https://docs.docker.com/storage/volumes/) could also be mounted to the container.
+
 
 ### Building ViViaN and DOX with Docker
 
