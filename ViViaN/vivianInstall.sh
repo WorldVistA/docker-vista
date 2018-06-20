@@ -90,15 +90,15 @@ VISTA_CACHE_INSTANCE:STRING=cache
 //Cache namespace to store VistA
 VISTA_CACHE_NAMESPACE:STRING=$namespace" >> $scriptdir/ViViaN/CMakeCache.txt
   connectionArg="-S 1 -CN $namespace"
-  # Fix start.sh permissions
-  chown cacheusr$instance:cachegrp$instance $basedir/bin/start.sh
-  chmod +x $basedir/bin/start.sh
   sh $basedir/bin/start.sh &
 fi
 
 # Add apache to start.sh
 awk -v n=5 -v s='echo "Starting Apache"' 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
 awk -v n=6 -v s="/usr/sbin/apachectl" 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
+# Fix start.sh permissions
+chown cacheusr$instance:cachegrp$instance $basedir/bin/start.sh
+chmod +x $basedir/bin/start.sh
 
 mkdir -p /opt/VistA-docs
 mkdir -p /opt/viv-out
