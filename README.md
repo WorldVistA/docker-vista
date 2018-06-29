@@ -196,7 +196,7 @@ instantiated.
 
 For a Caché instance, the command would look as follows:
 
-    docker build --build-arg flags="-c -b -v" --build-arg instance="osehra" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" -t cacheviv .
+    docker build --build-arg flags="-c -b -v" --build-arg entry="/opt/cachesys" --build-arg instance="osehra" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" -t cacheviv .
     docker run -p 9430:9430 -p 8001:8001 -p 8080:8080 -p 2222:22 -p 57772:57772 -p 3080:80 -d -P --name=cache cacheviv
 
 For a YottaDB instance, the command would look as follows:
