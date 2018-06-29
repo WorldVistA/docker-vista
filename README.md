@@ -146,7 +146,9 @@ Caché Install with local DAT file. You need to supply your own CACHE.DAT and CA
     docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -d -P --name=cache cachevista
 
 
-Caché Install with local DAT file to stop after exporting the code from the Cache instance. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the cache-files directories.
+Caché Install with local DAT file to stop after exporting the code from the Cache instance. You need to supply your own CACHE.DAT and .tar.gz installer for RHEL.
+When available, the system will also install a "cache.key" file when the system is built.  If it is not present, the extraction will be performed serially.
+These files need to be added to the cache-files directories.
 
     docker build --build-arg flags="-c -b -x" --build-arg instance="cachevista" --build-arg postInstallScript="-p ./Common/foiaPostInstall.sh" --build-arg entry="/opt/cachesys" -t cachevista .
     docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -d -P --name=cache cachevista

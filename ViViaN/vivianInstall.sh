@@ -94,6 +94,9 @@ VISTA_CACHE_NAMESPACE:STRING=$namespace" >> $scriptdir/ViViaN/CMakeCache.txt
   chown cacheusr$instance:cachegrp$instance $basedir/bin/start.sh
   chmod +x $basedir/bin/start.sh
   sh $basedir/bin/start.sh &
+  if [[ ! -f $basedir/mgr/cache.key ]]; then
+    serialExport="-sx"
+  fi
 fi
 
 # Add apache to start.sh
@@ -116,7 +119,7 @@ cp /opt/VistA/Packages.csv /opt/VistA-M/
 
 #  Export first so the configuration can find the correct files to query for
 echo "Starting VistAMComponentExtractor at:" $(timestamp)
-python /opt/VistA/Scripts/VistAMComponentExtractor.py $connectionArg -r /opt/VistA-M/ -o /tmp/ -l /tmp/
+python /opt/VistA/Scripts/VistAMComponentExtractor.py $connectionArg -r /opt/VistA-M/ -o /tmp/ -l /tmp/ $serialExport
 echo "Ending VistAMComponentExtractor at:" $(timestamp)
 # Uncomment to debug VistAMComponentExtractor
 # @TODO Make debugging a script option
