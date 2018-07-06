@@ -23,7 +23,7 @@ basedir=/home/$instance
 # Download the PIP repository
 cd $basedir
 su $instance -c "curl -s -L https://github.com/YottaDB/PIP/archive/master.zip -o pip.zip"
-su $instance -c "unzip pip.zip > $basedir/log/PIPunzip.log 2>&1 && mv PIP-master pip"
+su $instance -c "unzip pip.zip > $basedir/log/PIPunzip.log 2>&1 && mv PIP-master pip && rm pip.zip"
 
 # Build PIP
 
@@ -133,5 +133,9 @@ perl -pi -e 's#/home/pip/#'$basedir'/#g' $basedir/pip/mtm/PIPMTM
 mkdir -p /SCA/sca_gtm/alerts/
 chmod ugo+rw /SCA/sca_gtm/alerts
 
+# Copy routine to p directory
+if [ -d $basedir/pip ] ; then
+  su $instance -c "cp $basedir/pip/p/*.m $basedir/p"
+fi
 
 echo "Done installing PIP"
