@@ -67,6 +67,7 @@ usage()
       -g    Use GT.M
       -i    Instance name (Namespace/Database for Caché)
       -p    Post install hook (path to script)
+      -q    Install SQL mapping for YottaDB
       -s    Skip testing
       -w    Install RPMS XINETD scripts
       -y    Use YottaDB
@@ -81,7 +82,7 @@ usage()
 EOF
 }
 
-while getopts ":ha:cbxemdgi:vp:sr:wy" option
+while getopts ":ha:cbxemdgi:vp:sr:wyq" option
 do
     case $option in
         h)
@@ -137,6 +138,9 @@ do
             ;;
         y)
             installYottaDB=true
+            ;;
+        q)
+            installSQL=true
             ;;
     esac
 done
@@ -202,6 +206,10 @@ if [ -z $extractOnly ]; then
     extractOnly=false;
 fi
 
+if [ -z $installSQL ]; then
+    installSQL=false;
+fi
+
 # Quit if no M environment viable
 if [[ ! $installgtm || ! $installcache || ! $installYottaDB ]]; then
     echo "You need to either install Caché, GT.M or YottaDB!"
@@ -214,6 +222,7 @@ echo "Create development directories: $developmentDirectories"
 echo "Installing an instance named: $instance"
 echo "Installing QEWD: $installEWD"
 echo "Installing Panorama: $installPanorama"
+echo "Installing SQL Mapping: $installSQL"
 echo "Post install hook: $postInstallScript"
 echo "Skip Testing: $skipTests"
 echo "Skip bootstrap: $bootstrap"
@@ -461,6 +470,13 @@ fi
 if $installPanorama && ($installgtm || $installYottaDB); then
     cd $scriptdir/EWD
     ./panorama.sh -f
+    cd $basedir
+fi
+
+# Install PIP/SQL Mapping
+if $installSQL && ($installgtm || $installYottaDB); then
+    cd $scriptdir/GTM
+    ./installPIP.sh
     cd $basedir
 fi
 
