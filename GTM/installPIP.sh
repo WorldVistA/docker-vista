@@ -134,7 +134,7 @@ mkdir -p /SCA/sca_gtm/alerts/
 chmod ugo+rw /SCA/sca_gtm/alerts
 
 # Copy routine to p directory
-if [ -d $basedir/pip ] ; then
+if [ -d $basedir/p ] ; then
   su $instance -c "cp $basedir/pip/p/*.m $basedir/p"
 fi
 
