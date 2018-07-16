@@ -52,6 +52,12 @@ start() {
     # Start TaskMan
     echo "Starting TaskMan"
     su $instance -c "source $basedir/etc/env && cd $basedir/tmp && $gtm_dist/mumps -run START^ZTMB"
+
+    # Start PIP
+    if [ -d $basedir/pip ] ; then
+        echo "Starting PIP"
+        su $instance -c "source $basedir/etc/env && $basedir/pip/pipstart"
+    fi
 }
 stop() {
     # Stop TaskMan
@@ -64,6 +70,12 @@ EOF"
     # Wait for TaskMan to stop
     echo "Waiting for TaskMan to stop (2 sec)"
     sleep 2
+
+    # Stop PIP
+    if [ -d $basedir/pip ] ; then
+        echo "Stopping PIP"
+        su $instance -c "source $basedir/etc/env && $basedir/pip/pipstop"
+    fi
 
     # Look for M processes and terminate them nicely
     processes=$(pgrep mumps)
