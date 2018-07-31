@@ -140,6 +140,7 @@ do
             installYottaDB=true
             ;;
         q)
+            developmentDirectories=true
             installSQL=true
             ;;
     esac
