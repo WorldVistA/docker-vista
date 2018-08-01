@@ -213,28 +213,59 @@ SQL Mapping of FileMan Files is in development at https://github.com/YottaDB/PIP
 
 #### Installation Command Line flag
 
-The -q command line flag is used to install all required files for the SQL Mapping and set up processes for auto start when the container is started
+The -q command line flag is used to install all required files for the SQL Mapping and set up processes for auto start when the container is started.
+Development directories are automatically installed by specifing "-q"
+
+An example build command:
+
+    docker build --build-arg flags="-y -b -e -m -q -s" --build-arg instance="osehra" -t osehrapip .
 
 #### Docker run Command Line flags
 
 SQL Mapping uses POSIX message passing to perform certain operations and the Linux defaults are too small for operation. The following command line arguments are used to increase the size of the POSIX message passing parameters to support the SQL Mapping tool.
 
-```
---sysctl kernel.msgmax=1048700
---sysctl kernel.msgmnb=65536000
-```
+    --sysctl kernel.msgmax=1048700
+    --sysctl kernel.msgmnb=65536000
 
 There is also an additional port that needs to be forwarded from the Host to the Guest:
 
-```
--p 61012:61012
-```
+    -p 61012:61012
 
 example docker run command:
 
-```
-docker run -p 9430:9430 -p 8001:8001 -p 2223:22 -p 61012:61012 -d -P --sysctl kernel.msgmax=1048700 --sysctl kernel.msgmnb=65536000 --name=osehra osehra
-```
+    docker run -p 9430:9430 -p 8001:8001 -p 2223:22 -p 61012:61012 -d -P --sysctl kernel.msgmax=1048700 --sysctl kernel.msgmnb=65536000 --name=osehra osehra
+
+#### Mapping FileMan Files
+
+Since PIP has specific environment setup that is outside the normal from VistA it isn't integrated into the "normal" environemnt and must be ran using a helper script that sets up several environment variables for C Call-Outs and configuration.
+
+    pip/dm
+
+To map individual files:
+
+    OSEHRA>D MAPFM^KBBOSQL(FileNumber)
+
+Replace FileNumber with a valid parent File Number like 200 (NEW PERSON) or 2 (PATIENT)
+
+    OSEHRA>D MAPFM^KBBOSQL(200)
+
+Mapping all FileMan files can be accomplished by running:
+
+    OSEHRA>D MAPALL^KBBOSQL
+
+Note: This will corrupt certain tables in DATA-QWIK. See PIP issue: https://github.com/YottaDB/PIP/issues/72
+
+If you don't use the above script errors in the M routine will be reported such as
+
+    OSEHRA>D MAPFM^KBBOSQL(200)
+    %GTM-E-UNDEF, Undefined local variable: QUIT
+    At M source location CREATEMAP+19^KBBOSQL
+
+or
+
+    OSEHRA>D MAPFM^KBBOSQL(200)
+    %GTM-E-UNDEF, Undefined local variable: PARENT
+    At M source location GETPARENTS+1^KBBOSQL
 
 ## Roll-and-Scroll Access for non Caché installs
 
