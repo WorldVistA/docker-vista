@@ -218,7 +218,7 @@ Development directories are automatically installed by specifing "-q"
 
 An example build command:
 
-    docker build --build-arg flags="-y -b -e -m -q -s" --build-arg instance="osehra" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" -t osehrapip .
+    docker build --build-arg flags="-y -b -e -m -q -s" --build-arg instance="osehra" -t osehrapip .
 
 #### Docker run Command Line flags
 
