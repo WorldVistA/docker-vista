@@ -35,6 +35,10 @@ if [ -d $basedir/p ] ; then
   su $instance -c "cp $basedir/PIP-master/p/*.m $basedir/p"
 fi
 
+# Copy ProfileBrowserIDE to proper place
+mkdir $basedir/pip/ProfileBrowserIDE
+cp $basedir/PIP-master/ProfileBrowserIDE/* $basedir/pip/ProfileBrowserIDE/
+
 # Remove pip build directories
 rm -rf $basedir/PIP-master $basedir/pip-build $basedir/pip.zip
 cd $basedir/pip
@@ -117,5 +121,28 @@ chmod ugo+rw /SCA/sca_gtm/alerts
 
 # Fix permissions
 chown -R $instance:$instance $basedir/pip
+
+# Install Tomcat
+curl -fSsLO https://archive.apache.org/dist/tomcat/tomcat-6/v6.0.53/bin/apache-tomcat-6.0.53.tar.gz
+tar xzf apache-tomcat-*.tar.gz -C /opt
+rm -f apache-tomcat-*.tar.gz
+perl -pi -e 's/<Connector port="8080"/<Connector port="8081"/g' /opt/apache-tomcat-*/conf/server.xml
+
+# Install Derby jar
+curl -fSsLO http://www-us.apache.org/dist//db/derby/db-derby-10.14.2.0/db-derby-10.14.2.0-lib.zip
+unzip db-derby-*.zip
+mv db-derby-*-lib/lib/derbyclient.jar /opt/apache-tomcat-*/lib/
+mv db-derby-*-lib/lib/derby.jar  /opt/apache-tomcat-*/lib/
+mv db-derby-*-lib/lib/derbyrun.jar  /opt/apache-tomcat-*/lib/
+mv db-derby-*-lib/lib/derbytools.jar  /opt/apache-tomcat-*/lib/
+rm -rf db-derby-*-lib
+rm -f db-derby-*-lib.zip
+
+# Extract Derby Database
+tar xvzf $basedir/pip/ProfileBrowserIDE/profile_ide_db.tgz -C /opt
+
+# Fix permissions
+chown -R $instance:$instance /opt/apache-tomcat-*
+chown -R $instance:$instance /opt/profile_ide_db
 
 echo "Done installing PIP"
