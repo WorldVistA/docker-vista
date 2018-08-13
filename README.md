@@ -229,11 +229,11 @@ SQL Mapping uses POSIX message passing to perform certain operations and the Lin
 
 There is also an additional port that needs to be forwarded from the Host to the Guest:
 
-    -p 61012:61012
+    -p 61012:61012 -p 8081:8081
 
 example docker run command:
 
-    docker run -p 9430:9430 -p 8001:8001 -p 2223:22 -p 61012:61012 -d -P --sysctl kernel.msgmax=1048700 --sysctl kernel.msgmnb=65536000 --name=osehra osehra
+    docker run -p 9430:9430 -p 8001:8001 -p 2223:22 -p 61012:61012 -p 8081:8081 -d -P --sysctl kernel.msgmax=1048700 --sysctl kernel.msgmnb=65536000 --name=osehra osehra
 
 #### Mapping FileMan Files
 
