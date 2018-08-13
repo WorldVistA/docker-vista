@@ -2,10 +2,33 @@ FROM centos
 
 RUN echo "multilib_policy=best" >> /etc/yum.conf
 RUN yum  -y update && \
-    yum install -y gcc-c++ git xinetd perl curl python openssh-server openssh-clients expect man python-argparse sshpass wget make cmake dos2unix which unzip lsof net-tools || true && \
+    yum install -y \
+                   gcc-c++ \
+                   git \
+                   xinetd \
+                   perl \
+                   curl \
+                   python \
+                   openssh-server \
+                   openssh-clients \
+                   expect \
+                   man \
+                   python-argparse \
+                   sshpass \
+                   wget \
+                   make \
+                   cmake \
+                   dos2unix \
+                   which \
+                   unzip \
+                   lsof \
+                   net-tools \
+                   java-devel \
+                   || true && \
     yum install -y http://libslack.org/daemon/download/daemon-0.6.4-1.i686.rpm > /dev/null && \
     package-cleanup --cleandupes && \
-    yum  -y clean all
+    yum  -y clean all && \
+    rm -rf /var/cache/yum
 
 RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa && \
     ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa && \
@@ -82,4 +105,4 @@ RUN dos2unix /opt/vista/* && \
 
 RUN ./autoInstaller.sh ${install_flags}
 ENTRYPOINT ${entry_path}/bin/start.sh
-EXPOSE 22 8001 9100 9101 9430 8080 57772
+EXPOSE 22 8001 9100 9101 61012 9430 8080 8081 57772

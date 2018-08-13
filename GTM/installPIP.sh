@@ -23,35 +23,25 @@ basedir=/home/$instance
 # Download the PIP repository
 cd $basedir
 su $instance -c "curl -s -L https://github.com/YottaDB/PIP/archive/master.zip -o pip.zip"
-su $instance -c "unzip pip.zip > $basedir/log/PIPunzip.log 2>&1 && mv PIP-master pip && rm pip.zip"
+su $instance -c "unzip pip.zip > $basedir/log/PIPunzip.log 2>&1"
 
 # Build PIP
+mkdir $basedir/pip-build
+cd $basedir/pip-build
+cmake -D CMAKE_INSTALL_PREFIX=$basedir/pip $basedir/PIP-master && make && make install
 
-# Build Message Transfer Manager
-echo "Building Message Transfer Manager..."
-cd $basedir/pip/mtm_*
-make > $basedir/log/PIPMTMCompile.log 2>&1
+# Copy routine to p directory
+if [ -d $basedir/p ] ; then
+  su $instance -c "cp $basedir/PIP-master/p/*.m $basedir/p"
+fi
 
-# Build External Call Utility
-echo "Building External Call Utility..."
-cd $basedir/pip/extcall_*/shlib
-make > $basedir/log/PIPshlibCompile.log 2>&1
-cd ../alerts
-make > $basedir/log/PIPalertsCompile.log 2>&1
-cd ../src
-make > $basedir/log/PIPextcallCompile.log 2>&1
-make -f version.mk > $basedir/log/PIPextcallVersionCompile.log 2>&1
+# Copy ProfileBrowserIDE to proper place
+mkdir $basedir/pip/ProfileBrowserIDE
+cp $basedir/PIP-master/ProfileBrowserIDE/* $basedir/pip/ProfileBrowserIDE/
 
-# Build SQL Library
-echo "Building SQL Library..."
-cd $basedir/pip/libsql_*/src
-make LINUX > $basedir/log/PIPlibSQLCompile.log 2>&1
-make version > $basedir/log/PIPlibSQLVersionCompile.log 2>&1
-
-# Compile M interrupt
-echo "Building M Interrupt..."
-cd $basedir/pip/util
-make -f mintrpt.mk > $basedir/log/PIPmintrptCompile.log 2>&1
+# Remove pip build directories
+rm -rf $basedir/PIP-master $basedir/pip-build $basedir/pip.zip
+cd $basedir/pip
 
 # Create PIP database
 echo "a -s PIP      -alloc=4000 -exten=5000 -glob=2000 -FILE=$basedir/g/pip.dat" > $basedir/etc/pip.gde
@@ -102,10 +92,6 @@ echo "Done Creating PIP database"
 perl -pi -e 's/GT.M MUPIP EXTRACT UTF-8/GT.M MUPIP EXTRACT/g' $basedir/pip/gbls/globals.zwr
 su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip load \$basedir/pip/gbls/globals.zwr >> $basedir/log/PIPLoadGlobals.log 2>&1"
 
-# Modify *.xc files to reflect correct path
-perl -pi -e 's#/home/pip/#'$basedir'/#g' $basedir/pip/extcall_V1.2/*.xc
-perl -pi -e 's#/home/pip/#'$basedir'/#g' $basedir/pip/mtm_V2.4.5/*.xc
-
 # Modify gtmenv to reflect correct paths
 perl -pi -e 's#gtm_dist=/opt/yottadb/current#gtm_dist=\$basedir/lib/gtm#g' $basedir/pip/gtmenv
 perl -pi -e 's#gtmgbldir=\$\{SCAU_GBLS\}/pip.gld#gtmgbldir=\$basedir/g/\$instance.gld\nunset gtm_lvnullsubs\n#g' $basedir/pip/gtmenv
@@ -127,15 +113,36 @@ perl -pi -e 's#gbls/mumps.mjl#\$basedir/j/pip.mjl#g' $basedir/pip/pipstop
 perl -pi -e 's#gbls/mumps.dat#\$basedir/g/pip.dat#g' $basedir/pip/pipstop
 
 # Modify PIPMTM to reflect correct path
-perl -pi -e 's#/home/pip/#'$basedir'/#g' $basedir/pip/mtm/PIPMTM
+perl -pi -e 's#/home/pip/#'$basedir'/#g' $basedir/pip/bin/pipmtm
 
 # Create error paths
 mkdir -p /SCA/sca_gtm/alerts/
 chmod ugo+rw /SCA/sca_gtm/alerts
 
-# Copy routine to p directory
-if [ -d $basedir/p ] ; then
-  su $instance -c "cp $basedir/pip/p/*.m $basedir/p"
-fi
+# Fix permissions
+chown -R $instance:$instance $basedir/pip
+
+# Install Tomcat
+curl -fSsLO https://archive.apache.org/dist/tomcat/tomcat-6/v6.0.53/bin/apache-tomcat-6.0.53.tar.gz
+tar xzf apache-tomcat-*.tar.gz -C /opt
+rm -f apache-tomcat-*.tar.gz
+perl -pi -e 's/<Connector port="8080"/<Connector port="8081"/g' /opt/apache-tomcat-*/conf/server.xml
+
+# Install Derby jar
+curl -fSsLO http://www-us.apache.org/dist//db/derby/db-derby-10.14.2.0/db-derby-10.14.2.0-lib.zip
+unzip db-derby-*.zip
+mv db-derby-*-lib/lib/derbyclient.jar /opt/apache-tomcat-*/lib/
+mv db-derby-*-lib/lib/derby.jar  /opt/apache-tomcat-*/lib/
+mv db-derby-*-lib/lib/derbyrun.jar  /opt/apache-tomcat-*/lib/
+mv db-derby-*-lib/lib/derbytools.jar  /opt/apache-tomcat-*/lib/
+rm -rf db-derby-*-lib
+rm -f db-derby-*-lib.zip
+
+# Extract Derby Database
+tar xvzf $basedir/pip/ProfileBrowserIDE/profile_ide_db.tgz -C /opt
+
+# Fix permissions
+chown -R $instance:$instance /opt/apache-tomcat-*
+chown -R $instance:$instance /opt/profile_ide_db
 
 echo "Done installing PIP"
