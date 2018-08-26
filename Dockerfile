@@ -25,6 +25,7 @@ RUN yum  -y update && \
                    lsof \
                    net-tools \
                    java-devel \
+                   file \
                    || true && \
     yum install -y http://libslack.org/daemon/download/daemon-0.6.4-1.i686.rpm > /dev/null && \
     package-cleanup --cleandupes && \
@@ -106,4 +107,4 @@ RUN dos2unix /opt/vista/* && \
 
 RUN ./autoInstaller.sh ${install_flags}
 ENTRYPOINT ${entry_path}/bin/start.sh
-EXPOSE 22 8001 9100 9101 61012 9430 8080 8081 57772
+EXPOSE 22 8001 9100 9101 61012 9430 8080 8081 9080 57772
