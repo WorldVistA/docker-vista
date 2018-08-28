@@ -507,3 +507,10 @@ fi
 if $generateViVDox; then
     $scriptdir/ViViaN/vivianInstall.sh -i $instance -s $scriptdir $extract
 fi
+
+# Clean up the VistA-M source directories to save space
+if $skipTests; then
+    rm -rf /usr/local/src/VistA-Source
+else
+    rm -rf $basedir/Dashboard/VistA-M
+fi
