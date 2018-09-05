@@ -28,19 +28,19 @@ su $instance -c "unzip pip.zip > $basedir/log/PIPunzip.log 2>&1"
 # Build PIP
 mkdir $basedir/pip-build
 cd $basedir/pip-build
-cmake -D CMAKE_INSTALL_PREFIX=$basedir/pip $basedir/PIP-master && make && make install
+cmake -D CMAKE_INSTALL_PREFIX=$basedir/pip $basedir/YDBPIP-master && make && make install
 
 # Copy routine to p directory
 if [ -d $basedir/p ] ; then
-  su $instance -c "cp $basedir/PIP-master/p/*.m $basedir/p"
+  su $instance -c "cp $basedir/YDBPIP-master/p/*.m $basedir/p"
 fi
 
 # Copy ProfileBrowserIDE to proper place
 mkdir $basedir/pip/ProfileBrowserIDE
-cp $basedir/PIP-master/ProfileBrowserIDE/* $basedir/pip/ProfileBrowserIDE/
+cp $basedir/YDBPIP-master/ProfileBrowserIDE/* $basedir/pip/ProfileBrowserIDE/
 
 # Remove pip build directories
-rm -rf $basedir/PIP-master $basedir/pip-build $basedir/pip.zip
+rm -rf $basedir/YDBPIP-master $basedir/pip-build $basedir/pip.zip
 cd $basedir/pip
 
 # Create PIP database
