@@ -75,7 +75,7 @@ fi
 
 # YottaDB
 if [ $installYottaDB ] && [ -z $gtm_ver ]; then
-    gtm_ver="r1.10"
+    gtm_ver="r1.22"
 fi
 
 if [ -z $sharedmem ]; then
@@ -85,13 +85,6 @@ fi
 # Download ydbinstall
 echo "Downloading ydbinstall"
 curl -s -L https://raw.githubusercontent.com/YottaDB/YottaDB/master/sr_unix/ydbinstall.sh -o ydbinstall
-
-# Verify hash as we are going to make it executable
-sha1sum -c --status ydbinstall_SHA1
-if [ $? -gt 0 ]; then
-    echo "Something went wrong downloading ydbinstall"
-    exit $?
-fi
 
 # Get kernel.shmmax to determine if we can use 32k strings
 # ${#...} is to compare lengths of strings before trying to use them as numbers

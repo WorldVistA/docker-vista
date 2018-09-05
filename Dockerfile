@@ -20,6 +20,7 @@ RUN yum  -y update && \
                    cmake \
                    dos2unix \
                    which \
+                   file \
                    unzip \
                    lsof \
                    net-tools \
