@@ -86,6 +86,12 @@ fi
 echo "Downloading ydbinstall"
 curl -s -L https://raw.githubusercontent.com/YottaDB/YottaDB/master/sr_unix/ydbinstall.sh -o ydbinstall
 
+isValidFile=`head ydbinstall | grep "Fidelity National Information"`
+if [[ ! $isValidFile ]]; then
+    echo "Something went wrong downloading ydbinstall"
+    exit $?
+fi
+
 # Get kernel.shmmax to determine if we can use 32k strings
 # ${#...} is to compare lengths of strings before trying to use them as numbers
 # Ubuntu 16.04 box seems to have a shared memory of 18446744073692774399!!!
