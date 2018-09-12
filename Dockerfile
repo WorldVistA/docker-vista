@@ -25,7 +25,9 @@ RUN yum  -y update && \
                    lsof \
                    net-tools \
                    java-devel \
-                   file \
+                   libicu \
+                   libicu-devel \
+                   bzip2 \
                    || true && \
     yum install -y http://libslack.org/daemon/download/daemon-0.6.4-1.i686.rpm > /dev/null && \
     package-cleanup --cleandupes && \
