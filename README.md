@@ -33,7 +33,7 @@ Pre-built images using this repository are available on [docker hub](https://hub
 QEWD enabled images: Add `-p 8080:8080` to access QEWD/Panorama at port 8080.
 
 ```
-docker run -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 -d -P --name=osehravista krmassociates/osehravista-qewd
+docker run -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 -p 9080:9080 -d -P --name=osehravista krmassociates/osehravista-qewd
 ```
 
 ## Docker Build
@@ -48,7 +48,7 @@ docker run -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 -d -P --name=osehra
 2) Run the created image
 
     ```
-    docker run -p 9430:9430 -p 8001:8001 -p 2222:22 -d -P --name=osehravista osehra
+    docker run -p 9430:9430 -p 8001:8001 -p 2222:22 -p 9080:9080 -d -P --name=osehravista osehra
     ```
 
 ## Build Steps for Caché installs
@@ -66,7 +66,7 @@ Also, many options (EWD, Panorama, etc) are not valid for Caché installs and wi
 4) Build the image
 
    ```
-   docker build --build-arg flags="-c -b -s" --build-arg instance="cachevista" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cachevista .
+   docker build --build-arg flags="-c -b -s -p ./Common/pvPostInstall.sh" --build-arg instance="cachevista" --build-arg entry="/opt/cachesys" -t cachevista .
    ```
 
 5) Run the image:
@@ -86,25 +86,21 @@ Example:
 
     docker build --build-arg instance=vxvista -t vxvista .
 
-#### postInstallScript
-Default: `NULL`
-
-The `postInstallScript` argument allows you to define a post install shell script that you want to run.
-
-Example:
-
-    docker build --build-arg postInstallScript="-p ./Common/vxvistaPostInstall.sh" -t vxvista .
-
 #### flags
 Default: `-c -b -s`
 
-The `flags` argument allows you to adjust which flags you want to send to the autoInstaller.sh.
+The `flags` argument allows you to adjust which flags you want to send to the autoInstaller.sh. This includes any post install script.
 
 Example:
 
     docker build --build-arg flags="-y -b -s -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip" -t vxvista .
 
+Example:
+
+    docker build --build-arg flags="-y -b -s -p ./Common/vxvistaPostInstall.sh" -t vxvista .
+
 To see the flags that are available, execute the command 'autoInstaller.sh -h'
+
 ### entry
 Default: `/home`
 
@@ -118,40 +114,40 @@ Example:
 Default: "OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)"
 
     docker build -t osehra-vista .
-    docker run -d -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 --name=osehravista osehra-vista
+    docker run -d -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 -p 9080:9080 --name=osehravista osehra-vista
 
 WorldVistA (GTM, no boostrap, skip testing):
 
-    docker build --build-arg flags="-g -b -s -a https://github.com/glilly/wvehr2-dewdrop/archive/master.zip" --build-arg instance="worldvista" --build-arg postInstallScript="-p ./Common/removeVistaSource.sh" -t worldvista .
-    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 --name=worldvista worldvista
+    docker build --build-arg flags="-g -b -s -a https://github.com/glilly/wvehr2-dewdrop/archive/master.zip -p ./Common/removeVistaSource.sh" --build-arg instance="worldvista" -t worldvista .
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 9080:9080 --name=worldvista worldvista
 
 vxVistA (YottaDB, no boostrap, skip testing, and do post-install as well):
 
-    docker build --build-arg flags="-y -b -s -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip" --build-arg instance="vxvista" --build-arg postInstallScript="-p ./Common/vxvistaPostInstall.sh" -t vxvista .
-    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 --name=vxvista vxvista
+    docker build --build-arg flags="-y -b -s -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip -p ./Common/vxvistaPostInstall.sh" --build-arg instance="vxvista" -t vxvista .
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 9080:9080 --name=vxvista vxvista
 
 VEHU (GTM, no bootstrap, skip testing, Panorama)
 
-    docker build --build-arg flags="-g -b -s -m -a https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" --build-arg postInstallScript="-p ./Common/removeVistaSource.sh" -t vehu .
-    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 --name=vehu vehu
+    docker build --build-arg flags="-g -b -s -m -a https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip -p ./Common/removeVistaSource.sh" --build-arg instance="vehu" -t vehu .
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=vehu vehu
 
 RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
 
-    docker build --build-arg flags="-w -y -b -s -a https://github.com/shabiel/FOIA-RPMS/archive/master.zip" --build-arg instance="rpms" --build-arg postInstallScript="-p ./Common/rpmsPostInstall.sh" -t rpms .
-    docker run -d -p 2222:22 -p 9100:9100 -p 9101:9101 --name=rpms rpms
+    docker build --build-arg flags="-w -y -b -s -a https://github.com/shabiel/FOIA-RPMS/archive/master.zip -p ./Common/rpmsPostInstall.sh" --build-arg instance="rpms" -t rpms .
+    docker run -d -p 2222:22 -p 9100:9100 -p 9101:9101 -p 9080:9080 --name=rpms rpms
 
 Caché Install with local DAT file. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the cache-files directories.
 
-    docker build --build-arg flags="-c -b -s" --build-arg instance="cachevista" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" -t cachevista .
-    docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -d -P --name=cache cachevista
+    docker build --build-arg flags="-c -b -s -p ./Common/pvPostInstall.sh" --build-arg instance="cachevista" --build-arg entry="/opt/cachesys" -t cachevista .
+    docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -p 9080:9080 -d -P --name=cache cachevista
 
 
 Caché Install with local DAT file to stop after exporting the code from the Cache instance. You need to supply your own CACHE.DAT and .tar.gz installer for RHEL.
 When available, the system will also install a "cache.key" file when the system is built.  If it is not present, the extraction will be performed serially.
 These files need to be added to the cache-files directories.
 
-    docker build --build-arg flags="-c -b -x" --build-arg instance="cachevista" --build-arg postInstallScript="-p ./Common/foiaPostInstall.sh" --build-arg entry="/opt/cachesys" -t cachevista .
-    docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -d -P --name=cache cachevista
+    docker build --build-arg flags="-c -b -x -p ./Common/foiaPostInstall.sh" --build-arg instance="cachevista" --build-arg entry="/opt/cachesys" -t cachevista .
+    docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -p 9080:9080 -d -P --name=cache cachevista
 
 To capture the exported code from the container and remove the Docker objects, execute the following commands:
 
@@ -196,12 +192,12 @@ instantiated.
 
 For a Caché instance, the command would look as follows:
 
-    docker build --build-arg flags="-c -b -v" --build-arg entry="/opt/cachesys" --build-arg instance="osehra" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" -t cacheviv .
+    docker build --build-arg flags="-c -b -v -p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" --build-arg instance="osehra" -t cacheviv .
     docker run -p 9430:9430 -p 8001:8001 -p 8080:8080 -p 2222:22 -p 57772:57772 -p 3080:80 -d -P --name=cache cacheviv
 
 For a YottaDB instance, the command would look as follows:
 
-    docker build --build-arg flags="-y -b -v" --build-arg instance="osehra" --build-arg postInstallScript="-p ./Common/pvPostInstall.sh" -t yottaviv .
+    docker build --build-arg flags="-y -b -v -p ./Common/pvPostInstall.sh" --build-arg instance="osehra" -t yottaviv .
     docker run -p 9430:9430 -p 8001:8001 -p 8080:8080 -p 2222:22 -p 57772:57772 -p 3080:80 -d -P --name=cache yottaviv
 
 Once the container is running, the ViViaN and DOX pages can be accessed via
