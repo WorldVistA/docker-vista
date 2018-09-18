@@ -393,9 +393,9 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
       curl -fsSLO --progress-bar https://github.com/shabiel/Kernel-GTM/releases/download/XU-8.0-10001/virgin_install.zip
 
       # Unzip file, put routines, delete old objects
-      su $instance -c "unzip -qo virgin_install.zip -d $basedir/r/ && rm -f virgin_install.zip"
+      su $instance -c "unzip -qo virgin_install.zip -d $basedir/r/"
       su $instance -c "unzip -l virgin_install.zip | awk '{print \$4}' | grep '\.m' | sed 's/.m/.o/' | xargs -i rm -fv r/$gtmver/{}"
-      su $instance -c "rm -fv r/$gtmver/_*.o"
+      su $instance -c "rm -fv r/$gtmver/_*.o && rm -f virgin_install.zip"
 
       # Get the Auto-configurer for VistA/RPMS and run
       curl -fsSLO https://raw.githubusercontent.com/shabiel/random-vista-utilities/master/KBANTCLN.m
