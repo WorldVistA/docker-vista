@@ -1,4 +1,4 @@
-rpmsPostInstall ; OSE/SMH - rpmsPostInstall ;2017-12-20  4:41 PM
+rpmsPostInstall ; OSE/SMH - rpmsPostInstall ;2018-10-03  3:44 PM
  ;
  D DT^DICRW
  ;
@@ -148,13 +148,20 @@ rpmsPostInstall ; OSE/SMH - rpmsPostInstall ;2017-12-20  4:41 PM
  ;
  ; 18. Fix routine CIAUOS to get the correct default directory
  ; NB: THIS IS A TOTAL TOTAL TOTAL HACK!!!! We need to create a new routine and till CIAINIT to use it.
- D MES^XPDUTL("Fix Directory delimiter for CIAUOS")
+ D MES^XPDUTL("Fix Directory delimiter for CIAUOS & Fix $ZT to use GTM/YDB syntax")
  K ^TMP($J)
  S DIF="^TMP($J,",XCNP=0,X="CIAUOS" X ^%ZOSF("LOAD")
+ ;
  N ENL S ENL=0
  N I F I=1:1 I $E(^TMP($J,I,0),1,6)="DIRDLM" S ENL=I QUIT
- I 'ENL W "CONFIG FAILED",! QUIT
+ I 'ENL W "CONFIG 1 FAILED",! QUIT
  S ^TMP($J,ENL+1,0)=" Q ""/"" ; Changed by OSEHRA RPMS Installer"
+ ;
+ N ENL S ENL=0
+ N I F I=1:1 I $E(^TMP($J,I,0),1,4)="TRAP" S ENL=I QUIT
+ I 'ENL W "CONFIG 2 FAILED",! QUIT
+ S ^TMP($J,ENL+1,0)=" Q $S($D(X):""$ZT=""""G ""_X_"""""""",1:""$ZT"") ; Changed by OSEHRA RPMS Installer"
+ ;
  S DIE=DIF,XCN=0,X="CIAUOS" X ^%ZOSF("SAVE")
  ;
  ; 19. Change CIAU HFS DEVICE to point to /dev/null rather than NUL
