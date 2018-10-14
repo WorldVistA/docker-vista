@@ -126,19 +126,19 @@ WorldVistA (YottaDB, Panorama, no boostrap, skip testing):
     docker build --build-arg flags="-bymsa http://opensourcevista.net/NancysVistAServer/BetaWVEHR-3.0-Ver2-16Without-CPT-20181004/FileForDockerBuildWVEHR3.0WithoutCPT.zip" --build-arg instance="wv" -t wv .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=wv wv
 
-vxVistA (YottaDB, no boostrap, skip testing, and do post-install as well):
+vxVistA (YottaDB, no boostrap, skip testing, fix Kernel Routines and do post-install as well):
 
-    docker build --build-arg flags="-ybsa https://github.com/OSEHRA/vxVistA-M/archive/master.zip -p ./Common/vxvistaPostInstall.sh" --build-arg instance="vxvista" -t vxvista .
+    docker build --build-arg flags="-ybsfa https://github.com/OSEHRA/vxVistA-M/archive/master.zip -p ./Common/vxvistaPostInstall.sh" --build-arg instance="vxvista" -t vxvista .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 9080:9080 --name=vxvista vxvista
 
 VEHU (GTM, no bootstrap, skip testing, Panorama)
 
-    docker build --build-arg flags="-g -b -s -m -a https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
+    docker build --build-arg flags="-g -f -b -s -m -a https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=vehu vehu
 
 RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
 
-    docker build --build-arg flags="-w -y -b -s -a https://github.com/shabiel/FOIA-RPMS/archive/master.zip -p ./Common/rpmsPostInstall.sh" --build-arg instance="rpms" -t rpms .
+    docker build --build-arg flags="-w -f -y -b -s -a https://github.com/shabiel/FOIA-RPMS/archive/master.zip -p ./Common/rpmsPostInstall.sh" --build-arg instance="rpms" -t rpms .
     docker run -d -p 2222:22 -p 9100:9100 -p 9101:9101 -p 9080:9080 --name=rpms rpms
 
 Caché Install with local DAT file. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the cache-files directories.
