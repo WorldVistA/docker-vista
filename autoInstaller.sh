@@ -16,7 +16,7 @@
 #---------------------------------------------------------------------------
 
 # Turn this flag on for debugging.
-#set -x;
+# set -x;
 
 # Make sure we are root
 if [[ $EUID -ne 0 ]]; then
@@ -57,23 +57,26 @@ usage()
 
     OPTIONS:
       -h    Show this message
+
       -a    Alternate VistA-M repo (zip or git format) (Must be in OSEHRA format)
-      -r    Alternate VistA-M repo branch (git format only)
       -b    Skip bootstrapping system (used for docker)
       -c    Use Caché
       -d    Create development directories (s & p) (GT.M and YottaDB only)
       -e    Install QEWD (assumes development directories)
-      -m    Install Panorama (assumes development directories and QEWD)
+      -f    Apply Kernel-GTM fixes after import
       -g    Use GT.M
+      -h    Show this message
       -i    Instance name (Namespace/Database for Caché)
+      -m    Install Panorama (assumes development directories and QEWD)
       -p    Post install hook (path to script)
       -q    Install SQL mapping for YottaDB
+      -r    Alternate VistA-M repo branch (git format only)
       -s    Skip testing
-      -w    Install RPMS XINETD scripts
       -u    Install GTM/YottaDB with UTF-8 enabled
-      -y    Use YottaDB
       -v    Build ViViaN Documentation
+      -w    Install RPMS XINETD scripts
       -x    Extract given M[UMPS] code
+      -y    Use YottaDB
       -z    Dev Mode: Don't clean-up and set -x
 
     NOTE:
@@ -84,7 +87,7 @@ usage()
 EOF
 }
 
-while getopts ":ha:cbxemdugi:vp:sr:wyqz" option
+while getopts ":ha:cbxemdufgi:vp:sr:wyqz" option
 do
     case $option in
         h)
@@ -106,6 +109,9 @@ do
         e)
             installEWD=true
             developmentDirectories=true
+            ;;
+        f)
+            kernelGTMFixes=true
             ;;
         m)
             installEWD=true
@@ -177,6 +183,10 @@ fi
 
 if [[ -z $installgtm ]]; then
     installgtm=false
+fi
+
+if [[ -z $kernelGTMFixes ]]; then
+    kernelGTMFixes=false
 fi
 
 if [[ -z $instance ]]; then
@@ -426,17 +436,19 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
       su $instance -c "source $basedir/etc/env && $scriptdir/GTM/importVistA.sh"
       export -n devMode    # and not any further!
 
-      # Get GT.M Optimized Routines from Kernel-GTM project and unzip
-      curl -fsSLO --progress-bar https://github.com/shabiel/Kernel-GTM/releases/download/XU-8.0-10002/virgin_install.zip
+      if $kernelGTMFixes; then
+        # Get GT.M Optimized Routines from Kernel-GTM project and unzip
+        curl -fsSLO --progress-bar https://github.com/shabiel/Kernel-GTM/releases/download/XU-8.0-10002/virgin_install.zip
 
-      # Unzip file, put routines, delete old objects
-      su $instance -c "unzip -qo virgin_install.zip -d $basedir/r/"
-      su $instance -c "unzip -l virgin_install.zip | awk '{print \$4}' | grep '\.m' | sed 's/.m/.o/' | xargs -i rm -fv r/$gtmver/{}"
-      su $instance -c "rm -fv r/$gtmver/_*.o && rm -f virgin_install.zip"
+        # Unzip file, put routines, delete old objects
+        su $instance -c "unzip -qo virgin_install.zip -d $basedir/r/"
+        su $instance -c "unzip -l virgin_install.zip | awk '{print \$4}' | grep '\.m' | sed 's/.m/.o/' | xargs -i rm -fv r/$gtmver/{}"
+        su $instance -c "rm -fv r/$gtmver/_*.o && rm -f virgin_install.zip"
+      fi
 
       # Get the Auto-configurer for VistA/RPMS and run
-      curl -fsSLO https://raw.githubusercontent.com/shabiel/random-vista-utilities/master/KBANTCLN.m
-      su $instance -c "mv KBANTCLN.m $basedir/r/"
+      mv $scriptdir/Common/KBANTCLN.m $basedir/r/
+      chown $instance:$instance $basedir/r/KBANTCLN.m
 
       # Run the auto-configurer accepting the defaults
       su $instance -c "source $basedir/etc/env && mumps -run START^KBANTCLN"
