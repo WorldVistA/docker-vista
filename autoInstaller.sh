@@ -148,7 +148,7 @@ done
 
 # Set defaults for options
 if [[ -z $repoPath ]]; then
-    repoPath="https://github.com/OSEHRA/VistA-M.git"
+    repoPath="https://github.com/OSEHRA/VistA-M/archive/master.zip"
 fi
 
 if [[ -z $bootstrap ]]; then
@@ -360,29 +360,26 @@ fi
 
 if (($installgtm || $installYottaDB) && ! $generateViVDox); then
 
-  # Build a dashboard and run the tests to verify installation
-  # These use the Dashboard branch of the VistA repository
-  # The dashboard will clone VistA and VistA-M repos
-  # run this as the $instance user
-  if $skipTests; then
-      echo "Cloning the VistA-M Repository"
-      # Clone VistA-M repo
-      cd /usr/local/src
-      if [[ $repoPath == *.git ]]; then
-          if ! [ -z $branch ]; then
-              git clone --depth 1 $repoPath -b $branch VistA-Source
-          else
-              git clone --depth 1 $repoPath VistA-Source
-          fi
+  echo "Getting the VistA-M Source Code"
+  # Clone VistA-M repo
+  pushd /usr/local/src
+  if [[ $repoPath == *.git ]]; then
+      if ! [ -z $branch ]; then
+          git clone --depth 1 $repoPath -b $branch VistA-Source
       else
-          echo "Downloading "$repoPath
-          curl -fsSL --progress-bar $repoPath -o VistA-M-master.zip
-          unzip -q VistA-M-master.zip
-          rm VistA-M-master.zip
-          dir=$(ls -1)
-          mv $dir VistA-Source
+          git clone --depth 1 $repoPath VistA-Source
       fi
+  else
+      echo "Downloading "$repoPath
+      curl -fsSL --progress-bar $repoPath -o VistA-M-master.zip
+      dir=$(zipinfo -1 VistA-M-master.zip | head -1 | cut -d/ -f1)
+      unzip -q VistA-M-master.zip
+      rm VistA-M-master.zip
+      mv $dir VistA-Source
+  fi
+  popd
 
+  if $skipTests; then
       # Go back to the $basedir
       cd $basedir
 
@@ -407,19 +404,19 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
       # Start Taskman
       su $instance -c "source $basedir/etc/env && cd ~/tmp/ && mumps -run ^ZTMB"
   else
-      # Attempt to bypass huge git clone by getting the zip files and unzipping them where they go
+      # Build a dashboard and run the tests to verify installation
+      # These use the Dashboard branch of the VistA repository
+      # The dashboard will clone VistA and VistA-M repos
+      # run this as the $instance user
+      #
       su $instance -c "source $basedir/etc/env && mkdir -p $basedir/Dashboard"
       cd $basedir/Dashboard
-      echo "Downloading OSEHRA VistA"
+      echo "Downloading OSEHRA VistA Tester Repo"
       curl -fsSL --progress-bar https://github.com/OSEHRA/VistA/archive/master.zip -o VistA-master.zip
       unzip -q VistA-master.zip
       rm VistA-master.zip
       mv VistA-master VistA
-      echo "Downloading OSEHRA VistA-M"
-      curl -fsSL --progress-bar https://github.com/OSEHRA/VistA-M/archive/master.zip -o VistA-M-master.zip
-      unzip -q VistA-M-master.zip
-      rm VistA-M-master.zip
-      mv VistA-M-master VistA-M
+      mv /usr/local/src/VistA-Source ./VistA-M
 
       # create random string for build identification
       # source: http://ubuntuforums.org/showthread.php?t=1775099&p=10901169#post10901169
@@ -431,11 +428,14 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
       echo "Your build id is: $buildid you will need this to identify your build on the VistA dashboard"
 
       # Compile routines
+      # number of cores - 1
+      # (works also on MacOS; on FreeBSD, omit underscore)
+      cores=$(($(getconf _NPROCESSORS_ONLN) - 1))
+      if (( cores < 1 )); then cores=1; fi
+
       echo "Compiling routines"
       cd $basedir/r/$gtmver
-      for routine in $basedir/r/*.m; do
-          mumps ${routine} >> $basedir/log/compile.log 2>&1
-      done
+      find .. -name '*.m' | xargs --max-procs=$cores --max-args=1 $gtm_dist/mumps >> $basedir/log/compile.log 2>&1
       echo "Done compiling routines"
   fi
 fi
