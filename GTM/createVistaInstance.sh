@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #---------------------------------------------------------------------------
-# Copyright 2011-2012 The Open Source Electronic Health Record Agent
+# Copyright 2011-2018 The Open Source Electronic Health Record Agent
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,18 +37,19 @@ usage()
     cat << EOF
     usage: $0 options
 
-    This script will create a VistA instance for GT.M
+    This script will create a VistA instance for GT.M/YottaDB
 
     OPTIONS:
       -h    Show this message
       -f    Skip setting firewall rules
       -i    Instance name
       -r    Put RPMS Scripts into XINETD
+      -u    Create VistA/RPMS instance with UTF-8 support
       -y    Use YottaDB
 EOF
 }
 
-while getopts ":hfi:ry" option
+while getopts ":hfui:ry" option
 do
     case $option in
         h)
@@ -63,6 +64,9 @@ do
             ;;
         r)
             rpmsScripts=true
+            ;;
+        u)
+            utf8=true
             ;;
         y)
             installYottaDB=true
@@ -85,6 +89,10 @@ fi
 
 if [ -z $rpmsScripts ]; then
     rpmsScripts=false
+fi
+
+if [ -z $utf8 ]; then
+    utf8=false;
 fi
 
 echo "Creating $instance..."
@@ -190,6 +198,7 @@ echo "export gtm_tmp=$basedir/tmp"              >> $basedir/etc/env
 echo "export gtm_prompt=\"${instance^^}>\""     >> $basedir/etc/env
 echo "export gtmgbldir=$basedir/g/$instance.gld" >> $basedir/etc/env
 echo "export gtm_zinterrupt='I \$\$JOBEXAM^ZU(\$ZPOSITION)'" >> $basedir/etc/env
+echo "export gtm_lct_stdnull=1"                 >> $basedir/etc/env
 echo "export gtm_lvnullsubs=2"                  >> $basedir/etc/env
 echo "export gtm_zquit_anyway=1"                >> $basedir/etc/env
 echo "export PATH=\$PATH:\$gtm_dist"            >> $basedir/etc/env
@@ -197,6 +206,13 @@ echo "export basedir=$basedir"                  >> $basedir/etc/env
 echo "export gtm_arch=$gtm_arch"                >> $basedir/etc/env
 echo "export gtmver=$gtmver"                    >> $basedir/etc/env
 echo "export instance=$instance"                >> $basedir/etc/env
+echo "export gtm_sysid=$instance"               >> $basedir/etc/env
+echo "export gtm_zstep='n oldio s oldio=\$i u 0 zp @\$zpos b  u oldio'">> $basedir/etc/env
+echo "export gtm_link=RECURSIVE"                >> $basedir/etc/env
+
+# NB: gtm_side_effects and gtm_boolean intentionally omitted here.
+# While I would use them on production; I want to see if we ever have problems
+# using them here.
 
 # Ensure correct permissions for env
 chown $instance:$instance $basedir/etc/env
@@ -207,17 +223,38 @@ echo "source $basedir/etc/env" >> $basedir/.bashrc
 # Setup base gtmroutines
 gtmroutines="\$basedir/r/\$gtmver(\$basedir/r)"
 
+# This block: Set gtmroutines
 # 64bit GT.M can use a shared library instead of $gtm_dist
+# Also handle utf8 stuff
 if [[ $gtm_arch == "x86_64" && -e $basedir/lib/gtm/libgtmutil.so ]]; then
+  if $utf8; then
+    echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm/utf8/libgtmutil.so $basedir/lib/gtm/utf8\"" >> $basedir/etc/env
+  else
     echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm/libgtmutil.so $basedir/lib/gtm\"" >> $basedir/etc/env
+  fi #utf8
 else
+  if $utf8; then
+    echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm/utf8\"" >> $basedir/etc/env
+  else
     echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm\"" >> $basedir/etc/env
+  fi
 fi
+
+# This block: Set utf-8 variables
+# LC_ALL & LC_LANG get set to C for a lot of time. We need these here.
+if $utf8; then
+  echo "export LC_ALL=en_US.UTF8"                       >> $basedir/etc/env
+  echo "export LC_LANG=en_US.UTF8"                      >> $basedir/etc/env
+  echo "export gtm_chset=utf-8"                         >> $basedir/etc/env
+  echo "export gtm_icu_version=$(icu-config --version)" >> $basedir/etc/env
+fi
+
 
 # prog.sh - priviliged (programmer) user access
 # Allow access to ZSY
 echo "#!/bin/bash"                              > $basedir/bin/prog.sh
 echo "source $basedir/etc/env"                  >> $basedir/bin/prog.sh
+echo "export gtm_etrap='B'"                     >> $basedir/bin/prog.sh
 echo "export SHELL=/bin/bash"                   >> $basedir/bin/prog.sh
 echo "#These exist for compatibility reasons"   >> $basedir/bin/prog.sh
 echo "alias gtm=\"\$gtm_dist/mumps -dir\""      >> $basedir/bin/prog.sh
@@ -238,6 +275,7 @@ echo "#!/bin/bash"                              > $basedir/bin/tied.sh
 echo "source $basedir/etc/env"                  >> $basedir/bin/tied.sh
 echo "export SHELL=/bin/false"                  >> $basedir/bin/tied.sh
 echo "export gtm_nocenable=true"                >> $basedir/bin/tied.sh
+echo "export gtm_etrap='D ^%ZTER W !!!! HALT'"  >> $basedir/bin/tied.sh
 echo "exec \$gtm_dist/mumps -run ^ZU"           >> $basedir/bin/tied.sh
 
 # Ensure correct permissions for tied.sh
@@ -284,12 +322,10 @@ echo "c -s DEFAULT    -ACCESS_METHOD=BG -BLOCK_SIZE=4096 -ALLOCATION=200000 -EXT
 echo "a -s TEMP       -ACCESS_METHOD=MM -BLOCK_SIZE=4096 -ALLOCATION=10000 -EXTENSION_COUNT=1024 -GLOBAL_BUFFER_COUNT=4096 -LOCK_SPACE=400 -FILE=$basedir/g/temp.dat" >> $basedir/etc/db.gde
 echo "c -r DEFAULT    -RECORD_SIZE=16368 -KEY_SIZE=1019 -JOURNAL=(BEFORE_IMAGE,FILE_NAME=\"$basedir/j/$instance.mjl\") -DYNAMIC_SEGMENT=DEFAULT" >> $basedir/etc/db.gde
 echo "a -r TEMP       -RECORD_SIZE=16368 -KEY_SIZE=1019 -NOJOURNAL -DYNAMIC_SEGMENT=TEMP"   >> $basedir/etc/db.gde
-echo "a -n TMP        -r=TEMP"                  >> $basedir/etc/db.gde
-echo "a -n TEMP       -r=TEMP"                  >> $basedir/etc/db.gde
-echo "a -n UTILITY    -r=TEMP"                  >> $basedir/etc/db.gde
-echo "a -n XTMP       -r=TEMP"                  >> $basedir/etc/db.gde
-echo "a -n XUTL       -r=TEMP"                  >> $basedir/etc/db.gde
-echo "a -n CacheTemp* -r=TEMP"                  >> $basedir/etc/db.gde
+# Sam sez: This list follows what the VA does for their scripts
+for global in TMP TEMP UTILITY XTMP XUTL HLTMP BMXTMP VPRHTTP KMPTMP DISV DOSV SPOOL 'CacheTemp*'; do
+  echo "a -n $global -r=TEMP"                  >> $basedir/etc/db.gde
+done
 # Sam sez: This list was given to me by Floyd Dennis on Dec 12 2017 from the CSMT branch
 if $rpmsScripts; then
   for global in ABMDTMP ACPTEMP AGSSTEMP AGSSTMP1 AGSTEMP AGTMP APCHTMP ATXTMP AUMDDTMP AUMDOTMP AUTTEMP BARTMP BDMTMP BDWBLOG BDWTMP BGOTEMP BGOTMP BGPELLDBA BPATEMP BPCTMP BSDZTMP BGPTMP BIPDUE BITEMP BITMP BQIPAT BQIFAC BQIPAT BQIPROV BTPWPQ BTPWQ BUSAD; do

@@ -116,19 +116,24 @@ Default: "OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)"
     docker build -t osehra-vista .
     docker run -d -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 -p 9080:9080 --name=osehravista osehra-vista
 
-WorldVistA (GTM, no boostrap, skip testing):
+Plan VI (Internationalized Version) OSEHRA VistA (YottaDB, UTF-8 enabled, no bootstrap, with QEWD and Panorama)
 
-    docker build --build-arg flags="-g -b -s -a https://github.com/glilly/wvehr2-dewdrop/archive/master.zip -p ./Common/removeVistaSource.sh" --build-arg instance="worldvista" -t worldvista .
-    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 9080:9080 --name=worldvista worldvista
+    docker build --build-arg flags="-byuma https://github.com/OSEHRA-Sandbox/VistA-M/archive/plan-vi.zip -p ./Common/ov6pi.sh" --build-arg instance="ov6" -t ov6 .
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=ov6 ov6
+
+WorldVistA (YottaDB, Panorama, no boostrap, skip testing):
+
+    docker build --build-arg flags="-bymsa http://opensourcevista.net/NancysVistAServer/BetaWVEHR-3.0-Ver2-16Without-CPT-20181004/FileForDockerBuildWVEHR3.0WithoutCPT.zip" --build-arg instance="wv" -t wv .
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=wv wv
 
 vxVistA (YottaDB, no boostrap, skip testing, and do post-install as well):
 
-    docker build --build-arg flags="-y -b -s -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip -p ./Common/vxvistaPostInstall.sh" --build-arg instance="vxvista" -t vxvista .
+    docker build --build-arg flags="-ybsa https://github.com/OSEHRA/vxVistA-M/archive/master.zip -p ./Common/vxvistaPostInstall.sh" --build-arg instance="vxvista" -t vxvista .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 9080:9080 --name=vxvista vxvista
 
 VEHU (GTM, no bootstrap, skip testing, Panorama)
 
-    docker build --build-arg flags="-g -b -s -m -a https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip -p ./Common/removeVistaSource.sh" --build-arg instance="vehu" -t vehu .
+    docker build --build-arg flags="-g -b -s -m -a https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=vehu vehu
 
 RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)

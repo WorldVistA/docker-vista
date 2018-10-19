@@ -70,9 +70,11 @@ usage()
       -q    Install SQL mapping for YottaDB
       -s    Skip testing
       -w    Install RPMS XINETD scripts
+      -u    Install GTM/YottaDB with UTF-8 enabled
       -y    Use YottaDB
       -v    Build ViViaN Documentation
       -x    Extract given M[UMPS] code
+      -z    Dev Mode: Don't clean-up and set -x
 
     NOTE:
     The Caché install only supports using .DAT files for the VistA DB, and
@@ -82,7 +84,7 @@ usage()
 EOF
 }
 
-while getopts ":ha:cbxemdgi:vp:sr:wyq" option
+while getopts ":ha:cbxemdugi:vp:sr:wyqz" option
 do
     case $option in
         h)
@@ -126,6 +128,9 @@ do
         s)
             skipTests=true
             ;;
+        u)
+            utf8=true
+            ;;
         v)
             generateViVDox=true
             ;;
@@ -142,6 +147,9 @@ do
         q)
             developmentDirectories=true
             installSQL=true
+            ;;
+        z)
+            devMode=true
             ;;
     esac
 done
@@ -211,6 +219,18 @@ if [ -z $installSQL ]; then
     installSQL=false;
 fi
 
+if [ -z $utf8 ]; then
+    utf8=false;
+fi
+
+if [ -z $devMode ]; then
+    devMode=false
+fi
+
+if $devMode; then
+    set -x
+fi
+
 # Quit if no M environment viable
 if [[ ! $installgtm || ! $installcache || ! $installYottaDB ]]; then
     echo "You need to either install Caché, GT.M or YottaDB!"
@@ -230,6 +250,7 @@ echo "Skip bootstrap: $bootstrap"
 echo "Use Cache: $installcache"
 echo "Use GT.M: $installgtm"
 echo "Use YottaDB: $installYottaDB"
+echo "GT.M/YDB in UTF-8: $utf8"
 echo "Install RPMS scripts: $installRPMS"
 echo "Running on local repo: $localVistARepo"
 
@@ -265,7 +286,7 @@ fi
 if ! $skipTests; then
     cd /usr/local/src
     rm -rf VistA-Dashboard
-    git clone -q https://github.com/OSEHRA/VistA -b dashboard VistA-Dashboard
+    git clone -q https://github.com/OSEHRA-Sandbox/VistA -b dashboard VistA-Dashboard
 fi
 
 # See if vagrant folder exists if it does use it. if it doesn't clone the repo
@@ -318,6 +339,9 @@ fi
 if $installRPMS; then
    createVistaInstanceOptions+="-r "
 fi
+if $utf8; then
+   createVistaInstanceOptions+="-u "
+fi
 
 if $installgtm || $installYottaDB ; then
     cd GTM
@@ -353,6 +377,11 @@ else
     USER_HOME=/root
 fi
 
+# number of cores - 1
+# (works also on MacOS; on FreeBSD, omit underscore)
+cores=$(($(getconf _NPROCESSORS_ONLN) - 1))
+if (( cores < 1 )); then cores=1; fi
+
 # source env script during running user's login
 if $installgtm || $installYottaDB; then
     echo "source $basedir/etc/env" >> $USER_HOME/.bashrc
@@ -361,7 +390,6 @@ fi
 if (($installgtm || $installYottaDB) && ! $generateViVDox); then
 
   echo "Getting the VistA-M Source Code"
-  # Clone VistA-M repo
   pushd /usr/local/src
   if [[ $repoPath == *.git ]]; then
       if ! [ -z $branch ]; then
@@ -377,6 +405,16 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
       rm VistA-M-master.zip
       mv $dir VistA-Source
   fi
+
+  # Make routines/globals importable if UTF-8
+  if $utf8; then
+      echo "Modifying zwr globals to contain UTF-8 in the first line"
+      find VistA-Source -name '*.zwr' -print0 | xargs -0 -I{} -n 1 -P $cores \
+        sed -i '1c\OSEHRA ZGO Export: THIS GLOBAL UTF-8' "{}"
+      echo "Convert non-ASCII routines to UTF-8"
+      find VistA-Source -name '*.m' -print0 | xargs -0 -I{} -n 1 -P $cores \
+        recode -f iso8859-1..utf-8 "{}"
+  fi
   popd
 
   if $skipTests; then
@@ -384,10 +422,12 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
       cd $basedir
 
       # Perform the import
+      export devMode       # Send this guy down
       su $instance -c "source $basedir/etc/env && $scriptdir/GTM/importVistA.sh"
+      export -n devMode    # and not any further!
 
       # Get GT.M Optimized Routines from Kernel-GTM project and unzip
-      curl -fsSLO --progress-bar https://github.com/shabiel/Kernel-GTM/releases/download/XU-8.0-10001/virgin_install.zip
+      curl -fsSLO --progress-bar https://github.com/shabiel/Kernel-GTM/releases/download/XU-8.0-10002/virgin_install.zip
 
       # Unzip file, put routines, delete old objects
       su $instance -c "unzip -qo virgin_install.zip -d $basedir/r/"
@@ -400,9 +440,6 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
 
       # Run the auto-configurer accepting the defaults
       su $instance -c "source $basedir/etc/env && mumps -run START^KBANTCLN"
-
-      # Start Taskman
-      su $instance -c "source $basedir/etc/env && cd ~/tmp/ && mumps -run ^ZTMB"
   else
       # Build a dashboard and run the tests to verify installation
       # These use the Dashboard branch of the VistA repository
@@ -424,21 +461,18 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
 
       # Import VistA and run tests using OSEHRA automated testing framework
       su $instance -c "source $basedir/etc/env && ctest -S $scriptdir/test.cmake -V"
+
       # Tell users of their build id
       echo "Your build id is: $buildid you will need this to identify your build on the VistA dashboard"
-
-      # Compile routines
-      # number of cores - 1
-      # (works also on MacOS; on FreeBSD, omit underscore)
-      cores=$(($(getconf _NPROCESSORS_ONLN) - 1))
-      if (( cores < 1 )); then cores=1; fi
-
-      echo "Compiling routines"
-      cd $basedir/r/$gtmver
-      find .. -name '*.m' | xargs --max-procs=$cores --max-args=1 $gtm_dist/mumps >> $basedir/log/compile.log 2>&1
-      echo "Done compiling routines"
   fi
+
+  echo "Compiling routines"
+  cd $basedir/r/$gtmver
+  find .. -name '*.m' | xargs --max-procs=$cores --max-args=1 $gtm_dist/mumps >> $basedir/log/compile.log 2>&1
+  echo "Done compiling routines"
+
 fi
+
 # Enable journaling
 if $installgtm || $installYottaDB; then
     su $instance -c "source $basedir/etc/env && $basedir/bin/enableJournal.sh"
@@ -495,7 +529,7 @@ fi
 # Ensure group permissions are correct
 if $installgtm || $installYottaDB; then
     echo "Please wait while I fix the group permissions on the files..."
-    chmod -R g+rw /home/$instance
+    find /home/$instance -print0 | xargs -0 -I{} -n 1 -P $cores chmod g+rw "{}"
 fi
 
 extract=""
@@ -509,8 +543,11 @@ if $generateViVDox; then
 fi
 
 # Clean up the VistA-M source directories to save space
-if $skipTests; then
-    rm -rf /usr/local/src/VistA-Source
-else
-    rm -rf $basedir/Dashboard/VistA-M
+echo "Cleaning up..."
+if ! $devMode; then
+    if $skipTests; then
+        rm -rf /usr/local/src/VistA-Source
+    else
+        rm -rf $basedir/Dashboard/VistA-M
+    fi
 fi
