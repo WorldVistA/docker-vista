@@ -38,7 +38,7 @@ usage()
 
     DEFAULTS:
       GT.M Version = V6.3-002
-      YottaDB Version = r1.10
+      YottaDB Version = r1.22
 
     OPTIONS:
       -h    Show this message
