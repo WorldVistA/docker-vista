@@ -123,7 +123,7 @@ Plan VI (Internationalized Version) OSEHRA VistA (YottaDB, UTF-8 enabled, no boo
 
 WorldVistA (YottaDB, Panorama, no boostrap, skip testing):
 
-    docker build --build-arg flags="-bymsa http://opensourcevista.net/NancysVistAServer/BetaWVEHR-3.0-Ver2-16Without-CPT-20181004/FileForDockerBuildWVEHR3.0WithoutCPT.zip" --build-arg instance="wv" -t wv .
+    docker build --build-arg flags="-bymsa http://opensourcevista.net/NancysVistAServer/BetaWVEHR-3.0-Ver2-16Without-CPT-20181004/FileForDockerBuildWVEHR3.0WithoutCPT.zip -p Common/wvDemopi.sh" --build-arg instance="wv" -t wv .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=wv wv
 
 vxVistA (YottaDB, no boostrap, skip testing, fix Kernel Routines and do post-install as well):
@@ -170,6 +170,52 @@ Utilizing the "-v" argument flag, the system will attempt to execute the tasks w
 install a MUMPS environment, execute tasks to gather data, generate HTML pages, and finally
 set up a web server on the container to display the data.  The scripts are designed to
 take and process a M[UMPS] system that is supplied by the user in one of two formats.
+
+### Tagging an image to upload to Docker Hub
+First, you need to login to Docker Hub using the command ``docker login``.
+
+MAKE SURE THAT WHAT YOU PUSH IS OPEN SOURCE CODE. Docker Hub is a public
+resource. There are enterprise versions of Docker Hub; we are providing
+intructions for that here.
+
+Then you need to tag your image. First find the image ID using ``docker images``. For example,
+
+  REPOSITORY           TAG                 IMAGE ID            CREATED             SIZE
+  wv                   latest              4d088aa275ff        13 hours ago        6.06GB
+  vehu                 latest              ed6175534a1c        20 hours ago        4.29GB
+  vxvista              latest              3866735fcfc0        21 hours ago        2.96GB
+  cachevista           latest              071386cb0e80        46 hours ago        15.4GB
+  centos               latest              75835a67d134        11 days ago         200MB
+  osehra/osehravista   latest              8d58b9b985d7        5 weeks ago         4.63GB
+  hello-world          latest              e38bc07ac18e        6 months ago        1.85kB
+
+So, if we want to push ``wv`` up, then we need to use the image ID ``4d088aa275ff``
+using our username on dockerhub plus the name of the image. If your username on
+Docker Hub is ``boo``, then you need to tag your image as follows:
+
+  docker tag 4d088aa275ff boo/wv
+
+If you plan to have more than one version of your images, you can use ``:``
+after the tag name. Not using a ``:`` automatically applies the version ``latest``.
+For example,
+
+  docker tag 4d088aa275ff boo/wv:v3
+
+... to deploy v3.
+
+The last step is pushing to Docker Hub. To push the ``latest`` version, just
+do this:
+
+  docker push boo/wv
+
+To push a specific version, you need to put the ``:``.
+
+  docker push boo/wv:v3
+
+The push will take a long time depending on how fast your upload speed is. VistA
+images are around 4GB big when uploaded; 1GB big when downloaded (as they are
+downloaded gzipped).
+
 
 #### Files needed for building
 
