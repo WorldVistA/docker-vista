@@ -172,45 +172,45 @@ set up a web server on the container to display the data.  The scripts are desig
 take and process a M[UMPS] system that is supplied by the user in one of two formats.
 
 ### Tagging an image to upload to Docker Hub
-First, you need to login to Docker Hub using the command ``docker login``.
+First, you need to login to Docker Hub using the command `docker login`.
 
 MAKE SURE THAT WHAT YOU PUSH IS OPEN SOURCE CODE. Docker Hub is a public
-resource. There are enterprise versions of Docker Hub; we are providing
+resource. There are enterprise versions of Docker Hub; we are NOT providing
 intructions for that here.
 
-Then you need to tag your image. First find the image ID using ``docker images``. For example,
+Then you need to tag your image. First find the image ID using `docker images`. For example,
 
-  REPOSITORY           TAG                 IMAGE ID            CREATED             SIZE
-  wv                   latest              4d088aa275ff        13 hours ago        6.06GB
-  vehu                 latest              ed6175534a1c        20 hours ago        4.29GB
-  vxvista              latest              3866735fcfc0        21 hours ago        2.96GB
-  cachevista           latest              071386cb0e80        46 hours ago        15.4GB
-  centos               latest              75835a67d134        11 days ago         200MB
-  osehra/osehravista   latest              8d58b9b985d7        5 weeks ago         4.63GB
-  hello-world          latest              e38bc07ac18e        6 months ago        1.85kB
+    REPOSITORY           TAG                 IMAGE ID            CREATED             SIZE
+    wv                   latest              4d088aa275ff        13 hours ago        6.06GB
+    vehu                 latest              ed6175534a1c        20 hours ago        4.29GB
+    vxvista              latest              3866735fcfc0        21 hours ago        2.96GB
+    cachevista           latest              071386cb0e80        46 hours ago        15.4GB
+    centos               latest              75835a67d134        11 days ago         200MB
+    osehra/osehravista   latest              8d58b9b985d7        5 weeks ago         4.63GB
+    hello-world          latest              e38bc07ac18e        6 months ago        1.85kB
 
-So, if we want to push ``wv`` up, then we need to use the image ID ``4d088aa275ff``
+So, if we want to push `wv` up, then we need to use the image ID `4d088aa275ff`
 using our username on dockerhub plus the name of the image. If your username on
-Docker Hub is ``boo``, then you need to tag your image as follows:
+Docker Hub is `boo`, then you need to tag your image as follows:
 
-  docker tag 4d088aa275ff boo/wv
+    docker tag 4d088aa275ff boo/wv
 
-If you plan to have more than one version of your images, you can use ``:``
-after the tag name. Not using a ``:`` automatically applies the version ``latest``.
+If you plan to have more than one version of your images, you can use `:`
+after the tag name. Not using a `:` automatically applies the version `latest`.
 For example,
 
-  docker tag 4d088aa275ff boo/wv:v3
+    docker tag 4d088aa275ff boo/wv:v3
 
 ... to deploy v3.
 
-The last step is pushing to Docker Hub. To push the ``latest`` version, just
+The last step is pushing to Docker Hub. To push the `latest` version, just
 do this:
 
-  docker push boo/wv
+    docker push boo/wv
 
-To push a specific version, you need to put the ``:``.
+To push a specific version, you need to put the `:`.
 
-  docker push boo/wv:v3
+    docker push boo/wv:v3
 
 The push will take a long time depending on how fast your upload speed is. VistA
 images are around 4GB big when uploaded; 1GB big when downloaded (as they are
