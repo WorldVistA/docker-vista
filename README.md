@@ -164,13 +164,6 @@ To capture the exported code from the container and remove the Docker objects, e
 A [volume](https://docs.docker.com/storage/volumes/) could also be mounted to the container.
 
 
-### Building ViViaN and DOX with Docker
-
-Utilizing the "-v" argument flag, the system will attempt to execute the tasks which will
-install a MUMPS environment, execute tasks to gather data, generate HTML pages, and finally
-set up a web server on the container to display the data.  The scripts are designed to
-take and process a M[UMPS] system that is supplied by the user in one of two formats.
-
 ### Tagging an image to upload to Docker Hub
 First, you need to login to Docker Hub using the command `docker login`.
 
@@ -216,6 +209,12 @@ The push will take a long time depending on how fast your upload speed is. VistA
 images are around 4GB big when uploaded; 1GB big when downloaded (as they are
 downloaded gzipped).
 
+### Building ViViaN and DOX with Docker
+
+Utilizing the "-v" argument flag, the system will attempt to execute the tasks which will
+install a MUMPS environment, execute tasks to gather data, generate HTML pages, and finally
+set up a web server on the container to display the data.  The scripts are designed to
+take and process a M[UMPS] system that is supplied by the user in one of two formats.
 
 #### Files needed for building
 
