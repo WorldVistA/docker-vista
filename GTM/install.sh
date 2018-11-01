@@ -37,7 +37,7 @@ usage()
     This script will automatically install GT.M/YottaDB
 
     DEFAULTS:
-      GT.M Version = V6.3-002
+      GT.M Version = V6.3-005
       YottaDB Version = r1.22
 
     OPTIONS:
@@ -70,7 +70,7 @@ done
 # Set defaults for options
 # GT.M
 if [ -z $gtm_ver ] && [ -z $installYottaDB ]; then
-    gtm_ver="V6.3-002"
+    gtm_ver="V6.3-005"
 fi
 
 # YottaDB
@@ -128,10 +128,11 @@ fi
 # Accept most defaults for ydbinstall
 # --ucaseonly-utils - override default to install only uppercase utilities
 #                     this follows VistA convention of uppercase only routines
+# Force install is necessary b/c of a recent change in the YDB installer.
 if [ "$installYottaDB" = "true" ] ; then
-    ./ydbinstall --ucaseonly-utils --utf8 default --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch" $gtm_ver
+    ./ydbinstall --force-install --ucaseonly-utils --utf8 default --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch" $gtm_ver
 else
-    ./ydbinstall --gtm --ucaseonly-utils --utf8 default --installdir /opt/lsb-gtm/"$gtm_ver"_"$gtm_arch" $gtm_ver
+    ./ydbinstall --force-install --gtm --ucaseonly-utils --utf8 default --installdir /opt/lsb-gtm/"$gtm_ver"_"$gtm_arch" $gtm_ver
 fi
 # Remove ydbinstall script as it is unnecessary
 rm ./ydbinstall
