@@ -129,9 +129,9 @@ fi
 # --ucaseonly-utils - override default to install only uppercase utilities
 #                     this follows VistA convention of uppercase only routines
 if [ "$installYottaDB" = "true" ] ; then
-    ./ydbinstall --ucaseonly-utils --utf8 default --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch" $gtm_ver
+    ./ydbinstall --force-install --ucaseonly-utils --utf8 default --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch" $gtm_ver
 else
-    ./ydbinstall --gtm --ucaseonly-utils --utf8 default --installdir /opt/lsb-gtm/"$gtm_ver"_"$gtm_arch" $gtm_ver
+    ./ydbinstall --force-install --gtm --ucaseonly-utils --utf8 default --installdir /opt/lsb-gtm/"$gtm_ver"_"$gtm_arch" $gtm_ver
 fi
 # Remove ydbinstall script as it is unnecessary
 rm ./ydbinstall
