@@ -136,6 +136,11 @@ VEHU (GTM, no bootstrap, skip testing, Panorama)
     docker build --build-arg flags="-g -f -b -s -m -a https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=vehu vehu
 
+VEHU Plan VI (Internationalized Version) (YottaDB, UTF-8 enabled, no bootstrap, skip testing, Panorama)
+
+    docker build --build-arg flags="-bysuma https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/plan-vi.zip" --build-arg instance="vehu6" -t osehra/vehu6:201808 -t osehra/vehu6:latest .
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=vehu osehra/vehu6
+
 RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
 
     docker build --build-arg flags="-w -f -y -b -s -a https://github.com/shabiel/FOIA-RPMS/archive/master.zip -p ./Common/rpmsPostInstall.sh" --build-arg instance="rpms" -t rpms .
