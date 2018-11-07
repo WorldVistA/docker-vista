@@ -221,7 +221,7 @@ chown $instance:$instance $basedir/etc/env
 echo "source $basedir/etc/env" >> $basedir/.bashrc
 
 # Setup base gtmroutines
-gtmroutines="\$basedir/r/\$gtmver(\$basedir/r)"
+gtmroutines="\$basedir/r/\$gtmver*(\$basedir/r)"
 
 # This block: Set gtmroutines
 # 64bit GT.M can use a shared library instead of $gtm_dist
