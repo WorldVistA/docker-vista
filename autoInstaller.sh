@@ -503,7 +503,7 @@ fi
 # Add p and s directories to gtmroutines environment variable
 if $developmentDirectories && ($installgtm || $installYottaDB); then
     su $instance -c "mkdir $basedir/{p,p/$gtmver,s,s/$gtmver}"
-    perl -pi -e 's#export gtmroutines=\"#export gtmroutines=\"\$basedir/p/\$gtmver\(\$basedir/p\) \$basedir/s/\$gtmver\(\$basedir/s\) #' $basedir/etc/env
+    perl -pi -e 's#export gtmroutines=\"#export gtmroutines=\"\$basedir/p/\$gtmver*\(\$basedir/p\) \$basedir/s/\$gtmver*\(\$basedir/s\) #' $basedir/etc/env
 fi
 
 # Install QEWD
