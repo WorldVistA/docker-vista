@@ -156,6 +156,9 @@ echo ${instance}prog:prog | chpasswd
 # Make instance Directories
 su $instance -c "mkdir -p $basedir/{r,r/$gtmver,g,j,etc,etc/xinetd.d,log,tmp,bin,lib,www,backup}"
 
+# chmod instance directories to be readable by group
+su $instance -c "chmod g+rw $basedir/{r,r/$gtmver,g,j,etc,etc/xinetd.d,log,tmp,bin,lib,www,backup}"
+
 # Copy standard etc and bin items from repo
 su $instance -c "cp -R etc $basedir"
 su $instance -c "cp -R bin $basedir"
@@ -195,6 +198,7 @@ su $instance -c "ln -s $gtm_dist $basedir/lib/gtm"
 echo "export gtm_dist=$basedir/lib/gtm"         > $basedir/etc/env
 echo "export gtm_log=$basedir/log"              >> $basedir/etc/env
 echo "export gtm_tmp=$basedir/tmp"              >> $basedir/etc/env
+echo "export gtm_linktmpdir=$basedir/tmp"       >> $basedir/etc/env
 echo "export gtm_prompt=\"${instance^^}>\""     >> $basedir/etc/env
 echo "export gtmgbldir=$basedir/g/$instance.gld" >> $basedir/etc/env
 echo "export gtm_zinterrupt='I \$\$JOBEXAM^ZU(\$ZPOSITION)'" >> $basedir/etc/env

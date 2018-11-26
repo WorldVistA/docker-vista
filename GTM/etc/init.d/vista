@@ -49,6 +49,9 @@ start() {
     # Rundown readonly GT.M/YDB databases
     for f in $gtm_dist/*.dat; do $gtm_dist/mupip rundown -f $f; done
 
+    # Rundown relinkctl files
+    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip rundown -relink"
+
     # Start TaskMan
     echo "Starting TaskMan"
     su $instance -c "source $basedir/etc/env && cd $basedir/tmp && $gtm_dist/mumps -run START^ZTMB"
