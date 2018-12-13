@@ -303,19 +303,19 @@ echo "/etc/init.d/${instance}vista start"               >> $basedir/bin/start.sh
 echo 'echo "Starting QEWD process"'                     >> $basedir/bin/start.sh
 echo "/etc/init.d/${instance}vista-qewd start"          >> $basedir/bin/start.sh
 echo "chmod ug+rw $basedir/tmp/*"                       >> $basedir/bin/start.sh
-echo '# Create a fifo so that bash can read from it to' >> $basedir/bin/start.sh
-echo '# catch signals from docker'                      >> $basedir/bin/start.sh
 echo 'if [ -d /opt/apache-tomcat-6.0.53 ] ; then'       >> $basedir/bin/start.sh
 echo '  # Start Tomcat'                                 >> $basedir/bin/start.sh
 echo '  echo "Deploying ProfileBrowserIDE..."'          >> $basedir/bin/start.sh
 echo '  /opt/apache-tomcat-*/bin/catalina.sh start'     >> $basedir/bin/start.sh
-echo '  cp $basedir/pip/ProfileBrowserIDE/ProfileBrowserIDE.war /opt/apache-tomcat-*/webapps'  >> $basedir/bin/start.sh
+echo '  cp '${basedir}'/pip/ProfileBrowserIDE/ProfileBrowserIDE.war /opt/apache-tomcat-*/webapps'  >> $basedir/bin/start.sh
 echo '  sleep 10'                                       >> $basedir/bin/start.sh
 echo '  # Fix the derby jdbc database location'         >> $basedir/bin/start.sh
 echo "  perl -pi -e 's#jdbc:derby:profile_ide_db#jdbc:derby:/opt/profile_ide_db#g' /opt/apache-tomcat-*/webapps/ProfileBrowserIDE/WEB-INF/applicationContext-acegi-security.xml"  >> $basedir/bin/start.sh
 echo '  /opt/apache-tomcat-*/bin/catalina.sh stop && /opt/apache-tomcat-*/bin/catalina.sh start'  >> $basedir/bin/start.sh
 echo '  echo "Done deploying ProfileBrowserIDE"'        >> $basedir/bin/start.sh
 echo 'fi'                                               >> $basedir/bin/start.sh
+echo '# Create a fifo so that bash can read from it to' >> $basedir/bin/start.sh
+echo '# catch signals from docker'                      >> $basedir/bin/start.sh
 echo 'rm -f ~/fifo'                                     >> $basedir/bin/start.sh
 echo 'mkfifo ~/fifo || exit'                            >> $basedir/bin/start.sh
 echo 'chmod 400 ~/fifo'                                 >> $basedir/bin/start.sh
