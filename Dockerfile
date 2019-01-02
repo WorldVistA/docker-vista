@@ -51,6 +51,7 @@ ADD ./Common /opt/vista/Common
 ADD ./Dashboard /opt/vista/Dashboard
 ADD ./EWD /opt/vista/EWD
 ADD ./GTM /opt/vista/GTM
+ADD ./Synthea /opt/vista/Synthea
 ADD ./tests /opt/vista/tests
 ADD ./test.cmake /opt/vista/
 ADD ./ViViaN /opt/vista/ViViaN

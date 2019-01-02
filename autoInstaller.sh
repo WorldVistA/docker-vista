@@ -67,6 +67,7 @@ usage()
       -g    Use GT.M
       -h    Show this message
       -i    Instance name (Namespace/Database for Caché)
+      -l    Install Synthea ingestor patch with the supplied DUZ
       -m    Install Panorama (assumes development directories and QEWD)
       -p    Post install hook (path to script)
       -q    Install SQL mapping for YottaDB
@@ -87,7 +88,7 @@ usage()
 EOF
 }
 
-while getopts ":ha:cbxemdufgi:vp:sr:wyqz" option
+while getopts ":ha:cbxemdufgi:vp:sr:wyqzl:" option
 do
     case $option in
         h)
@@ -112,6 +113,10 @@ do
             ;;
         f)
             kernelGTMFixes=true
+            ;;
+        l)
+            installSyntheaLoader=true
+            duz=$OPTARG
             ;;
         m)
             installEWD=true
@@ -233,6 +238,9 @@ if [ -z $utf8 ]; then
     utf8=false;
 fi
 
+if [ -z $installSyntheaLoader ]; then
+    installSyntheaLoader=false
+fi
 if [ -z $devMode ]; then
     devMode=false
 fi
@@ -511,6 +519,27 @@ if $installEWD && ($installgtm || $installYottaDB); then
     cd $scriptdir/EWD
     ./ewdjs.sh -f
     cd $basedir
+fi
+
+if $installSyntheaLoader; then
+    echo "Installing Synthea ingestor patch"
+    system=1
+    instanceName='-cn $instance'
+    if ($installgtm || $installYottaDB); then
+      system=2
+      instanceName=''
+    fi
+    if [ ! -d "VistA" ]; then
+      echo "Downloading OSEHRA VistA Tester Repo"
+      curl -fsSL --progress-bar https://github.com/OSEHRA/VistA/archive/master.zip -o VistA-master.zip
+      unzip -q VistA-master.zip
+      rm VistA-master.zip
+      mv VistA-master VistA
+    fi
+    cd VistA/Scripts/
+    python PatchSequenceApply.py -S $system -p $scriptdir/Synthea $routineDir $instanceName -l /tmp/ -i -n ALL -d $duz
+    cd ../..
+    rm -rf VistA
 fi
 
 # Install Panorama
