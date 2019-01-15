@@ -258,6 +258,20 @@ For a YottaDB instance, the command would look as follows:
 Once the container is running, the ViViaN and DOX pages can be accessed via
 a web browser at http://localhost:3080/vivian and http://localhost:3080/vivian/files/dox
 
+### Post Installs that you can apply with -p flag
+
+| Script                              | What it does? |
+| ----------------------------------- | ------------- |
+| `./Common/pvPostInstall.sh`         | Generic Cache Set-up  |
+| `./Common/syntheaPostInstall.sh`    | Install Synthetic Patient Generator |
+| `./Common/vxvistaPostInstall.sh`    | vxVistA GT.M/YDB specific set-up |
+| `./Common/rpmsPostInstall.sh`       | RPMS GT.M/YDB specific set-up |
+| `./Common/foiaPostInstall.sh`       | Fix FOIA Console Set-up |
+| `./Common/ov6pi.sh`                 | Add Korean demo data for Plan VI images |
+| `./Common/ovydbPostInstall.sh`      | DO NOT USE |
+| `./Common/wvDemopi.sh`              | Create Demo Users for an instance (physician, pharmacist, and nurse) |
+
+
 ### Installing SQL Mapping
 
 SQL Mapping of FileMan Files is in development at https://github.com/YottaDB/PIP. SQL Mapping is supported for YottaDB and GT.M. There are some special command line arguments that are required for proper running:
