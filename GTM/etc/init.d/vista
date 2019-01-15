@@ -56,6 +56,13 @@ start() {
     echo "Starting TaskMan"
     su $instance -c "source $basedir/etc/env && cd $basedir/tmp && $gtm_dist/mumps -run START^ZTMB"
 
+    # Start M-Web-Server @ 9080
+    if [ -f $basedir/r/VPRJREQ.m ] || [ -f $basedir/p/VPRJREQ.m ]; then
+        echo "Starting M Web Server"
+        su $instance -c "source $basedir/etc/env && cd $basedir/tmp && $gtm_dist/mumps -r %XCMD 'D JOB^VPRJREQ(9080)'"
+    fi
+
+
     # Start PIP
     if [ -d $basedir/pip ] ; then
         echo "Starting PIP"
