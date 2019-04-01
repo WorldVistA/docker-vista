@@ -63,17 +63,17 @@ ARG entry="/home"
 ENV entry_path="${entry}/${instance_name}"
 ENV install_flags="$flags -i ${instance_name}"
 
-RUN dos2unix /opt/vista/* && \
-    dos2unix /opt/vista/Cache/* && \
-    dos2unix /opt/vista/Cache/etc/init.d/* && \
-    dos2unix /opt/vista/Common/* && \
-    dos2unix /opt/vista/Dashboard/* && \
-    dos2unix /opt/vista/EWD/* && \
-    dos2unix /opt/vista/EWD/etc/init.d/* && \
-    dos2unix /opt/vista/GTM/* && \
-    dos2unix /opt/vista/GTM/bin/* && \
-    dos2unix /opt/vista/GTM/etc/init.d/* && \
-    dos2unix /opt/vista/ViViaN/*
+RUN dos2unix /opt/vista/* >/dev/null 2>&1 && \
+    dos2unix /opt/vista/Cache/* >/dev/null 2>&1 && \
+    dos2unix /opt/vista/Cache/etc/init.d/* >/dev/null 2>&1 && \
+    dos2unix /opt/vista/Common/* >/dev/null 2>&1 && \
+    dos2unix /opt/vista/Dashboard/* >/dev/null 2>&1 && \
+    dos2unix /opt/vista/EWD/* >/dev/null 2>&1 && \
+    dos2unix /opt/vista/EWD/etc/init.d/* >/dev/null 2>&1 && \
+    dos2unix /opt/vista/GTM/* >/dev/null 2>&1 && \
+    dos2unix /opt/vista/GTM/bin/* >/dev/null 2>&1 && \
+    dos2unix /opt/vista/GTM/etc/init.d/* >/dev/null 2>&1 && \
+    dos2unix /opt/vista/ViViaN/* >/dev/null 2>&1
 
 RUN ./autoInstaller.sh ${install_flags}
 ENTRYPOINT ${entry_path}/bin/start.sh
