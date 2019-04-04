@@ -1,7 +1,7 @@
 FROM centos
 
 RUN echo "multilib_policy=best" >> /etc/yum.conf
-RUN yum  -y update && \
+RUN yum update  -y && \
     yum install -y \
                    coreutils \
                    util-linux \
@@ -36,6 +36,7 @@ RUN yum  -y update && \
                    vim \
                    bind-utils \
                    perl-Digest-SHA \
+                   epel-release \
                    || true && \
     yum install -y http://libslack.org/daemon/download/daemon-0.6.4-1.i686.rpm > /dev/null && \
     package-cleanup --cleandupes && \

@@ -574,10 +574,10 @@ if $installPanorama && ($installgtm || $installYottaDB); then
     cd $basedir
 fi
 
-# Install PIP/SQL Mapping
+# Install YottaDB SQL Mapping (Octo)
 if $installSQL && ($installgtm || $installYottaDB); then
     cd $scriptdir/GTM
-    ./installPIP.sh
+    ./installOcto.sh
     cd $basedir
 fi
 

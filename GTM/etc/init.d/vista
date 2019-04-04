@@ -62,11 +62,12 @@ start() {
         su $instance -c "source $basedir/etc/env && cd $basedir/tmp && $gtm_dist/mumps -r %XCMD 'do job^%webreq(9080)'"
     fi
 
-
-    # Start PIP
-    if [ -d $basedir/pip ] ; then
-        echo "Starting PIP"
-        su $instance -c "source $basedir/etc/env && $basedir/pip/pipstart"
+    # Start Octo
+    if [ -d $basedir/lib/gtm/plugin/bin ] ; then
+        echo "Starting Rocto"
+        su $instance -c "source $basedir/etc/env && $gtm_dist/mupip journal -recover -backward $basedir/j/octo.mjl >> $basedir/log/OctoJournalRecovery.log 2>&1"
+        su $instance -c "source $basedir/etc/env && $gtm_dist/mupip set -journal=\"enable,on,before,file=$basedir/j/octo.mjl\" -file $basedir/g/octo.dat >> $basedir/log/OctoJournal.log 2>&1"
+        su $instance -c "source $basedir/etc/env && cd $basedir && $basedir/lib/gtm/plugin/bin/rocto > $basedir/log/rocto.log 2>&1 &"
     fi
 }
 stop() {

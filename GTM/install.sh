@@ -38,23 +38,27 @@ usage()
 
     DEFAULTS:
       GT.M Version = V6.3-005
-      YottaDB Version = r1.24
+      YottaDB Version = r1.26
 
     OPTIONS:
       -h    Show this message
       -v    GT.M/YottaDB version to install
       -y    Install YottaDB instead of GT.M
       -s    Skip setting shared memory parameters
+      -r    Install from source
 
 EOF
 }
 
-while getopts "hsyv:" option
+while getopts "hrsyv:" option
 do
     case $option in
         h)
             usage
             exit 1
+            ;;
+        r)
+            source=true
             ;;
         s)
             sharedmem=false
@@ -75,21 +79,75 @@ fi
 
 # YottaDB
 if [ $installYottaDB ] && [ -z $gtm_ver ]; then
-    gtm_ver="r1.24"
+    gtm_ver="r1.26"
 fi
 
 if [ -z $sharedmem ]; then
     sharedmem=true
 fi
 
-# Download ydbinstall
-echo "Downloading ydbinstall"
-curl -s -L https://raw.githubusercontent.com/YottaDB/YottaDB/master/sr_unix/ydbinstall.sh -o ydbinstall
+if [ -z $source ]; then
+    source=false
+fi
 
-isValidFile=`head ydbinstall | grep "Fidelity National Information"`
-if [[ ! $isValidFile ]]; then
-    echo "Something went wrong downloading ydbinstall"
-    exit $?
+# Determine processor architecture - used to determine if we can use GT.M
+#                                    Shared Libraries
+# Changed to support ARM chips as well as x64/x86.
+arch=$(uname -m | tr -d _)
+if [ $arch == "x8664" ]; then
+    gtm_arch="x86_64"
+else
+    gtm_arch=$arch
+fi
+
+# Download ydbinstall
+if $source; then
+    if $installYottaDB; then
+        yum install -y \
+                    git \
+                    gcc \
+                    cmake \
+                    tcsh \
+                    {libconfig,gpgme,libicu,libgpg-error,libgcrypt,ncurses,openssl,zlib,elfutils-libelf}-devel \
+                    binutils
+        git clone https://gitlab.com/YottaDB/DB/YDB.git
+        cd YDB
+        mkdir build
+        cd build
+        cmake -D CMAKE_INSTALL_PREFIX:PATH=$PWD ../
+        make -j `grep -c ^processor /proc/cpuinfo`
+        make install
+        cd yottadb_r*
+        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch"
+    else
+        echo "Installing GT.M from source isn't supported"
+        exit 1
+    fi
+else
+    echo "Downloading ydbinstall"
+    curl -s -L https://gitlab.com/YottaDB/DB/YDB/raw/r1.24/sr_unix/ydbinstall.sh?inline=false -o ydbinstall
+
+    isValidFile=`head ydbinstall | grep "Fidelity National Information"`
+    if [[ ! $isValidFile ]]; then
+        echo "Something went wrong downloading ydbinstall"
+        exit $?
+    fi
+
+    # Make it executable
+    chmod +x ydbinstall
+
+    # Accept most defaults for ydbinstall
+    # --ucaseonly-utils - override default to install only uppercase utilities
+    #                     this follows VistA convention of uppercase only routines
+    # Force install is necessary b/c of a recent change in the YDB installer.
+    if [ "$installYottaDB" = "true" ] ; then
+        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch" $gtm_ver
+    else
+        ./ydbinstall --force-install --gtm --ucaseonly-utils --utf8 default --installdir /opt/lsb-gtm/"$gtm_ver"_"$gtm_arch" $gtm_ver
+    fi
+
+    # Remove ydbinstall script as it is unnecessary
+    rm ./ydbinstall
 fi
 
 # Get kernel.shmmax to determine if we can use 32k strings
@@ -111,32 +169,6 @@ if $sharedmem; then
         sysctl -w kernel.shmmax=$shmmin
     fi
 fi
-
-# Make it executable
-chmod +x ydbinstall
-
-# Determine processor architecture - used to determine if we can use GT.M
-#                                    Shared Libraries
-# Changed to support ARM chips as well as x64/x86.
-arch=$(uname -m | tr -d _)
-if [ $arch == "x8664" ]; then
-    gtm_arch="x86_64"
-else
-    gtm_arch=$arch
-fi
-
-# Accept most defaults for ydbinstall
-# --ucaseonly-utils - override default to install only uppercase utilities
-#                     this follows VistA convention of uppercase only routines
-# Force install is necessary b/c of a recent change in the YDB installer.
-if [ "$installYottaDB" = "true" ] ; then
-    ./ydbinstall --force-install --ucaseonly-utils --utf8 default --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch" $gtm_ver
-else
-    ./ydbinstall --force-install --gtm --ucaseonly-utils --utf8 default --installdir /opt/lsb-gtm/"$gtm_ver"_"$gtm_arch" $gtm_ver
-fi
-# Remove ydbinstall script as it is unnecessary
-rm ./ydbinstall
-
 
 # Link GT.M shared library where the linker can find it and refresh the cache
 if [[ $RHEL || -z $ubuntu ]]; then

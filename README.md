@@ -11,15 +11,14 @@ available yet. It will be soon.
 * [Pre-built images](#pre-built-images)
 * [Quick Reference for building &amp; running images](#quick-reference-for-building--running-images)
 * [Detailed Discussion and Reference](#detailed-discussion-and-reference)
-   * [Build Options](#build-options)
-   * [Tagging an image to upload to Docker Hub](#tagging-an-image-to-upload-to-docker-hub)
-   * [Building ViViaN and DOX with Docker](#building-vivian-and-dox-with-docker)
-   * [Post Installs that you can apply with -p flag](#post-installs-that-you-can-apply-with--p-flag)
-   * [Installing SQL Mapping](#installing-sql-mapping)
-
-
+  * [Build Options](#build-options)
+  * [Tagging an image to upload to Docker Hub](#tagging-an-image-to-upload-to-docker-hub)
+  * [Building ViViaN and DOX with Docker](#building-vivian-and-dox-with-docker)
+  * [Post Installs that you can apply with -p flag](#post-installs-that-you-can-apply-with--p-flag)
+  * [Installing SQL Mapping](#installing-sql-mapping)
 
 ## Pre-built images
+
 Pre-built images for open source code are available on Docker Hub. Instrucions
 for running them are available on the URL, including usernames/passwords:
 
@@ -36,6 +35,7 @@ for running them are available on the URL, including usernames/passwords:
 | WorldVistA   | GTM   | 2.0                | https://hub.docker.com/r/krmassociates/worldvista  |
 
 ## Quick Reference for building & running images
+
 Default: "OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)"
 
     docker build -t osehra-vista .
@@ -98,6 +98,7 @@ To capture the exported code from the container and remove the Docker objects, e
 A [volume](https://docs.docker.com/storage/volumes/) could also be mounted to the container.
 
 ### List of Ports
+
 The exported ports are as follows:
 
 | Docker Port | Mapped To? | Purpose         | Applicable to?    |
@@ -113,6 +114,7 @@ The exported ports are as follows:
 | 1338        | 1338       | SQL Listener Port | YottaDB         |
 
 ## Detailed Discussion and Reference
+
 As shown above, there are two steps: the build step and and run step. There
 are defaults if you don't supply arguments, which are discussed below. The
 build step runs the script [autoInstaller.sh](./autoInstaller.sh) which does
@@ -130,7 +132,7 @@ as follows:
 3) Copy your CACHE.DAT to the cache-files directory of this repository
 4) Build and run the image
 
-   ```
+   ```sh
    docker build --build-arg flags="-cbsp ./Common/pvPostInstall.sh" --build-arg instance="cachevista" --build-arg entry="/opt/cachesys" -t cachevista .
    docker run -p9430:9430 -p8001:8001 -p2222:22 -p57772:57772 -d --name=cache cachevista
    ```
@@ -170,8 +172,8 @@ as follows:
 | y      | n/a     | Use YottaDB |
 | z      | n/a     | Dev Mode: Don't clean-up and set -x |
 
-
 ### Tagging an image to upload to Docker Hub
+
 First, you need to login to Docker Hub using the command `docker login`.
 
 MAKE SURE THAT WHAT YOU PUSH IS OPEN SOURCE CODE. Docker Hub is a public
@@ -259,9 +261,8 @@ a web browser at http://localhost:3080/vivian and http://localhost:3080/vivian/f
 | `./Common/ov6piko.sh`               | GTM-YDB        | Add Korean ICD-10 and Korean demo data for Plan VI images |
 | `./Common/ovydbPostInstall.sh`      | Sample Only    | DO NOT USE |
 | `./Common/wvDemopi.sh`              | GTM-YDB        | Create Demo Users for an instance (physician, pharmacist, and nurse) |
-| `./Common/foiaRPMSPostInstall.sh    | Caché          | FOIA RPMS CACHE.DAT Post-Installer |
+| `./Common/foiaRPMSPostInstall.sh`   | Caché          | FOIA RPMS CACHE.DAT Post-Installer |
 | `./Common/vehu6piko.sh`             | GTM-YDB        | Add Korean ICD-10 to VEHU instance |
-
 
 ### Installing SQL Mapping
 
@@ -306,20 +307,71 @@ Then load it using the octo command line tool:
 
     octo -f /path/for/ddl.sql
 
-### QEWD passwords for non Caché installs
-Monitor: keepThisSecret!
+#### Connecting with SquirrelSQL
 
-### Tests
+[SquirrelSQL](http://www.squirrelsql.org) is the preferred client to use with Octo as that is what is used in
+development and testing. Other clients may have varying degress of success connecting to Octo due to certain
+queries sent by the tool.
+
+## Roll-and-Scroll Access for non Caché installs
+
+1) Tied VistA user:
+
+    ssh osehratied@localhost -p 2222 # subsitute worldvistatied or vxvistatied if you used one of those images
+
+password tied
+
+2) Programmer VistA user:
+
+    ssh osehraprog@localhost -p 2222 # subsitute worldvistaprog or vxvistaprog if you used one of those images
+
+password: prog
+
+3) Root access:
+
+    ssh root@localhost -p 2222
+
+password: docker
+
+## VistA Access/Verify codes for non Caché installs
+
+OSEHRA VistA:
+
+Regular doctor:
+Access Code: FakeDoc1
+Verify Code: 1Doc!@#$
+
+System Manager:
+Access Code: SM1234
+Verify Code: SM1234!!!
+
+WorldVistA:
+
+Displayed in the VistA greeting message
+
+vxVistA:
+
+Displayed in the VistA greeting message
+
+## QEWD passwords for non Caché installs
+
+Monitor:
+keepThisSecret!
+
+## Tests
+
 Deployment tests are written using [bats](https://github.com/sstephenson/bats)
 The tests make sure that deployment directories, scripts, RPC Broker, VistALink
 are all working and how they should be.
 
 There are two special tests:
- * fifo
+
+* fifo
 
    The fifo test is for docker containers and assumes that the tests are ran as root
    (currently) as that is who owns the fifo
- * VistALink
+
+* VistALink
 
    This test installs java, retrieves a zip file of a github repo and makes a VistALink
    connection. This test does take a few seconds to complete and modifies the installed

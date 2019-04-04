@@ -218,6 +218,9 @@ if $installYottaDB; then
 else
   echo "export mumps_implementation=GTM"        >> $basedir/etc/env
 fi
+echo 'if [ -d $gtm_dist/plugin/bin ]; then'     >> $basedir/etc/env
+echo " export PATH=\$gtm_dist/plugin/bin:\$PATH" >> $basedir/etc/env
+echo "fi"                                       >> $basedir/etc/env
 
 # NB: gtm_side_effects and gtm_boolean intentionally omitted here.
 # While I would use them on production; I want to see if we ever have problems
@@ -257,7 +260,6 @@ if $utf8; then
   echo "export gtm_chset=utf-8"                         >> $basedir/etc/env
   echo "export gtm_icu_version=$(icu-config --version)" >> $basedir/etc/env
 fi
-
 
 # prog.sh - priviliged (programmer) user access
 # Allow access to ZSY
