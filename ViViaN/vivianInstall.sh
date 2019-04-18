@@ -107,7 +107,7 @@ mkdir -p /opt/VistA-docs
 mkdir -p /opt/viv-out
 pushd /opt
 echo "Acquiring DBIA/ICR Information from https://foia-vista.osehra.org/VistA_Integration_Agreement/"
-curl -fsSL --progress-bar https://foia-vista.osehra.org/VistA_Integration_Agreement/2018_September_05_IA_Listing_Descriptions.TXT -o ICRDescription.txt
+curl -fsSL --progress-bar https://foia-vista.osehra.org/VistA_Integration_Agreement/2019_January_24_IA_Listing_Descriptions.TXT -o ICRDescription.txt
 echo "Downloading OSEHRA VistA Testing Repository"
 curl -fsSL --progress-bar https://github.com/OSEHRA/VistA/archive/master.zip -o VistA-master.zip
 unzip -q VistA-master.zip
