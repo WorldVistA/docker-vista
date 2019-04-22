@@ -1,4 +1,4 @@
-ov6piko ; OSE/SMH - OSEHRA Korean VistA Post Install;2018-10-18  3:33 PM
+ov6piko ; OSE/SMH - OSEHRA Korean VistA Post Install;2019-04-22  9:50 AM
  ;
  ; *** IMPORTANT ***
  ; This .m file expects data produced by the OSEHRA testing framework.
@@ -27,9 +27,17 @@ users ; change user names
  d FILE^DIE(,"fda")
  ;
 patients ; change patient name
- n i,t,fda f i=1:1 s t=$p($t(ptdata+i),";;",2) q:t=""  d
+ n i,t,fda,DIERR f i=1:1 s t=$p($t(ptdata+i),";;",2) q:t=""  d
  . i $d(^DPT(i,0)) s fda(2,i_c,.01)=t
- d FILE^DIE(,"fda")
+ d FILE^DIE("E","fda")
+ i $D(DIERR) W "Error: " D MSG^DIALOG()
+ ;
+ ;
+kspLang ; change Kernel System Language to Korean
+ ; NB: This FDA syntax works only in FM22.2; don't try on FM22.0
+ S fda(8989.3,"1,","DEFAULT LANGUAGE")="KOREAN"
+ D FILE^DIE("E","fda")
+ i $D(DIERR) W "Error: " D MSG^DIALOG()
  quit
  ;
 ptdata ; data for patient names

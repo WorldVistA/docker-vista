@@ -118,7 +118,7 @@ Default: "OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)"
 
 Plan VI (Internationalized Version) OSEHRA VistA (YottaDB, UTF-8 enabled, no bootstrap, with QEWD and Panorama)
 
-    docker build --build-arg flags="-byuma https://github.com/OSEHRA-Sandbox/VistA-M/archive/plan-vi.zip -p ./Common/ov6pi.sh" --build-arg instance="ov6" -t ov6 .
+    docker build --build-arg flags="-byuma https://github.com/OSEHRA-Sandbox/VistA-M/archive/plan-vi.zip -p ./Common/ov6piko.sh" --build-arg instance="ov6" -t ov6 .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=ov6 ov6
 
 WorldVistA (YottaDB, Panorama, no boostrap, skip testing):
