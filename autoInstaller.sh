@@ -529,6 +529,7 @@ fi
 
 # Post install hook
 if $postInstall; then
+  echo "Executing post install hook..."
   if $installgtm || $installYottaDB; then
     su $instance -c "source $basedir/etc/env && pushd $scriptdir && $postInstallScript && popd"
   elif $installcache; then
