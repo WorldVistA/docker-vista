@@ -4,7 +4,7 @@ mkdir /tmp/kids/logs
 pushd /tmp/kids
 
 # Download KIDS build for Plan 6 Lexicon
-curl -sSOL https://github.com/OSEHRA-Sandbox/VistA-M/releases/download/kcd7/UKO_KCD7_LOAD_0p2.KID
+curl -sSOL https://github.com/OSEHRA-Sandbox/VistA-M/releases/download/kcd7/UKO_KCD7_LOAD_0P3.KID
 
 # Set up arguments for PatchSequenceApply script based upon system
 system=1
