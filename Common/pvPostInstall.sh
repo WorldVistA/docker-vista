@@ -4,6 +4,10 @@
 instance=$1
 ccontrol start CACHE
 csession CACHE -U $instance <<END
+; Recompile
+W "Recompiling Routines",!
+D Compile^%R("*.*")
+D Compile^%R("%*.*")
 ; Save pvPostInstall Routine
 W "Saving pvPostInstall...",!
 d \$SYSTEM.Process.SetZEOF(1)
