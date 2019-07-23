@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #---------------------------------------------------------------------------
-# Copyright 2011-2012 The Open Source Electronic Health Record Agent
+# Copyright 2011-2012,2019 The Open Source Electronic Health Record Alliance
 # Copyright 2017 Christopher Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,10 +40,11 @@ usage()
       -h    Show this message
       -f    Skip setting firewall rules
       -i    Instance name
+      -r    Do RPMS instead of VistA
 EOF
 }
 
-while getopts ":hfi:" option
+while getopts ":hfri:" option
 do
     case $option in
         h)
@@ -52,6 +53,9 @@ do
             ;;
         f)
             firewall=false
+            ;;
+        r)
+            rpms=true
             ;;
         i)
             instance=$(echo $OPTARG |tr '[:upper:]' '[:lower:]')
@@ -68,6 +72,10 @@ if [[ -z $firewall ]]; then
     firewall=true
 fi
 
+if [[ -z $rpms ]]; then
+    rpms=false
+fi
+
 # hack for CentOS
 cp /etc/redhat-release /etc/redhat-release.orig
 echo "Red Hat Enterprise Linux (Santiago) release 6" > /etc/redhat-release
@@ -79,9 +87,9 @@ scriptdir=`dirname $0`
 basedir=/opt/cachesys/$instance
 
 # Create Daemon User accounts
-./createDaemonAccount.sh -i $instance
+./createDaemonAccount.sh
 
-usermod root -G cachegrp$instance
+usermod root -G cachegrp
 
 # unzip the cachekit in a temp directory
 cachekit=$(ls -1 /opt/vista/cache-files/cache-*.tar.gz)
@@ -94,13 +102,16 @@ tar xzf $cachekit
 
 # Create environment variables for install
 export ISC_PACKAGE_INITIAL_SECURITY="minimal"
-export ISC_PACKAGE_MGRUSER=cacheusr$instance
-export ISC_PACKAGE_MGRGROUP=cachegrp$instance
+export ISC_PACKAGE_MGRUSER=cacheusr
+export ISC_PACKAGE_MGRGROUP=cachegrp
 export ISC_PACKAGE_INSTANCENAME=CACHE
 export ISC_PACKAGE_INSTALLDIR=$basedir
-export ISC_PACKAGE_CACHEUSER=cacheusr$instance
-export ISC_PACKAGE_CACHEGROUP=cachegrp$instance
+export ISC_PACKAGE_CACHEUSER=cacheusr
+export ISC_PACKAGE_CACHEGROUP=cachegrp
 export ISC_PACKAGE_STARTCACHE="N"
+if $rpms; then
+  export ISC_PACKAGE_UNICODE="Y"
+fi
 
 # Install Caché
 if [ -e cinstall_silent ]; then
@@ -120,19 +131,28 @@ if [ -e /opt/vista/cache-files/cache.key ]; then
 fi
 
 # Perform subsitutions in cpf file and copy to destination
-cp $scriptdir/cache.cpf $basedir/cache.cpf-new
-perl -pi -e 's/foia/'$instance'/g' $basedir/cache.cpf-new
-perl -pi -e 's/FOIA/'${instance^^}'/g' $basedir/cache.cpf-new
+if $rpms; then
+  cp $scriptdir/cache-rpms.cpf $basedir/cache.cpf-new
+else
+  cp $scriptdir/cache.cpf $basedir/cache.cpf-new
+fi
+perl -pi -e 's/zzzz/'$instance'/g' $basedir/cache.cpf-new
+perl -pi -e 's/ZZZZ/'${instance^^}'/g' $basedir/cache.cpf-new
 cp $basedir/cache.cpf-new $basedir/cache.cpf
 
 # Move CACHE.dat
-mkdir -p $basedir/vista
+if $rpms; then
+  dirname=rpms
+else
+  dirname=vista
+fi
+mkdir -p $basedir/$dirname
 if [ -e /opt/vista/cache-files/CACHE.DAT ]; then
     echo "Moving CACHE.DAT..."
-    mv -v /opt/vista/cache-files/CACHE.DAT $basedir/vista/CACHE.DAT
-    chown root:cachegrp$instance $basedir/vista/CACHE.DAT
-    chmod ug+rw $basedir/vista/CACHE.DAT
-    chmod ug+rw $basedir/vista
+    mv -v /opt/vista/cache-files/CACHE.DAT $basedir/$dirname/CACHE.DAT
+    chown root:cachegrp $basedir/$dirname/CACHE.DAT
+    chmod ug+rw $basedir/$dirname/CACHE.DAT
+    chmod ug+rw $basedir/$dirname
 fi
 
 # Clean up from install
@@ -159,5 +179,5 @@ echo 'chmod 400 ~/fifo'                                 >> $basedir/bin/start.sh
 echo 'read < ~/fifo'                                    >> $basedir/bin/start.sh
 
 # Ensure correct permissions for start.sh
-chown cacheusr$instance:cachegrp$instance $basedir/bin/start.sh
+chown cacheusr:cachegrp $basedir/bin/start.sh
 chmod +x $basedir/bin/start.sh
