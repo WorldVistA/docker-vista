@@ -121,6 +121,9 @@ Java_JAVA_EXECUTABLE:FILEPATH=/bin/java
 //Use a local links for DOX page connections
 LOCAL_DOX_LINKS:BOOL=TRUE
 
+//A local ViViaN/files URL to point to
+LOCAL_VIVIAN_FILES_URL:STRING=http://localhost:3080/vivian/files
+
 //Command to build the project
 MAKECOMMAND:STRING=/usr/bin/gmake -i
 

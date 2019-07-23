@@ -139,10 +139,10 @@ cp $scriptdir/ViViaN/CMakeCache.txt /opt/VistA-docs
 echo "Starting CTest at:" $(timestamp)
 echo "Installing XINDEX patch"
 /usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "XINDEX"
+echo "Executing XINDEX reports"
+/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "CALLERGRAPH"
 echo "Executing data-gathering tasks"
-/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -E "WebPageGenerator|FileManGlobalDataParser|XINDEX"
-echo "Parsing VistA Globals"
-/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "FileManGlobalDataParser"
+/usr/bin/ctest -V -E "CALLERGRAPH|XINDEX|WebPageGenerator"
 echo "Generating ViViaN and DOX HTML"
 /usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "WebPageGenerator"
 echo "Ending CTest at:" $(timestamp)
