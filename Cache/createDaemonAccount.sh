@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #---------------------------------------------------------------------------
-# Copyright 2011-2012 The Open Source Electronic Health Record Agent
+# Copyright 2011-2019 The Open Source Electronic Health Record Alliance
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,36 +37,27 @@ usage()
 
     OPTIONS:
       -h    Show this message
-      -i    Instance name
 EOF
 }
 
-while getopts ":hi:" option
+while getopts ":h" option
 do
     case $option in
         h)
             usage
             exit 1
             ;;
-        i)
-            instance=$(echo $OPTARG |tr '[:upper:]' '[:lower:]')
-            ;;
     esac
 done
-
-if [[ -z $instance ]]; then
-    usage
-    exit 1
-fi
 
 # Used ideas from:
 # http://www.debian.org/doc/manuals/securing-debian-howto/ch9.en.html
 # to create daemon accounts & groups
 
-SERVER_HOME=/opt/cachesys/$instance
-SERVER_USER=cacheusr$instance
+SERVER_HOME=/opt/cachesys/
+SERVER_USER=cacheusr
 SERVER_NAME="Intersystems Cache CACHE instance"
-SERVER_GROUP=cachegrp$instance
+SERVER_GROUP=cachegrp
 
 # create user to avoid running server as root
 # create group if not existing

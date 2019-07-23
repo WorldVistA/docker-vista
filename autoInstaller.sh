@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #---------------------------------------------------------------------------
-# Copyright 2011-2018 The Open Source Electronic Health Record Agent
+# Copyright 2011-2019 The Open Source Electronic Health Record Alliance
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ usage()
       -s    Skip testing
       -u    Install GTM/YottaDB with UTF-8 enabled
       -v    Build ViViaN Documentation
-      -w    Install RPMS XINETD scripts
+      -w    Install RPMS scripts (GT.M/YDB or Caché)
       -x    Extract given M[UMPS] code
       -y    Use YottaDB
       -z    Dev Mode: Don't clean-up and set -x
@@ -361,7 +361,11 @@ fi
 
 if $installcache; then
     cd Cache
-    ./install.sh -i $instance
+    if $installRPMS; then
+      ./install.sh -i $instance -r
+    else
+      ./install.sh -i $instance
+    fi
     # Create the VistA instance
     #./createVistaInstance.sh
 fi

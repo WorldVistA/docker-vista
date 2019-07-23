@@ -146,11 +146,15 @@ RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
     docker build --build-arg flags="-w -f -y -b -s -a https://github.com/shabiel/FOIA-RPMS/archive/master.zip -p ./Common/rpmsPostInstall.sh" --build-arg instance="rpms" -t rpms .
     docker run -d -p 2222:22 -p 9100:9100 -p 9101:9101 -p 9080:9080 --name=rpms rpms
 
-Caché Install with local DAT file. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the cache-files directories.
+Caché Install with local VistA DAT file. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the cache-files directories.
 
-    docker build --build-arg flags="-c -b -s -p ./Common/pvPostInstall.sh" --build-arg instance="cachevista" --build-arg entry="/opt/cachesys" -t cachevista .
-    docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -p 9080:9080 -d -P --name=cache cachevista
+    docker build --build-arg flags="-cbsp ./Common/pvPostInstall.sh" --build-arg instance="foia" --build-arg entry="/opt/cachesys" -t cache .
+    docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -p 9080:9080 -d -P --name=cache cache
 
+Caché Install with local RPMS DAT file.
+
+    docker build --build-arg flags="-cbswp ./Common/foiaRPMSPostInstall.sh" --build-arg instance="rpms" --build-arg entry="/opt/cachesys" -t rpms .
+    docker run -d -p 2222:22 -p 9100:9100 -p 9101:9101 -p 9080:9080 --name=rpms rpms
 
 Caché Install with local DAT file to stop after exporting the code from the Cache instance. You need to supply your own CACHE.DAT and .tar.gz installer for RHEL.
 When available, the system will also install a "cache.key" file when the system is built.  If it is not present, the extraction will be performed serially.
