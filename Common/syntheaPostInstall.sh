@@ -1,9 +1,24 @@
 #!/bin/bash
-mkdir /tmp/loader
+# Get RGNETWWW and put it in the routine directory. Required by SYN_1_0_2.KID
+pushd $basedir/r/
+curl -LO https://raw.githubusercontent.com/mdgeek/VistA-Network-Services/master/src/RGNETWWW.m
+dos2unix RGNETWWW.m
+popd
+
+mkdir -p /tmp/loader/Synthea
 pushd /tmp/loader
+
 # Download Synthea loader multibuild
-curl -fsSL --progress-bar https://github.com/OSEHRA/VistA-FHIR-Data-Loader/releases/download/0.2/SYN_BUNDLE_0P2.KIDS.zip -o loader.zip
+curl -fsSL --progress-bar https://github.com/OSEHRA/VistA-FHIR-Data-Loader/releases/download/0.3/VISTA_FHIR_DATA_LOADER_BUNDLE_0P3.KID.zip -o loader.zip
 unzip -q loader.zip -d /tmp/loader/Synthea
+
+# Download FHIR Display Code
+pushd ./Synthea
+curl -fsSLO --progress-bar https://raw.githubusercontent.com/OSEHRA/FHIR-on-VistA/master/VistA-REST-services/kids/SYN_1_0_2.KID
+dos2unix *.KID
+popd
+
+
 echo "Installing Synthea ingestor patch"
 # Set up arguments for PatchSequenceApply script based upon system
 system=1
