@@ -44,8 +44,8 @@ usage()
     cat << EOF
     usage: $0 options
 
-    This script will automatically create a VistA instance for GT.M on
-    RHEL-like Distros
+    This script will automatically create a VistA instance using Caché, GT.M
+    or YottaDB on RHEL-like Distros
 
     DEFAULTS:
       Alternate VistA-M repo = https://github.com/OSEHRA/VistA-M.git
@@ -284,12 +284,53 @@ echo This script will add $primaryuser to the VistA group
 test -d /home/$instance/g &&
 { echo "VistA already Installed. Aborting."; exit 0; }
 
-# extra utils - used for cmake and dashboards and initial clones
+# Bootstrap does all the stuff that is normally done by the Dockerfile
 if $bootstrap; then
     echo "Updating operating system"
     yum update -y > /dev/null
-    yum install -y cmake unzip git dos2unix > /dev/null
+    yum install -y \
+                       coreutils \
+                       util-linux \
+                       gcc-c++ \
+                       git \
+                       xinetd \
+                       perl \
+                       curl \
+                       python \
+                       openssh-server \
+                       openssh-clients \
+                       expect \
+                       man \
+                       python-argparse \
+                       sshpass \
+                       wget \
+                       make \
+                       cmake \
+                       dos2unix \
+                       which \
+                       file \
+                       unzip \
+                       net-tools \
+                       java-devel \
+                       libicu \
+                       libicu-devel \
+                       recode \
+                       bzip2 \
+                       lsof \
+                       openssl \ 
+                       gzip \
+                       vim \
+                       bind-utils \
+                       perl-Digest-SHA \
+                       > /dev/null
     yum install -y http://libslack.org/daemon/download/daemon-0.6.4-1.i686.rpm > /dev/null
+    package-cleanup --cleandupes
+    yum  -y clean all
+    rm -rf /var/cache/yum
+
+    # Enable & Start the firewall
+    systemctl enable firewalld
+    systemctl start firewalld
 fi
 
 # Clone repos - Dashboard
@@ -323,14 +364,7 @@ else
     fi
 fi
 
-# bootstrap the system
-if $bootstrap; then
-    cd $scriptdir
-    ./RHEL/bootstrapRHELserver.sh
-else
-    # move back to the /opt/vista directory
-    cd /opt/vista
-fi
+cd $scriptdir
 
 # Ensure scripts know if we are RHEL like or Ubuntu like
 export RHEL=true;
