@@ -1,116 +1,41 @@
-# Dockerized VistA instances
+# Dockerized VistA/RPMS instances
+Code in this repository enables you to create VistA or RPMS instances on
+Caché or GT.M/YottaDB.  A working [Docker](https://www.docker.com/community-edition#/download) installation on
+the platform of choice is required in order to be able to create instances.
 
-## Requirements
-This has only been tested using:
+NB: Octo SQL Access information is included here, but is not currently
+available yet. It will be soon.
 
-* Docker for Mac
-* Docker on Linux (Thanks: George Lilly)
-* Docker Toolkit on Windows 7 (Thanks: Sam Habiel)
+# Table of Contents
 
-## Pre-requisites
-A working [Docker](https://www.docker.com/community-edition#/download) installation on the platform of choice.
+* [Pre-built images](#pre-built-images)
+* [Quick Reference for building &amp; running images](#quick-reference-for-building--running-images)
+* [Detailed Discussion and Reference](#detailed-discussion-and-reference)
+   * [Build Options](#build-options)
+   * [Tagging an image to upload to Docker Hub](#tagging-an-image-to-upload-to-docker-hub)
+   * [Building ViViaN and DOX with Docker](#building-vivian-and-dox-with-docker)
+   * [Post Installs that you can apply with -p flag](#post-installs-that-you-can-apply-with--p-flag)
+   * [Installing SQL Mapping](#installing-sql-mapping)
 
-## Note
-You cannot use docker exec -it osehravista bash to get access to the mumps prompt. This is likely due to how docker permission schemes for shared memory access works. Instead always gain access via the ssh commands below
+
 
 ## Pre-built images
-Pre-built images using this repository are available on [docker hub](https://hub.docker.com/r/krmassociates/)
+Pre-built images for open source code are available on Docker Hub. Instrucions
+for running them are available on the URL, including usernames/passwords:
 
-### Running a Pre-built image
-1) Pull the image
+| Image Name   | M Imp | Versions Available | Docker Hub URL |
+| ----------   | ----- | ------------------ | -------------- |
+| FOIA VistA   | YDB   | Monthly Images     | https://hub.docker.com/r/osehra/foiavista |
+| OSEHRA VistA | YDB   | Quarterly Images   | https://hub.docker.com/r/osehra/osehravista |
+| vxVistA      | GTM   | 15.0               | https://hub.docker.com/r/osehra/vxvista |
+| VEHU         | GTM   | Quarterly Images   | https://hub.docker.com/r/osehra/vehu |
+| RPMS         | YDB   | Half yearly        | https://hub.docker.com/r/osehra/rpms |
+| OSEHRA Plan VI | YDB | 3; last 201902     | https://hub.docker.com/r/osehra/ov6  |
+| VEHU Plan VI | YDB   | 2; last 201901     | https://hub.docker.com/r/osehra/vehu6 |
+| WorldVistA   | YDB   | 3.0                | https://hub.docker.com/r/worldvista/worldvista-ehr |
+| WorldVistA   | GTM   | 2.0                | https://hub.docker.com/r/krmassociates/worldvista  |
 
-    ```
-    docker pull krmassociates/osehravista # subsitute worldvista or vxvista if you want one of those instead
-    ```
-
-2) Run the image
-  Non QEWD enabled images
-
-    ```
-    docker run -p 9430:9430 -p 8001:8001 -p 2222:22 -d -P --name=osehravista krmassociates/osehravista # subsitute worldvista or vxvista if you want one of those instead
-    ```
-
-QEWD enabled images: Add `-p 8080:8080` to access QEWD/Panorama at port 8080.
-
-```
-docker run -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 -p 9080:9080 -d -P --name=osehravista krmassociates/osehravista-qewd
-```
-
-## Docker Build
-
-### Build Commands
-1) Build the docker image
-
-    ```
-    docker build -t osehra .
-    ```
-
-2) Run the created image
-
-    ```
-    docker run -p 9430:9430 -p 8001:8001 -p 2222:22 -p 9080:9080 -d -P --name=osehravista osehra
-    ```
-
-## Build Steps for Caché installs
-Caché will not have any pre-built images due to license restrictions and needing licensed versions of Caché to be used.
-
-The Caché install assumes that you are using a pre-built CACHE.DAT and will perform no configuration to the CACHE.DAT. The default install is done with "minimal" security.
-
-The initial docker container startup will take a bit of time as it needs to perform a workaround due to limitations of the OverlayFS that docker uses (see: https://docs.docker.com/engine/userguide/storagedriver/overlayfs-driver/#limitations-on-overlayfs-compatibility)
-
-Also, many options (EWD, Panorama, etc) are not valid for Caché installs and will be ignored.
-
-1) Copy the Caché installer (.tar.gz RHEL kit) to the root of this repository
-2) Copy your cache.key to the cache-files directory of this repository
-3) Copy your CACHE.DAT to the cache-files directory of this repository
-4) Build the image
-
-   ```
-   docker build --build-arg flags="-c -b -s -p ./Common/pvPostInstall.sh" --build-arg instance="cachevista" --build-arg entry="/opt/cachesys" -t cachevista .
-   ```
-
-5) Run the image:
-
-   ```
-   docker run -p9430:9430 -p8001:8001 -p2222:22 -p57772:57772 -d --name=cache cachevista
-   ```
-
-### Build Options
-
-#### instance
-Default: `oshera`
-
-The `instance` argument allows you to define the instance Name Space and directory inside the docker container.
-
-Example:
-
-    docker build --build-arg instance=vxvista -t vxvista .
-
-#### flags
-Default: `-c -b -s`
-
-The `flags` argument allows you to adjust which flags you want to send to the autoInstaller.sh. This includes any post install script.
-
-Example:
-
-    docker build --build-arg flags="-y -b -s -a https://github.com/OSEHRA/vxVistA-M/archive/master.zip" -t vxvista .
-
-Example:
-
-    docker build --build-arg flags="-y -b -s -p ./Common/vxvistaPostInstall.sh" -t vxvista .
-
-To see the flags that are available, execute the command 'autoInstaller.sh -h'
-
-### entry
-Default: `/home`
-
-The `entry` argument allows you to adjust where docker looks for the entryfile.
-
-Example:
-
-    docker build --build-arg entry="/opt/cachesys" -t cache .
-
-### Build Examples
+## Quick Reference for building & running images
 Default: "OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)"
 
     docker build -t osehra-vista .
@@ -133,7 +58,7 @@ vxVistA (YottaDB, no boostrap, skip testing, fix Kernel Routines and do post-ins
 
 VEHU (GTM, no bootstrap, skip testing, Panorama)
 
-    docker build --build-arg flags="-g -f -b -s -m -a https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
+    docker build --build-arg flags="-gfbsma https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=vehu vehu
 
 VEHU Plan VI (Internationalized Version) (YottaDB, UTF-8 enabled, no bootstrap, skip testing, Panorama)
@@ -143,7 +68,7 @@ VEHU Plan VI (Internationalized Version) (YottaDB, UTF-8 enabled, no bootstrap, 
 
 RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
 
-    docker build --build-arg flags="-w -f -y -b -s -a https://github.com/shabiel/FOIA-RPMS/archive/master.zip -p ./Common/rpmsPostInstall.sh" --build-arg instance="rpms" -t rpms .
+    docker build --build-arg flags="-wfybsa https://github.com/shabiel/FOIA-RPMS/archive/master.zip -p ./Common/rpmsPostInstall.sh" --build-arg instance="rpms" -t rpms .
     docker run -d -p 2222:22 -p 9100:9100 -p 9101:9101 -p 9080:9080 --name=rpms rpms
 
 Caché Install with local VistA DAT file. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the cache-files directories.
@@ -160,7 +85,7 @@ Caché Install with local DAT file to stop after exporting the code from the Cac
 When available, the system will also install a "cache.key" file when the system is built.  If it is not present, the extraction will be performed serially.
 These files need to be added to the cache-files directories.
 
-    docker build --build-arg flags="-c -b -x -p ./Common/foiaPostInstall.sh" --build-arg instance="cachevista" --build-arg entry="/opt/cachesys" -t cachevista .
+    docker build --build-arg flags="-cbsxp ./Common/foiaPostInstall.sh" --build-arg instance="cachevista" --build-arg entry="/opt/cachesys" -t cachevista .
     docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -p 9080:9080 -d -P --name=cache cachevista
 
 To capture the exported code from the container and remove the Docker objects, execute the following commands:
@@ -171,6 +96,79 @@ To capture the exported code from the container and remove the Docker objects, e
     docker rmi cachevista
 
 A [volume](https://docs.docker.com/storage/volumes/) could also be mounted to the container.
+
+### List of Ports
+The exported ports are as follows:
+
+| Docker Port | Mapped To? | Purpose         | Applicable to?    |
+| ----------- | ---------- | -------         | ----------------- |
+| 22          | 2222       | SSH             | All               |
+| 9430        | 9430       | XWB  (CPRS etc) | VistA             |
+| 8080        | 8080       | Panorama        | VistA             |
+| 8001        | 8001       | VistALink       | VistA             |
+| 9080        | 9080       | M Web Server    | VistA             |
+| 9100        | 9100       | CIA (RPMS-EHR)  | RPMS              |
+| 9101        | 9101       | BMX (iCare etc) | RPMS              |
+| 57772       | 57772      | Caché Web Portal | Caché            |
+| 1338        | 1338       | SQL Listener Port | YottaDB         |
+
+## Detailed Discussion and Reference
+As shown above, there are two steps: the build step and and run step. There
+are defaults if you don't supply arguments, which are discussed below. The
+build step runs the script [autoInstaller.sh](./autoInstaller.sh) which does
+the actual installation. Post-install scripts (supplied after the argument -p)
+allow customization of the built image.
+
+Caché will not have any pre-built images due to license restrictions.  The
+Caché install assumes that you are using a pre-built CACHE.DAT. The default
+install is done with "minimal" security.  Also, some options (EWD, Panorama,
+etc) are not valid for Caché installs and will be ignored. The Cache Steps are
+as follows:
+
+1) Copy the Caché installer (.tar.gz RHEL kit) to the root of this repository
+2) Copy your cache.key to the cache-files directory of this repository (optional)
+3) Copy your CACHE.DAT to the cache-files directory of this repository
+4) Build and run the image
+
+   ```
+   docker build --build-arg flags="-cbsp ./Common/pvPostInstall.sh" --build-arg instance="cachevista" --build-arg entry="/opt/cachesys" -t cachevista .
+   docker run -p9430:9430 -p8001:8001 -p2222:22 -p57772:57772 -d --name=cache cachevista
+   ```
+
+### Build Options
+
+[Dockerfile](./Dockerfile) options:
+
+| Option Name | Default | Description | Example |
+| ----------- | ------- | ----------- | ------- |
+| instance    | `osehra` | The `instance` argument allows you to define the instance Name Space and directory inside the docker container. MUST BE lowercase. | `docker build --build-arg instance=vxvista -t vxvista` |
+| flags       | `-y -b -e -m -p ./Common/ovydbPostInstall.sh` | Command Line arguments to [autoInstaller.sh](./autoInstaller.sh) | See table below for more details and examples above |
+| entry       | `/home` | The `entry` argument allows you to adjust where docker looks for the entryfile | `docker build --build-arg entry="/opt/cachesys" -t cache .` |
+
+[autoInstaller.sh](./autoInstaller.sh) options:
+
+| Option | Default | Description |
+| ------ | ------- | ----------- |
+| a      | https://github.com/OSEHRA/VistA-M/archive/master.zip |  Alternate VistA-M repo (zip or git format) (Must be in OSEHRA format) |
+| b      | n/a     | Skip bootstrapping system (used for docker) |
+| c      | n/a     | Use Caché |
+| d      | n/a     | Create development directories (s & p) (GT.M and YottaDB only) |
+| e      | n/a     | Install QEWD (assumes development directories) |
+| f      | n/a     | Apply Kernel-GTM fixes after import |
+| g      | n/a     | Use GT.M |
+| h      | n/a     | Show the list of options |
+| i      | osehra  | Instance name (Namespace/Database for Caché) |
+| m      | n/a     | Install Panorama (assumes development directories and QEWD) |
+| p      | n/a     | Post install hook (path to script) |
+| q      | n/a     | Install SQL mapping for YottaDB |
+| r      | n/a     | Alternate VistA-M repo branch (git format only) |
+| s      | n/a     | Skip testing |
+| u      | n/a     | Install GTM/YottaDB with UTF-8 enabled |
+| v      | n/a     | Build ViViaN Documentation |
+| w      | n/a     | Install RPMS scripts (GT.M/YDB or Caché) |
+| x      | n/a     | Extract Routines and Globals from GT.M/Caché into .m/.zwr |
+| y      | n/a     | Use YottaDB |
+| z      | n/a     | Dev Mode: Don't clean-up and set -x |
 
 
 ### Tagging an image to upload to Docker Hub
@@ -225,29 +223,16 @@ install a MUMPS environment, execute tasks to gather data, generate HTML pages, 
 set up a web server on the container to display the data.  The scripts are designed to
 take and process a M[UMPS] system that is supplied by the user in one of two formats.
 
-#### Files needed for building
-
-
 |     Platform      |                       Required Files                           |
 | :---------------: | -------------------------------------------------------------- |
-|   GT.M/YottaDB    | A .zip file which contains a folder named "VistA" which        |
-|                   | contains the GT.M  instance to generate pages from.            |
-|                   | It should contain folder named ``g`` of globals (.GLD and .DAT)|
-|                   | and a directory named ``r`` which contains the ``.m`` files    |
-|                   | for the routines.  It should be placed in the ``GTM`` directory|                                               |
-| ----------------- | -------------------------------------------------------------- |
-|     Caché         | The files used as part of the install will be used again       |
-|                   | You need to supply your own CACHE.DAT and CACHE.key and .tar.gz|
-|                   | installer for RHEL.  These files need to be added to the       |
-|                   | cache-files directories.                                       |
+|   GT.M/YottaDB    | A .zip file which contains a folder named "VistA" which contains the GT.M  instance to generate pages from. It should contain folder named ``g`` of globals (.GLD and .DAT) and a directory named ``r`` which contains the ``.m`` files for the routines.  It should be placed in the ``GTM`` directory |
+|     Caché         | The files used as part of the install will be used again. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the  cache-files directories. |
 
 
 The building of ViViaN is available to executed on all three of the platforms using the same
 arguments as above: ``-c`` for Caché, ``-y`` for YottaDB, and ``-g`` for GT.M.  Each of these
 options should be combined with the ``-v`` and ``-b`` options when the docker build command is
 instantiated.
-
-*At this point, the instance must be named "osehra".*
 
 For a Caché instance, the command would look as follows:
 
@@ -264,21 +249,23 @@ a web browser at http://localhost:3080/vivian and http://localhost:3080/vivian/f
 
 ### Post Installs that you can apply with -p flag
 
-| Script                              | What it does? |
-| ----------------------------------- | ------------- |
-| `./Common/pvPostInstall.sh`         | Generic Cache Set-up  |
-| `./Common/syntheaPostInstall.sh`    | Install Synthetic Patient Generator |
-| `./Common/vxvistaPostInstall.sh`    | vxVistA GT.M/YDB specific set-up |
-| `./Common/rpmsPostInstall.sh`       | RPMS GT.M/YDB specific set-up |
-| `./Common/foiaPostInstall.sh`       | Fix FOIA Console Set-up |
-| `./Common/ov6pi.sh`                 | Add Korean demo data for Plan VI images |
-| `./Common/ovydbPostInstall.sh`      | DO NOT USE |
-| `./Common/wvDemopi.sh`              | Create Demo Users for an instance (physician, pharmacist, and nurse) |
+| Script                              | GTM-YDB/Caché? | What it does? |
+| ----------------------------------- | ---------------| ------------- |
+| `./Common/pvPostInstall.sh`         | Caché          | FOIA VistA Cache Set-up  |
+| `./Common/syntheaPostInstall.sh`    | GTM-YDB        | Install Synthetic Patient Ingestor and FHIR Exporter |
+| `./Common/vxvistaPostInstall.sh`    | GTM-YDB        | vxVistA GT.M/YDB specific set-up |
+| `./Common/rpmsPostInstall.sh`       | GTM-YDB        | RPMS GT.M/YDB specific set-up |
+| `./Common/foiaPostInstall.sh`       | Caché          | Fix FOIA Console Set-up |
+| `./Common/ov6piko.sh`               | GTM-YDB        | Add Korean ICD-10 and Korean demo data for Plan VI images |
+| `./Common/ovydbPostInstall.sh`      | Sample Only    | DO NOT USE |
+| `./Common/wvDemopi.sh`              | GTM-YDB        | Create Demo Users for an instance (physician, pharmacist, and nurse) |
+| `./Common/foiaRPMSPostInstall.sh    | Caché          | FOIA RPMS CACHE.DAT Post-Installer |
+| `./Common/vehu6piko.sh`             | GTM-YDB        | Add Korean ICD-10 to VEHU instance |
 
 
 ### Installing SQL Mapping
 
-SQL Mapping of FileMan Files is in development at https://github.com/YottaDB/PIP. SQL Mapping is supported for YottaDB and GT.M. There are some special command line arguments that are required for proper running:
+SQL Mapping of FileMan Files is in development at https://gitlab.com/YottaDB/DBMS/YDBOcto. SQL Mapping is supported only for YottaDB. There are some special command line arguments that are required for proper running:
 
 #### Installation Command Line flag
 
@@ -287,101 +274,42 @@ Development directories are automatically installed by specifing "-q"
 
 An example build command:
 
-    docker build --build-arg flags="-y -b -e -m -q -s" --build-arg instance="osehra" -t osehrapip .
+    docker build --build-arg flags="-y -b -e -m -q -s" --build-arg instance="osehra" -t osehraocto .
 
 #### Docker run Command Line flags
 
-SQL Mapping uses POSIX message passing to perform certain operations and the Linux defaults are too small for operation. The following command line arguments are used to increase the size of the POSIX message passing parameters to support the SQL Mapping tool.
-
-    --sysctl kernel.msgmax=1048700
-    --sysctl kernel.msgmnb=65536000
-
 There is also an additional port that needs to be forwarded from the Host to the Guest:
 
-    -p 61012:61012 -p 8081:8081
+    -p 1338:1338
 
 example docker run command:
 
-    docker run -p 9430:9430 -p 8001:8001 -p 2223:22 -p 61012:61012 -p 8081:8081 -d -P --sysctl kernel.msgmax=1048700 --sysctl kernel.msgmnb=65536000 --name=osehra osehrapip
+    docker run -p 9430:9430 -p 8001:8001 -p 2223:22 -p 1338:1338 -d -P --name=osehra osehraocto
 
 #### Mapping FileMan Files
 
-Since PIP has specific environment setup that is outside the normal from VistA it isn't integrated into the "normal" environemnt and must be ran using a helper script that sets up several environment variables for C Call-Outs and configuration.
-
-    pip/dm
+All FileMan files are automatically mapped when the container is built. If you need to re-run the mapping at any point you can run the following commands:
 
 To map individual files:
 
-    OSEHRA>D MAPFM^KBBOSQL(FileNumber)
+    OSEHRA>D MAPONE^%YDBOCTOVISTAM("/path/for/ddl.sql",FileNumber)
 
 Replace FileNumber with a valid parent File Number like 200 (NEW PERSON) or 2 (PATIENT)
 
-    OSEHRA>D MAPFM^KBBOSQL(200)
+    OSEHRA>D MAPFM^%YDBOCTOVISTAM("vista-200.sql",200)
 
 Mapping all FileMan files can be accomplished by running:
 
-    OSEHRA>D MAPALL^KBBOSQL
+    OSEHRA>D MAPALL^%YDBOCTOVISTAM("/path/for/ddl.sql")
 
-Note: This will corrupt certain tables in DATA-QWIK. See PIP issue: https://github.com/YottaDB/PIP/issues/72
+Then load it using the octo command line tool:
 
-If you don't use the above script errors in the M routine will be reported such as
+    octo -f /path/for/ddl.sql
 
-    OSEHRA>D MAPFM^KBBOSQL(200)
-    %GTM-E-UNDEF, Undefined local variable: QUIT
-    At M source location CREATEMAP+19^KBBOSQL
+### QEWD passwords for non Caché installs
+Monitor: keepThisSecret!
 
-or
-
-    OSEHRA>D MAPFM^KBBOSQL(200)
-    %GTM-E-UNDEF, Undefined local variable: PARENT
-    At M source location GETPARENTS+1^KBBOSQL
-
-## Roll-and-Scroll Access for non Caché installs
-
-1) Tied VistA user:
-
-    ssh osehratied@localhost -p 2222 # subsitute worldvistatied or vxvistatied if you used one of those images
-
-password tied
-
-2) Programmer VistA user:
-
-    ssh osehraprog@localhost -p 2222 # subsitute worldvistaprog or vxvistaprog if you used one of those images
-
-password: prog
-
-3) Root access:
-
-    ssh root@localhost -p 2222
-
-password: docker
-
-## VistA Access/Verify codes for non Caché installs
-
-OSEHRA VistA:
-
-Regular doctor:
-Access Code: FakeDoc1
-Verify Code: 1Doc!@#$
-
-System Manager:
-Access Code: SM1234
-Verify Code: SM1234!!!
-
-WorldVistA:
-
-Displayed in the VistA greeting message
-
-vxVistA:
-
-Displayed in the VistA greeting message
-
-## QEWD passwords for non Caché installs
-
-Monitor:
-keepThisSecret!
-
-## Tests
+### Tests
 Deployment tests are written using [bats](https://github.com/sstephenson/bats)
 The tests make sure that deployment directories, scripts, RPC Broker, VistALink
 are all working and how they should be.
@@ -398,4 +326,3 @@ There are two special tests:
    packages of the system. It also needs to have 2 environemnt variables defined: accessCode
    and verifyCode. These should be a valid access/verify code of a system manager user
    that has access to VistALink
-
