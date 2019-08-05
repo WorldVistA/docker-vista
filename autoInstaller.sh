@@ -72,6 +72,7 @@ usage()
       -q    Install SQL mapping for YottaDB
       -r    Alternate VistA-M repo branch (git format only)
       -s    Skip testing
+      -t    Test Docker Image Using BATS
       -u    Install GTM/YottaDB with UTF-8 enabled
       -v    Build ViViaN Documentation
       -w    Install RPMS scripts (GT.M/YDB or Caché)
@@ -87,7 +88,7 @@ usage()
 EOF
 }
 
-while getopts ":ha:cbxemdufgi:vp:sr:wyqz" option
+while getopts ":ha:cbxemdufgi:vp:str:wyqz" option
 do
     case $option in
         h)
@@ -133,6 +134,9 @@ do
             ;;
         s)
             skipTests=true
+            ;;
+        t)
+            batsTests=true
             ;;
         u)
             utf8=true
@@ -201,6 +205,10 @@ if [ -z $skipTests ]; then
     skipTests=false
 fi
 
+if [ -z $batsTests ]; then
+    batsTests=false
+fi
+
 if [ -z $localVistA ]; then
     localVistA=false
 fi
@@ -256,6 +264,7 @@ echo "Installing Panorama: $installPanorama"
 echo "Installing SQL Mapping: $installSQL"
 echo "Post install hook: $postInstallScript"
 echo "Skip Testing: $skipTests"
+echo "Run BATS Tests: $batsTests"
 echo "Skip bootstrap: $bootstrap"
 echo "Use Cache: $installcache"
 echo "Use GT.M: $installgtm"
@@ -591,6 +600,21 @@ fi
 # Generate ViViaN Documentation
 if $generateViVDox; then
     $scriptdir/ViViaN/vivianInstall.sh -i $instance -s $scriptdir $extract
+fi
+
+# Bats Tests. Available only for GTM/YDB.
+if ($installgtm || $installYottaDB) && $batsTests; then
+  cd /tmp/
+  git clone https://github.com/bats-core/bats-core.git
+  cd bats-core
+  ./install.sh /usr/local
+  cd $scriptdir
+  /home/$instance/bin/start.sh &
+  START_PID=$!
+  sleep 5
+  bats tests/vista.bats
+  kill -SIGTERM $START_PID
+  sleep 5
 fi
 
 # Clean up the VistA-M source directories to save space

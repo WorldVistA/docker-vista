@@ -1,4 +1,4 @@
-KBANTCLN ; VEN/SMH - Clean Taskman Environment ;2019-08-01  2:55 PM
+KBANTCLN ; VEN/SMH - Clean Taskman Environment ;2019-08-05  2:20 PM
  ;;nopackage;0.2
  ; License: Public Domain
  ; Author not responsible for use of this routine.
@@ -237,6 +237,14 @@ MSP ; Mailman Site Parameters Clean-up
  QUIT
  ;
 DEVCLEAN ; Device Cleanup
+ D DEVVOL
+ D DEVNULL
+ D DEVHFS
+ D DEVTTY
+ D DEVPTS
+ D DEVZERO
+ QUIT
+ ;
 DEVVOL ; Delete Volume field for each device.
  N KBANI S KBANI=0
  N KBANFDA
@@ -244,6 +252,7 @@ DEVVOL ; Delete Volume field for each device.
  N KBANERR
  D FILE^DIE("",$NA(KBANFDA),$NA(KBANERR))
  I $D(KBANERR) S $EC=",U1,"
+ QUIT
  ;
 DEVNULL ; Fix up null devices
  D FIND^DIC(3.5,,,"PQM","NULL")
@@ -278,6 +287,7 @@ DEVNULL ; Fix up null devices
  N ERR
  D UPDATE^DIE("E",$NA(FDA),,$NA(ERR))
  I $D(DIERR) ZWRITE ERR
+ QUIT
  ;
 DEVHFS ; Fix up HFS device
  N OS S OS=$$VERSION^%ZOSV(1)
@@ -302,6 +312,7 @@ DEVHFS ; Fix up HFS device
  N ERR
  D UPDATE^DIE("E",$NA(FDA),,$NA(ERR))
  I $D(DIERR) ZWRITE ERR
+ QUIT
  ;
 DEVTTY ; Fix TTY
  N OS S OS=$$VERSION^%ZOSV(1)
@@ -328,6 +339,7 @@ DEVTTY ; Fix TTY
  S FDA(3.5,IENS,1.95)=1           ; SIGN-ON/SYSTEM DEVICE
  D FILE^DIE(,$NA(FDA),$NA(ERR))
  I $D(DIERR) ZWRITE ERR B
+ QUIT
  ;
 DEVPTS ; Fix PTS
  N OS S OS=$$VERSION^%ZOSV(1)
@@ -350,6 +362,30 @@ DEVPTS ; Fix PTS
  e  D UPDATE^DIE("E",$NA(FDA),$NA(IEN),$NA(ERR)) S IENS=IEN(1)_","
  I $D(DIERR) ZWRITE ERR B
  ;
+ N FDA,ERR
+ S FDA(3.5,IENS,1.95)=1           ; SIGN-ON/SYSTEM DEVICE
+ D FILE^DIE(,$NA(FDA),$NA(ERR))
+ I $D(DIERR) ZWRITE ERR B
+ QUIT
+ ;
+DEVZERO ; Fix ZERO Device
+ ; (only needed for Unit Tests from Bash and Web Server)
+ ; GT.M Sets $Principal to 0 in HEREDOCS and jobbed off processes
+ N zeroIEN s zeroIEN=$$FIND1^DIC(3.5,,"MQX",0)
+ ;
+ i zeroIEN S IENS=zeroIEN_","
+ e  s IENS="+1,"
+ N FDA
+ if 'zeroIEN do
+ . S FDA(3.5,IENS,.01)="SLAVE DEVICE"
+ . S FDA(3.5,IENS,.02)="SLAVE"              ; LOCATION
+ . S FDA(3.5,IENS,1)=0                      ; $I
+ . S FDA(3.5,IENS,2)="TERMINAL"             ; TYPE
+ . S FDA(3.5,IENS,4)=1                      ; ASK DEVICE
+ . S FDA(3.5,IENS,3)="`"_$$FIND1^DIC(3.2,,"XQ","P-OTHER") ; TERMINAL TYPE
+ . N ERR,IEN
+ . D UPDATE^DIE("E",$NA(FDA),$NA(IEN),$NA(ERR)) S IENS=IEN(1)_","
+ . I $D(DIERR) ZWRITE ERR B
  N FDA,ERR
  S FDA(3.5,IENS,1.95)=1           ; SIGN-ON/SYSTEM DEVICE
  D FILE^DIE(,$NA(FDA),$NA(ERR))
