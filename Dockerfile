@@ -3,6 +3,8 @@ FROM centos
 RUN echo "multilib_policy=best" >> /etc/yum.conf
 RUN yum  -y update && \
     yum install -y \
+                   coreutils \
+                   util-linux \
                    gcc-c++ \
                    git \
                    xinetd \
@@ -22,13 +24,18 @@ RUN yum  -y update && \
                    which \
                    file \
                    unzip \
-                   lsof \
                    net-tools \
                    java-devel \
                    libicu \
                    libicu-devel \
                    recode \
                    bzip2 \
+                   lsof \
+                   openssl \
+                   gzip \
+                   vim \
+                   bind-utils \
+                   perl-Digest-SHA \
                    || true && \
     yum install -y http://libslack.org/daemon/download/daemon-0.6.4-1.i686.rpm > /dev/null && \
     package-cleanup --cleandupes && \
