@@ -498,11 +498,18 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
       #
       su $instance -c "source $basedir/etc/env && mkdir -p $basedir/Dashboard"
       cd $basedir/Dashboard
+
+      echo "Installing pip"
+      curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+      python get-pip.py
+
       echo "Downloading OSEHRA VistA Tester Repo"
       curl -fsSL --progress-bar https://github.com/OSEHRA/VistA/archive/master.zip -o VistA-master.zip
+      #curl -fsSL --progress-bar https://github.com/josephsnyder/VistA/archive/master.zip -o VistA-master.zip # for testing only!
+      dir=$(zipinfo -1 VistA-master.zip | head -1 | cut -d/ -f1)
       unzip -q VistA-master.zip
       rm VistA-master.zip
-      mv VistA-master VistA
+      mv $dir VistA
       mv /usr/local/src/VistA-Source ./VistA-M
 
       # create random string for build identification
