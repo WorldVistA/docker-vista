@@ -38,12 +38,7 @@
     [ -e /home/${instance}/bin/start.sh ]
 }
 
-@test "GT.M installation exist" {
-    # does it exist globally?
-    # Only checks key files
-    [ -d /opt/lsb-gtm/${gtmver} ]
-    [ -e /opt/lsb-gtm/${gtmver}/mumps ]
-    [ -e /opt/lsb-gtm/${gtmver}/mupip ]
+@test "GT.M/YDB installation exist" {
 
     # does it exist in the instance?
     [ -e /home/${instance}/lib/gtm/mumps ]
@@ -52,7 +47,7 @@
 }
 
 @test "relink control permissions" {
-    gtmrelinkctl=$(ls -1 /home/${instance}/tmp/gtm-relinkctl-*)
+    gtmrelinkctl=$(ls -1 /home/${instance}/tmp/*-relinkctl-* | head -1)
     [ -e ${gtmrelinkctl} ]
     [ "$(stat -c %a ${gtmrelinkctl})" -eq "664" ]
 }
@@ -61,7 +56,7 @@
     [ -e /root/fifo ]
 }
 
-@test "GT.M install works as intended" {
+@test "GT.M/YDB install works as intended" {
     # Test the intreperter
     [[ "$(mumps -run %XCMD 'W "Hello World"')" == "Hello World" ]]
     # Test datbase set
@@ -76,13 +71,13 @@ INQ
 
 EOF
 )
-    [ $(expr "$output" : ".*Fileman.*") -ne 0 ]
+    [ $(expr "$output" : ".*File.*") -ne 0 ]
 }
 
 @test "RPC Broker connection works" {
     run mumps -run %XCMD 'D HOME^%ZIS W $$TEST^XWBTCPMT("127.0.0.1",9430,1)'
     echo "output :"$output
-    [ $(expr "$output" : "1^accept.*") -ne 0 ]
+    [ $(expr "$output" : ".*1^accept.*") -ne 0 ]
 }
 
 @test "VistALink connection works" {
@@ -91,24 +86,32 @@ EOF
     run java -version
     [ $(expr "$output" : ".*1.8.*") -ne 0 ]
     pushd /tmp
+    rm -rf vistalink-tester-for-linux-master
     curl -LO https://github.com/shabiel/vistalink-tester-for-linux/archive/master.zip
-    unzip master.zip
+    unzip -q master.zip
     rm -f master.zip
-    export CLASSPATH=./geronimo-j2ee-connector_1.5_spec-1.0.1.jar
-    export CLASSPATH=${CLASSPATH}:./log4j-1.2.13.jar
-    export CLASSPATH=${CLASSPATH}:./vljConnector-1.6.0.028.jar
-    export CLASSPATH=${CLASSPATH}:./vljFoundationsLib-1.6.0.028.jar
-    export CLASSPATH=${CLASSPATH}:./vljSecurity-1.6.0.028.jar
-    export CLASSPATH=${CLASSPATH}:./vljSamples-1.6.0.028.jar
     cd vistalink-tester-for-linux-master/samples-J2SE/
     echo 'LocalServer {' > jaas1.config
     echo '    gov.va.med.vistalink.security.VistaLoginModule requisite' >> jaas1.config
     echo '    gov.va.med.vistalink.security.ServerAddressKey="127.0.0.1"' >> jaas1.config
     echo '    gov.va.med.vistalink.security.ServerPortKey="8001";' >> jaas1.config
     echo '};' >> jaas1.config
-    output=$(java -Djava.security.auth.login.config="./jaas1.config" -cp $CLASSPATH gov.va.med.vistalink.samples.VistaLinkRpcConsole -s LocalServer -a ${accessCode} -v ${verifyCode})
-    echo "output: "$output
+
+    accessCode=$(mumps -r ^%XCMD 'W $P(^VA(200,1,0),"^",3)')
+    verifyCode=$(mumps -r ^%XCMD 'W $P(^VA(200,1,.1),"^",2)')
+    if [[ -z "$accessCode" || -z "$verifyCode" ]]; then
+       loopdone=false
+       accessCode=""
+       while ! $loopdone ; do
+          accessCode=$(mumps -r ^%XCMD 'W $O(^VA(200,"A","'${accessCode}'"),-1)')
+          ien=$(mumps -r ^%XCMD 'W $O(^VA(200,"A","'${accessCode}'",""))')
+          verifyCode=$(mumps -r ^%XCMD 'W $P(^VA(200,'${ien}',.1),"^",2)')
+          if ! [[ -z "$accessCode" || -z "$verifyCode" ]]; then loopdone=true; fi
+       done
+    fi
+
+    run java -Djava.security.auth.login.config="./jaas1.config" -cp "./*" gov.va.med.vistalink.samples.VistaLinkRpcConsole -s LocalServer -a ${accessCode} -v ${verifyCode}
     cd ../..
     rm -rf vistalink-tester-for-linux-master
-    [ $(expr "$output" : ".*Successful.*Gettysburg.*") -ne 0 ]
+    [ $(expr "$output" : ".*sending AV.GetUserDemographics.*") -ne 0 ]
 }
