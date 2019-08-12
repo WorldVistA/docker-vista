@@ -49,8 +49,7 @@ fi
 
 yum install -y httpd graphviz java-1.8.0-openjdk-devel php
 curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && \
-    python get-pip.py && \
-    pip install xlrd reportlab
+    python get-pip.py
 # cp $scriptdir/ViViaN/viv.conf /etc/httpd/conf.d
 
 if [[ -f /home/$instance/etc/env ]]; then
@@ -116,6 +115,9 @@ mv VistA-master VistA
 echo "Generating VistA-M-like directory"
 mkdir -p /opt/VistA-M/Packages
 cp /opt/VistA/Packages.csv /opt/VistA-M/
+
+# Install requirements from Testing repository
+pip install -r /opt/VistA/requirements.txt
 
 #  Export first so the configuration can find the correct files to query for
 echo "Starting VistAMComponentExtractor at:" $(timestamp)
