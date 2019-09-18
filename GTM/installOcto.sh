@@ -118,11 +118,9 @@ echo "*                soft    stack           unlimited" >> /etc/security/limit
 echo "// Specifies the verbosity for logging; options are TRACE, INFO, DEBUG, WARNING, ERROR, and FATAL" > $basedir/octo.conf
 echo 'verbosity = "WARNING"'                                                                             >> $basedir/octo.conf
 echo "// Location to cache generated M routines which represent queries"                                 >> $basedir/octo.conf
-echo 'routine_cache = "'$basedir'/octoroutines"'                                                         >> $basedir/octo.conf
+echo 'octo_zroutines = "'$basedir'/octoroutines"'                                                        >> $basedir/octo.conf
 echo "// Global directory to use for Octo globals; if not present, we use the ydb_gbldir"                >> $basedir/octo.conf
 echo '//octo_global_directory = "'$basedir'/g/'$instance'.gld"'                                          >> $basedir/octo.conf
-echo "// Prefixed to all Octo globals"                                                                   >> $basedir/octo.conf
-echo 'octo_global_prefix = "%ydbocto"'                                                                   >> $basedir/octo.conf
 echo ""                                                                                                  >> $basedir/octo.conf
 echo "// Settings related to the octod process"                                                          >> $basedir/octo.conf
 echo "rocto = {"                                                                                         >> $basedir/octo.conf
@@ -145,13 +143,5 @@ EOF
 > $basedir/log/OctoMapFiles.log 2>&1"
 su $instance -c "source $basedir/etc/env && octo -f vista-new.sql > $basedir/log/OctoImport.log 2>&1"
 echo "Done Mapping VistA data to Octo"
-
-echo "Kill global to preven SquirrelSQL from hanging"
-su $instance -c "source $basedir/etc/env && \$gtm_dist/mumps -dir << EOF
-kill ^%ydboctoschema(\"PG_CATALOG.PG_ATTRDEF\")
-
-EOF
-> $basedir/log/OctoUserAdd.log 2>&1"
-echo "Done Kill global to preven SquirrelSQL from hanging"
 
 echo "Done installing Octo"
