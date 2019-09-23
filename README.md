@@ -3,8 +3,6 @@ Code in this repository enables you to create VistA or RPMS instances on
 Caché or GT.M/YottaDB.  A working [Docker](https://www.docker.com/community-edition#/download) installation on
 the platform of choice is required in order to be able to create instances.
 
-NB: Octo SQL Access information is included here, but is not currently
-available yet. It will be soon.
 
 # Table of Contents
 
@@ -265,8 +263,10 @@ a web browser at http://localhost:3080/vivian and http://localhost:3080/vivian/f
 | `./Common/vehu6piko.sh`             | GTM-YDB        | Add Korean ICD-10 to VEHU instance |
 
 ### Installing SQL Mapping
-
-SQL Mapping of FileMan Files is in development at https://gitlab.com/YottaDB/DBMS/YDBOcto. SQL Mapping is supported only for YottaDB. There are some special command line arguments that are required for proper running:
+SQL Mapping of FileMan Files is in development at
+https://gitlab.com/YottaDB/DBMS/YDBOcto. SQL Mapping is supported only for
+YottaDB. There are some special command line arguments that are required for
+proper running:
 
 #### Installation Command Line flag
 
@@ -312,46 +312,6 @@ Then load it using the octo command line tool:
 [SquirrelSQL](http://www.squirrelsql.org) is the preferred client to use with Octo as that is what is used in
 development and testing. Other clients may have varying degress of success connecting to Octo due to certain
 queries sent by the tool.
-
-## Roll-and-Scroll Access for non Caché installs
-
-1) Tied VistA user:
-
-    ssh osehratied@localhost -p 2222 # subsitute worldvistatied or vxvistatied if you used one of those images
-
-password tied
-
-2) Programmer VistA user:
-
-    ssh osehraprog@localhost -p 2222 # subsitute worldvistaprog or vxvistaprog if you used one of those images
-
-password: prog
-
-3) Root access:
-
-    ssh root@localhost -p 2222
-
-password: docker
-
-## VistA Access/Verify codes for non Caché installs
-
-OSEHRA VistA:
-
-Regular doctor:
-Access Code: FakeDoc1
-Verify Code: 1Doc!@#$
-
-System Manager:
-Access Code: SM1234
-Verify Code: SM1234!!!
-
-WorldVistA:
-
-Displayed in the VistA greeting message
-
-vxVistA:
-
-Displayed in the VistA greeting message
 
 ## QEWD passwords for non Caché installs
 
