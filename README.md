@@ -54,9 +54,9 @@ vxVistA (YottaDB, no boostrap, skip testing, fix Kernel Routines and do post-ins
     docker build --build-arg flags="-ybsfa https://github.com/OSEHRA/vxVistA-M/archive/master.zip -p ./Common/vxvistaPostInstall.sh" --build-arg instance="vxvista" -t vxvista .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 9080:9080 --name=vxvista vxvista
 
-VEHU (GTM, no bootstrap, skip testing, Panorama)
+VEHU (YottaDB, no bootstrap, skip testing, Panorama, SQL Access, BATS Test)
 
-    docker build --build-arg flags="-gfbsma https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
+    docker build --build-arg flags="-ybsmtqa https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=vehu vehu
 
 VEHU Plan VI (Internationalized Version) (YottaDB, UTF-8 enabled, no bootstrap, skip testing, Panorama)
@@ -163,6 +163,7 @@ as follows:
 | q      | n/a     | Install SQL mapping for YottaDB |
 | r      | n/a     | Alternate VistA-M repo branch (git format only) |
 | s      | n/a     | Skip testing |
+| t      | n/a     | Run BATS Tests |
 | u      | n/a     | Install GTM/YottaDB with UTF-8 enabled |
 | v      | n/a     | Build ViViaN Documentation |
 | w      | n/a     | Install RPMS scripts (GT.M/YDB or Caché) |
