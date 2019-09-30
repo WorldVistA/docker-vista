@@ -1,0 +1,13 @@
+service vista-hl7
+{
+  port = 5030
+  socket_type = stream
+  protocol = tcp
+  type = UNLISTED
+  user = foia
+  server = /home/foia/bin/hl7.sh
+  wait = no
+  disable = no
+  per_source = UNLIMITED
+  instances = UNLIMITED
+}
