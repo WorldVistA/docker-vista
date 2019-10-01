@@ -1,4 +1,4 @@
-KBANTCLN ; VEN/SMH - Clean Taskman Environment ;2019-08-05  2:20 PM
+KBANTCLN ; VEN/SMH - Clean Taskman Environment ;2019-10-01  2:11 PM
  ;;nopackage;0.2
  ; License: Public Domain
  ; Author not responsible for use of this routine.
@@ -403,6 +403,8 @@ F19P2OPT ; Map: Option Name; Startup or time to schedule; resched freq; OS-speci
  ;;XUDEV RES-CLEAR^S
  ;;XOBV LISTENER STARTUP^S
  ;;XMMGR-START-BACKGROUND-FILER^S
+ ;;HL AUTOSTART LINK MANAGER^S
+ ;;HL TASK RESTART^S
  ;;XMAUTOPURGE^T+1@0010^1D
  ;;XMCLEAN^T+1@0015^1D
  ;;XQBUILDTREEQUE^T+1@0020^1D
@@ -410,6 +412,7 @@ F19P2OPT ; Map: Option Name; Startup or time to schedule; resched freq; OS-speci
  ;;XUERTRP AUTO CLEAN^T+1@0030^1D
  ;;XUTM QCLEAN^T+1@0035^1D
  ;;XMMGR-PURGE-AI-XREF^T+1@0040^1D
+ ;;HL PURGE TRANSMISSIONS^T+1@0045^1D
  ;;<<END>>
  ;;
 SOFTCLN ; [Private] Soft clean tasks -- don't delete them as in a brand new system

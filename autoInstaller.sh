@@ -541,7 +541,7 @@ fi
 
 if $installgtm || $installYottaDB; then
     echo "Fixing HL7 Port"
-    (source $basedir/etc/env && $basedir/bin/fixHL7Port.sh)
+    su $instance -c "source $basedir/etc/env && $scriptdir/GTM/fixHL7Port.sh"
 fi
 
 # Enable journaling

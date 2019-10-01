@@ -13,4 +13,4 @@ echo "$$  ${gtm_dist}/mumps -run GTMLNX^HLCSGTM"                >>  ${LOG}
 
 ${gtm_dist}/mumps -run GTMLNX^HLCSGTM                          2>>  ${LOG}
 echo "$$  HL7 Listner stopped with exit code $?"                >>  ${LOG}
-echo "$$ Job ended `date`"
+echo "$$ Job ended `date`"                                      >>  ${LOG}

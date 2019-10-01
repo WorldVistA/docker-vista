@@ -1,6 +1,6 @@
 service vista-hl7
 {
-  port = 5030
+  port = 5001
   socket_type = stream
   protocol = tcp
   type = UNLISTED
