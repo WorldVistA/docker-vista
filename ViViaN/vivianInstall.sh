@@ -49,7 +49,7 @@ fi
 
 yum install -y httpd graphviz java-1.8.0-openjdk-devel php
 curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && \
-    python get-pip.py
+    python3 get-pip.py
 # cp $scriptdir/ViViaN/viv.conf /etc/httpd/conf.d
 
 if [[ -f /home/$instance/etc/env ]]; then
@@ -121,7 +121,7 @@ pip install -r /opt/VistA/requirements.txt
 
 #  Export first so the configuration can find the correct files to query for
 echo "Starting VistAMComponentExtractor at:" $(timestamp)
-python /opt/VistA/Scripts/VistAMComponentExtractor.py $connectionArg -r /opt/VistA-M/ -o /tmp/ -l /tmp/ $serialExport
+python3 /opt/VistA/Scripts/VistAMComponentExtractor.py $connectionArg -r /opt/VistA-M/ -o /tmp/ -l /tmp/ $serialExport
 echo "Ending VistAMComponentExtractor at:" $(timestamp)
 # Uncomment to debug VistAMComponentExtractor
 # @TODO Make debugging a script option
@@ -158,6 +158,6 @@ mv Product-Management-master /var/www/vivian
 ln -s /var/www/vivian/Visual /var/www/html/vivian
 ln -s /opt/viv-out/ /var/www/html/vivian/files
 pushd /var/www/html/vivian/scripts
-python setup.py
+python3 setup.py
 chown -R apache:apache /var/www/html
 rm /etc/httpd/conf.d/welcome.conf
