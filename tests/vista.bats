@@ -115,3 +115,8 @@ EOF
     rm -rf vistalink-tester-for-linux-master
     [ $(expr "$output" : ".*sending AV.GetUserDemographics.*") -ne 0 ]
 }
+
+@test "HL7 Listener works" {
+    run mumps -run %XCMD 'D CALL^%ZISTCP("127.0.0.1",5001) U IO W $C(11)_"MSH^PING^OSEHRA"_$C(10,28,13) R X:1 C IO U 0 W X'
+    [ $(expr "$output" : ".*OSEHRA.*") -ne 0 ]
+}
