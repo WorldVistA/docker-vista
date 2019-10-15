@@ -1,4 +1,4 @@
-FROM centos
+FROM centos:7
 
 RUN echo "multilib_policy=best" >> /etc/yum.conf
 RUN yum update  -y && \
