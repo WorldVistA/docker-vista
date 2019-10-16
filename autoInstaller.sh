@@ -539,6 +539,11 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
 
 fi
 
+if $installgtm || $installYottaDB; then
+    echo "Fixing HL7 Port"
+    su $instance -c "source $basedir/etc/env && $scriptdir/GTM/fixHL7Port.sh"
+fi
+
 # Enable journaling
 if $installgtm || $installYottaDB; then
     su $instance -c "source $basedir/etc/env && $basedir/bin/enableJournal.sh"

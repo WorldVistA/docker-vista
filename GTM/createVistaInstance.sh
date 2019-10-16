@@ -173,6 +173,7 @@ perl -pi -e 's/foia/'$instance'/g' $basedir/etc/init.d/vista
 # Create symbolic link to enable brokers
 ln -s $basedir/etc/xinetd.d/vista-rpcbroker /etc/xinetd.d/$instance-vista-rpcbroker
 ln -s $basedir/etc/xinetd.d/vista-vistalink /etc/xinetd.d/$instance-vista-vistalink
+ln -s $basedir/etc/xinetd.d/vista-hl7 /etc/xinetd.d/$instance-vista-hl7
 if $rpmsScripts; then
     ln -s $basedir/etc/xinetd.d/vista-bmxnet /etc/xinetd.d/$instance-vista-bmxnet
     ln -s $basedir/etc/xinetd.d/vista-cia /etc/xinetd.d/$instance-vista-cia
