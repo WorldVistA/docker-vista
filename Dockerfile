@@ -11,6 +11,7 @@ RUN yum update  -y && \
                    perl \
                    curl \
                    python \
+                   python3 \
                    openssh-server \
                    openssh-clients \
                    expect \
