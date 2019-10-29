@@ -510,7 +510,7 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
 
       echo "Installing pip"
       curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
-      python get-pip.py
+      python3 get-pip.py
 
       echo "Downloading OSEHRA VistA Tester Repo"
       curl -fsSL --progress-bar https://github.com/OSEHRA/VistA/archive/master.zip -o VistA-master.zip
