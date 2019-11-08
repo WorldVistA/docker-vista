@@ -10,13 +10,11 @@ RUN yum update  -y && \
                    xinetd \
                    perl \
                    curl \
-                   python \
                    python3 \
                    openssh-server \
                    openssh-clients \
                    expect \
                    man \
-                   python-argparse \
                    sshpass \
                    wget \
                    make \
