@@ -109,9 +109,10 @@ echo "Acquiring DBIA/ICR Information from https://foia-vista.osehra.org/VistA_In
 curl -fsSL --progress-bar https://foia-vista.osehra.org/VistA_Integration_Agreement/2019_September_10_IA_Listing_Descriptions.TXT -o ICRDescription.txt
 echo "Downloading OSEHRA VistA Testing Repository"
 curl -fsSL --progress-bar https://github.com/OSEHRA/VistA/archive/master.zip -o VistA-master.zip
+dir=$(zipinfo -1 VistA-master.zip | head -1 | cut -d/ -f1)
 unzip -q VistA-master.zip
 rm VistA-master.zip
-mv VistA-master VistA
+mv $dir VistA
 echo "Generating VistA-M-like directory"
 mkdir -p /opt/VistA-M/Packages
 cp /opt/VistA/Packages.csv /opt/VistA-M/
@@ -156,7 +157,6 @@ unzip -q vivian-master.zip
 rm vivian-master.zip
 mv Product-Management-master /var/www/vivian
 ln -s /var/www/vivian/Visual /var/www/html/vivian
-ln -s /opt/viv-out/ /var/www/html/vivian/files
 pushd /var/www/html/vivian/scripts
 python3 setup.py
 chown -R apache:apache /var/www/html
