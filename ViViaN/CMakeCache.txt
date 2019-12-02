@@ -80,7 +80,7 @@ DOCUMENT_VISTA:BOOL=ON
 DOCUMENT_VISTA_M_DIR:PATH=/opt/VistA-M
 
 //Path to the directory where ViViaN and DOX files will be generated
-DOCUMENT_VISTA_OUTPUT_DIR:PATH=/opt/viv-out
+DOCUMENT_VISTA_OUTPUT_DIR:PATH=/var/www/html
 
 //Path to a program.
 DOT_EXECUTABLE:FILEPATH=/usr/bin/dot
