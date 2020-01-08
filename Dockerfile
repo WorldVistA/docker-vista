@@ -69,6 +69,8 @@ ARG flags="-y -b -e -m -p ./Common/ovydbPostInstall.sh"
 ARG entry="/home"
 ENV entry_path="${entry}/${instance_name}"
 ENV install_flags="$flags -i ${instance_name}"
+ENV LC_ALL='en_US.ISO8859-1'
+
 
 RUN dos2unix /opt/vista/* >/dev/null 2>&1 && \
     dos2unix /opt/vista/Cache/* >/dev/null 2>&1 && \
