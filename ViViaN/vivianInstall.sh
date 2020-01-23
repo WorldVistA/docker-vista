@@ -152,12 +152,12 @@ echo "Ending CTest at:" $(timestamp)
 # =====================================================
 # Clone ViViaN repository
 echo "Cloning ViViaN Repository"
-curl -fsSL --progress-bar https://github.com/OSEHRA-Sandbox/Product-Management/archive/master.zip -o vivian-master.zip
+curl -fsSL --progress-bar https://github.com/OSEHRA/vivian/archive/master.zip -o vivian-master.zip
+dir=$(zipinfo -1 vivian-master.zip | head -1 | cut -d/ -f1)
 unzip -q vivian-master.zip
 rm vivian-master.zip
-mv Product-Management-master /var/www/vivian
-ln -s /var/www/vivian/Visual /var/www/html/vivian
+mv $dir /var/www/html/vivian
 pushd /var/www/html/vivian/scripts
-python3 setup.py
+python3 setup.py -fd /var/www/html/vivian-data -dd /var/www/html/dox
 chown -R apache:apache /var/www/html
 rm /etc/httpd/conf.d/welcome.conf
