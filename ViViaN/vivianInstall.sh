@@ -99,16 +99,16 @@ fi
 awk -v n=5 -v s='echo "Starting Apache"' 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
 awk -v n=6 -v s="/usr/sbin/apachectl" 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
 # Fix start.sh permissions
-chown cacheusr$instance:cachegrp$instance $basedir/bin/start.sh
+chown cacheusr:cachegrp $basedir/bin/start.sh
 chmod +x $basedir/bin/start.sh
 
 mkdir -p /opt/VistA-docs
 mkdir -p /opt/viv-out
 pushd /opt
-echo "Acquiring DBIA/ICR Information from https://foia-vista.osehra.org/VistA_Integration_Agreement/"
-curl -fsSL --progress-bar https://foia-vista.osehra.org/VistA_Integration_Agreement/2020_January_14_IA_Listing_Descriptions.TXT -o ICRDescription.txt
+echo "Acquiring DBIA/ICR Information from https://foia-vista.worldvista.org/VistA_Integration_Agreement/"
+curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2020_January_14_IA_Listing_Descriptions.TXT -o ICRDescription.txt
 echo "Downloading OSEHRA VistA Testing Repository"
-curl -fsSL --progress-bar https://github.com/OSEHRA/VistA/archive/master.zip -o VistA-master.zip
+curl -fsSL --progress-bar https://github.com/WorldVistA/VistA/archive/master.zip -o VistA-master.zip
 dir=$(zipinfo -1 VistA-master.zip | head -1 | cut -d/ -f1)
 unzip -q VistA-master.zip
 rm VistA-master.zip
@@ -152,7 +152,7 @@ echo "Ending CTest at:" $(timestamp)
 # =====================================================
 # Clone ViViaN repository
 echo "Cloning ViViaN Repository"
-curl -fsSL --progress-bar https://github.com/OSEHRA/vivian/archive/master.zip -o vivian-master.zip
+curl -fsSL --progress-bar https://github.com/WorldVistA/vivian/archive/master.zip -o vivian-master.zip
 dir=$(zipinfo -1 vivian-master.zip | head -1 | cut -d/ -f1)
 unzip -q vivian-master.zip
 rm vivian-master.zip
