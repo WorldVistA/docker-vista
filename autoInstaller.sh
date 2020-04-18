@@ -48,7 +48,7 @@ usage()
     or YottaDB on RHEL-like Distros
 
     DEFAULTS:
-      Alternate VistA-M repo = https://github.com/OSEHRA/VistA-M.git
+      Alternate VistA-M repo = https://github.com/WorldVistA/VistA-M.git
       Install EWD.js = false
       Create Development Directories = false
       Instance Name = OSEHRA
@@ -166,7 +166,7 @@ done
 
 # Set defaults for options
 if [[ -z $repoPath ]]; then
-    repoPath="https://github.com/OSEHRA/VistA-M/archive/master.zip"
+    repoPath="https://github.com/WorldVistA/VistA-M/archive/master.zip"
 fi
 
 if [[ -z $bootstrap ]]; then
@@ -343,11 +343,11 @@ if $bootstrap; then
 fi
 
 # Clone repos - Dashboard
-if ! $skipTests; then
-    cd /usr/local/src
-    rm -rf VistA-Dashboard
-    git clone -q https://github.com/OSEHRA-Sandbox/VistA -b dashboard VistA-Dashboard
-fi
+#if ! $skipTests; then
+#    cd /usr/local/src
+#    rm -rf VistA-Dashboard
+#    git clone -q https://github.com/OSEHRA-Sandbox/VistA -b dashboard VistA-Dashboard
+#fi
 
 # See if vagrant folder exists if it does use it. if it doesn't clone the repo
 if [ -d /vagrant ]; then
@@ -365,7 +365,7 @@ else
         if $localVistARepo; then
            scriptdir=$parentDir
         else
-           git clone -q https://github.com/OSEHRA/VistA
+           git clone -q https://github.com/WorldVistA/VistA
            scriptdir=/usr/local/src/VistA/Scripts/Install
         fi
     else
@@ -513,7 +513,7 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
       python3 get-pip.py
 
       echo "Downloading OSEHRA VistA Tester Repo"
-      curl -fsSL --progress-bar https://github.com/OSEHRA/VistA/archive/master.zip -o VistA-master.zip
+      curl -fsSL --progress-bar https://github.com/WorldVistA/VistA/archive/master.zip -o VistA-master.zip
       #curl -fsSL --progress-bar https://github.com/josephsnyder/VistA/archive/master.zip -o VistA-master.zip # for testing only!
       dir=$(zipinfo -1 VistA-master.zip | head -1 | cut -d/ -f1)
       unzip -q VistA-master.zip
