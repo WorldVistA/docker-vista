@@ -485,7 +485,7 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
 
       if $kernelGTMFixes; then
         # Get GT.M Optimized Routines from Kernel-GTM project and unzip
-        curl -fsSLO --progress-bar https://github.com/shabiel/Kernel-GTM/releases/download/XU-8.0-10004/virgin_install.zip
+        curl -fsSLO --progress-bar https://github.com/shabiel/Kernel-GTM/releases/download/XU-8.0-10006/virgin_install.zip
 
         # Unzip file, put routines, delete old objects
         su $instance -c "unzip -qo virgin_install.zip -d $basedir/r/"
