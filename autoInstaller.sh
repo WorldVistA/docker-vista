@@ -166,7 +166,7 @@ done
 
 # Set defaults for options
 if [[ -z $repoPath ]]; then
-    repoPath="https://github.com/WorldVistA/VistA-M/archive/master.zip"
+    repoPath="https://github.com/WorldVistA/VistA-M/archive/foia.zip"
 fi
 
 if [[ -z $bootstrap ]]; then
