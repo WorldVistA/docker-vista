@@ -342,13 +342,6 @@ if $bootstrap; then
     systemctl start firewalld
 fi
 
-# Clone repos - Dashboard
-#if ! $skipTests; then
-#    cd /usr/local/src
-#    rm -rf VistA-Dashboard
-#    git clone -q https://github.com/OSEHRA-Sandbox/VistA -b dashboard VistA-Dashboard
-#fi
-
 # See if vagrant folder exists if it does use it. if it doesn't clone the repo
 if [ -d /vagrant ]; then
     scriptdir=/vagrant
@@ -445,7 +438,6 @@ if $installgtm || $installYottaDB; then
 fi
 
 if (($installgtm || $installYottaDB) && ! $generateViVDox); then
-
   echo "Getting the VistA-M Source Code"
   pushd /usr/local/src
   if [[ $repoPath == *.git ]]; then
@@ -462,6 +454,10 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
       rm VistA-M-master.zip
       mv $dir VistA-Source
   fi
+
+  # Remove Audit files
+  echo "Removing Audit files..."
+  find VistA-Source -name '*AUDIT*.zwr' -delete
 
   # Make routines/globals importable if UTF-8
   if $utf8; then
@@ -482,29 +478,16 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
       export devMode       # Send this guy down
       su $instance -c "source $basedir/etc/env && $scriptdir/GTM/importVistA.sh"
       export -n devMode    # and not any further!
-
-      if $kernelGTMFixes; then
-        # Get GT.M Optimized Routines from Kernel-GTM project and unzip
-        curl -fsSLO --progress-bar https://github.com/shabiel/Kernel-GTM/releases/download/XU-8.0-10006/virgin_install.zip
-
-        # Unzip file, put routines, delete old objects
-        su $instance -c "unzip -qo virgin_install.zip -d $basedir/r/"
-        su $instance -c "unzip -l virgin_install.zip | awk '{print \$4}' | grep '\.m' | sed 's/.m/.o/' | xargs -i rm -fv r/$gtmver/{}"
-        su $instance -c "rm -fv r/$gtmver/_*.o && rm -f virgin_install.zip"
-      fi
-
-      # Get the Auto-configurer for VistA/RPMS and run
-      mv $scriptdir/Common/KBANTCLN.m $basedir/r/
-      chown $instance:$instance $basedir/r/KBANTCLN.m
-
-      # Run the auto-configurer accepting the defaults
-      su $instance -c "source $basedir/etc/env && mumps -run START^KBANTCLN"
   else
       # Build a dashboard and run the tests to verify installation
       # These use the Dashboard branch of the VistA repository
-      # The dashboard will clone VistA and VistA-M repos
-      # run this as the $instance user
       #
+      # Clone repos - Dashboard
+      echo "Cloning Dashboard..."
+      cd /usr/local/src
+      rm -rf VistA-Dashboard
+      git clone -q https://github.com/WorldVistA/VistA -b dashboard VistA-Dashboard
+
       su $instance -c "source $basedir/etc/env && mkdir -p $basedir/Dashboard"
       cd $basedir/Dashboard
 
@@ -532,21 +515,36 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
       echo "Your build id is: $buildid you will need this to identify your build on the VistA dashboard"
   fi
 
+  if $kernelGTMFixes; then
+    echo "Kernel Fixes for GT.M/YottaDB being applied..."
+    # Get GT.M Optimized Routines from Kernel-GTM project and unzip
+    curl -fsSLO --progress-bar https://github.com/shabiel/Kernel-GTM/releases/download/XU-8.0-10006/virgin_install.zip
+
+    # Unzip file, put routines, delete old objects
+    su $instance -c "unzip -qo virgin_install.zip -d $basedir/r/"
+    su $instance -c "unzip -l virgin_install.zip | awk '{print \$4}' | grep '\.m' | sed 's/.m/.o/' | xargs -i rm -fv r/$gtmver/{}"
+    su $instance -c "rm -fv r/$gtmver/_*.o && rm -f virgin_install.zip"
+  fi
+
   echo "Compiling routines"
   cd $basedir/r/$gtmver
+  rm *.o
   find .. -name '*.m' | xargs --max-procs=$cores --max-args=1 $gtm_dist/mumps >> $basedir/log/compile.log 2>&1
   echo "Done compiling routines"
 
-fi
+  # Get the Auto-configurer for VistA/RPMS and run
+  echo "Running KBANTCLN"
+  mv $scriptdir/Common/KBANTCLN.m $basedir/r/
+  chown $instance:$instance $basedir/r/KBANTCLN.m
+  su $instance -c "source $basedir/etc/env && mumps -run START^KBANTCLN"
 
-if $installgtm || $installYottaDB; then
-    echo "Fixing HL7 Port"
-    su $instance -c "source $basedir/etc/env && $scriptdir/GTM/fixHL7Port.sh"
-fi
-
-# Enable journaling
-if $installgtm || $installYottaDB; then
-    su $instance -c "source $basedir/etc/env && $basedir/bin/enableJournal.sh"
+  # Extra stuff
+  echo "Fixing HL7 Port"
+  su $instance -c "source $basedir/etc/env && $scriptdir/GTM/fixHL7Port.sh"
+  echo "Adding Audit 0 node"
+  su $instance -c "source $basedir/etc/env && $gtm_dist/mumps -r %XCMD 'S ^DIA(0)=\"AUDIT^1.1I\"'"
+  echo "Enabling Journaling"
+  su $instance -c "source $basedir/etc/env && $basedir/bin/enableJournal.sh"
 fi
 
 # if we are running on docker we must shutdown gracefully or else corruption will occur
