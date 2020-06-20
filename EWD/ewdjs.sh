@@ -35,7 +35,7 @@ usage()
     This script will automatically install EWD.js for GT.M
 
     DEFAULTS:
-      Node Version = Latest 6.x
+      Node Version = Latest 14.x
 
     OPTIONS:
       -h    Show this message
@@ -63,7 +63,7 @@ done
 
 # Set defaults for options
 if [ -z $nodever ]; then
-    nodever="6"
+    nodever="14"
 fi
 
 if [[ -z $firewall ]]; then

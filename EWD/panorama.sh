@@ -46,16 +46,17 @@ qewd.start(config, routes);
 EOF
 
 # Install published modules
-cd $basedir/qewd/node_modules
-su $instance -c "source $basedir/etc/env && git clone https://github.com/shabiel/ewd-vista.git"
-cd ewd-vista
-su $instance -c "source $basedir/.nvm/nvm.sh && source $basedir/etc/env && npm install --quiet >> $basedir/log/ewd-vistaInstall.log"
-cd ..
-su $instance -c "source $basedir/etc/env && git clone https://github.com/shabiel/ewd-vista-login.git"
-su $instance -c "source $basedir/etc/env && git clone https://github.com/shabiel/ewd-vista-bedboard.git"
-su $instance -c "source $basedir/etc/env && git clone https://github.com/shabiel/ewd-vista-taskman-monitor.git"
-su $instance -c "source $basedir/etc/env && git clone https://github.com/shabiel/ewd-vista-fileman.git"
-su $instance -c "source $basedir/etc/env && git clone https://github.com/shabiel/ewd-vista-pharmacy.git"
-su $instance -c "source $basedir/etc/env && git clone https://github.com/shabiel/ewd-vista-push-handler.git"
-su $instance -c "source $basedir/etc/env && mkdir $basedir/qewd/www/ewd-vista"
-su $instance -c "source $basedir/etc/env && cp -R $basedir/qewd/node_modules/ewd-vista/www/* $basedir/qewd/www/ewd-vista/"
+su - $instance <<'EOF'
+source $basedir/.nvm/nvm.sh
+cd $basedir/qewd
+npm install ewd-vista                    &>> $basedir/log/ewd-vistaInstall.log
+npm install ewd-vista-login              &>> $basedir/log/ewd-vistaInstall.log
+npm install ewd-vista-bedboard           &>> $basedir/log/ewd-vistaInstall.log
+npm install ewd-vista-taskman-monitor    &>> $basedir/log/ewd-vistaInstall.log
+npm install ewd-vista-fileman            &>> $basedir/log/ewd-vistaInstall.log
+npm install ewd-vista-pharmacy           &>> $basedir/log/ewd-vistaInstall.log
+npm install ewd-vista-push-handler       &>> $basedir/log/ewd-vistaInstall.log
+npm install ewd-vista-viewer             &>> $basedir/log/ewd-vistaInstall.log
+mkdir -p $basedir/qewd/www/ewd-vista
+cp -R $basedir/qewd/node_modules/ewd-vista/www/* $basedir/qewd/www/ewd-vista/
+EOF
