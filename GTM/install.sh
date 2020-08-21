@@ -106,7 +106,7 @@ if $source; then
         yum install -y \
                     git \
                     gcc \
-                    cmake \
+                    cmake3 \
                     tcsh \
                     {libconfig,gpgme,libicu,libgpg-error,libgcrypt,ncurses,openssl,zlib,elfutils-libelf}-devel \
                     binutils
@@ -114,7 +114,7 @@ if $source; then
         cd YDB
         mkdir build
         cd build
-        cmake -D CMAKE_INSTALL_PREFIX:PATH=$PWD ../
+        cmake3 -D CMAKE_INSTALL_PREFIX:PATH=$PWD ../
         make -j `grep -c ^processor /proc/cpuinfo`
         make install
         cd yottadb_r*
