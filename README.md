@@ -22,13 +22,13 @@ for running them are available on the URL, including usernames/passwords:
 
 | Image Name   | M Imp | Versions Available | Docker Hub URL |
 | ----------   | ----- | ------------------ | -------------- |
-| FOIA VistA   | YDB   | Monthly Images     | https://hub.docker.com/r/osehra/foiavista |
-| OSEHRA VistA | YDB   | Quarterly Images   | https://hub.docker.com/r/osehra/osehravista |
-| vxVistA      | GTM   | 15.0               | https://hub.docker.com/r/osehra/vxvista |
-| VEHU         | GTM   | Quarterly Images   | https://hub.docker.com/r/osehra/vehu |
-| RPMS         | YDB   | Half yearly        | https://hub.docker.com/r/osehra/rpms |
-| OSEHRA Plan VI | YDB | 3; last 201902     | https://hub.docker.com/r/osehra/ov6  |
-| VEHU Plan VI | YDB   | 2; last 201901     | https://hub.docker.com/r/osehra/vehu6 |
+| FOIA VistA   | YDB   | Monthly Images     | https://hub.docker.com/r/worldvista/foiavista |
+| OSEHRA VistA | YDB   | Quarterly Images   | https://hub.docker.com/r/worldvista/osehravista |
+| vxVistA      | GTM   | 15.0               | https://hub.docker.com/r/worldvista/vxvista |
+| VEHU         | GTM   | Quarterly Images   | https://hub.docker.com/r/worldvista/vehu |
+| RPMS         | YDB   | Half yearly        | https://hub.docker.com/r/worldvista/rpms |
+| OSEHRA Plan VI | YDB | 3; last 201902     | https://hub.docker.com/r/worldvista/ov6  |
+| VEHU Plan VI | YDB   | 2; last 201901     | https://hub.docker.com/r/worldvista/vehu6 |
 | WorldVistA   | YDB   | 3.0                | https://hub.docker.com/r/worldvista/worldvista-ehr |
 | WorldVistA   | GTM   | 2.0                | https://hub.docker.com/r/krmassociates/worldvista  |
 
@@ -36,8 +36,8 @@ for running them are available on the URL, including usernames/passwords:
 
 Default: "OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)"
 
-    docker build -t osehra-vista .
-    docker run -d -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 -p 9080:9080 --name=osehravista osehra-vista
+    docker build -t foia .
+    docker run -d -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 -p 9080:9080 --name=foia foia
 
 Plan VI (Internationalized Version) OSEHRA VistA (YottaDB, UTF-8 enabled, no bootstrap, with QEWD and Panorama)
 
