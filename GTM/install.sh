@@ -37,8 +37,8 @@ usage()
     This script will automatically install GT.M/YottaDB
 
     DEFAULTS:
-      GT.M Version = V6.3-005
-      YottaDB Version = r1.28
+      GT.M Version = V6.3-013
+      YottaDB Version = r1.30
 
     OPTIONS:
       -h    Show this message
@@ -74,12 +74,12 @@ done
 # Set defaults for options
 # GT.M
 if [ -z $gtm_ver ] && [ -z $installYottaDB ]; then
-    gtm_ver="V6.3-005"
+    gtm_ver="V6.3-013"
 fi
 
 # YottaDB
 if [ $installYottaDB ] && [ -z $gtm_ver ]; then
-    gtm_ver="r1.28"
+    gtm_ver="r1.30"
 fi
 
 if [ -z $sharedmem ]; then
