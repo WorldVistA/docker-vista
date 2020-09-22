@@ -51,7 +51,7 @@ usage()
       Alternate VistA-M repo = https://github.com/WorldVistA/VistA-M.git
       Install EWD.js = false
       Create Development Directories = false
-      Instance Name = OSEHRA
+      Instance Name = FOIA
       Post Install hook = none
       Skip Testing = false
 
@@ -194,7 +194,7 @@ if [[ -z $kernelGTMFixes ]]; then
 fi
 
 if [[ -z $instance ]]; then
-    instance=osehra
+    instance=foia
 fi
 
 if [[ -z $postInstall ]]; then

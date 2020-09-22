@@ -63,7 +63,7 @@ ADD ./test.cmake /opt/vista/
 ADD ./ViViaN /opt/vista/ViViaN
 ADD ./*.sh /opt/vista/
 
-ARG instance=osehra
+ARG instance=foia
 ENV instance_name=$instance
 ARG flags="-y -b -e -m -p ./Common/ovydbPostInstall.sh"
 ARG entry="/home"
