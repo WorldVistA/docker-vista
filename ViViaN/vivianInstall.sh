@@ -138,6 +138,7 @@ fi
 pushd VistA-docs
 cp $scriptdir/ViViaN/CMakeCache.txt /opt/VistA-docs
 /usr/bin/cmake .
+mkdir /var/www/html/vivian-data
 # =====================================================
 echo "Starting CTest at:" $(timestamp)
 echo "Installing XINDEX patch"
