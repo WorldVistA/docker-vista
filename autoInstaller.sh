@@ -16,7 +16,7 @@
 #---------------------------------------------------------------------------
 
 # Turn this flag on for debugging.
-# set -x;
+#set -x
 
 # Make sure we are root
 if [[ $EUID -ne 0 ]]; then
@@ -166,7 +166,15 @@ done
 
 # Set defaults for options
 if [[ -z $repoPath ]]; then
-    repoPath="https://github.com/WorldVistA/VistA-M/archive/foia.zip"
+    # See if we have a file passed to us, use that
+    shopt -s nullglob
+    files=(/opt/vista/zwr-zip/*.zip)
+    num=${#files[@]}
+    if (( num > 0 )); then
+        repoPath=${files[0]}
+    else
+        repoPath="https://github.com/WorldVistA/VistA-M/archive/foia.zip"
+    fi
 fi
 
 if [[ -z $bootstrap ]]; then
@@ -446,6 +454,11 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
       else
           git clone --depth 1 $repoPath VistA-Source
       fi
+  elif [ -f $repoPath ]; then
+      echo "Using $repoPath"
+      dir=$(zipinfo -1 $repoPath | head -1 | cut -d/ -f1)
+      unzip -q $repoPath
+      mv $dir VistA-Source
   else
       echo "Downloading "$repoPath
       curl -fsSL --progress-bar $repoPath -o VistA-M-master.zip
@@ -528,7 +541,7 @@ if (($installgtm || $installYottaDB) && ! $generateViVDox); then
 
   echo "Compiling routines"
   cd $basedir/r/$gtmver
-  rm *.o
+  rm -f *.o
   find .. -name '*.m' | xargs --max-procs=$cores --max-args=1 $gtm_dist/mumps >> $basedir/log/compile.log 2>&1
   echo "Done compiling routines"
 

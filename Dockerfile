@@ -54,6 +54,7 @@ WORKDIR /opt/vista
 # Add each folder individually to improve rebuild times
 ADD ./Cache /opt/vista/Cache
 ADD ./cache-files /opt/vista/cache-files
+ADD ./zwr-zip /opt/vista/zwr-zip
 ADD ./Common /opt/vista/Common
 ADD ./Dashboard /opt/vista/Dashboard
 ADD ./EWD /opt/vista/EWD
