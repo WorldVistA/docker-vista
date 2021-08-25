@@ -29,16 +29,9 @@ yum install -y vim-common bison flex readline-devel libconfig-devel openssl-deve
 echo "Installing YDB Posix Plugin"
 cd $basedir
 git clone https://gitlab.com/YottaDB/Util/YDBposix.git
-mkdir $basedir/ydbposix-build
-cd $basedir/ydbposix-build
-cmake $basedir/YDBposix && make && make install
-cmake -DM_UTF8_MODE=1 $basedir/YDBposix && make && make install
-
-# Remove YDBPosix build directories
-cd $basedir
-rm -rf $basedir/YDBPosix
-rm -rf $basedir/ydbposix-build
-
+mkdir YDBposix/build
+cd YDBposix/build
+cmake3 .. && make && make install
 
 # Download the Octo repository
 cd $basedir
@@ -52,14 +45,9 @@ fi
 export ydb_dist=$gtm_dist
 echo $gtm_dist
 echo $ydb_dist
-mkdir $basedir/octo-build
-cd $basedir/octo-build
-cmake3 -DSTRING_BUFFER_LENGTH=600000 -DCMAKE_INSTALL_PREFIX=$ydb_dist/plugin $basedir/YDBOcto && make && make install # use the make install target instead of the binary as we need bigger buffers
-
-# Remove octo build directories
-cd $basedir
-rm -rf $basedir/YDBOcto-master $basedir/octo.zip
-rm -rf $basedir/octo-build
+mkdir $basedir/YDBOcto/build
+cd $basedir/YDBOcto/build
+cmake3 .. && make && make install
 
 # Create the octo routines directory
 mkdir $basedir/octoroutines
@@ -93,6 +81,7 @@ echo "export GTMCI=\$gtm_dist/plugin/ydbocto.ci" >> $basedir/etc/env
 echo "export ydb_dist=\$gtm_dist" >> $basedir/etc/env
 echo "export gtmroutines=\"$basedir/octoroutines \$gtm_dist/plugin/o/_ydbocto.so \$gtm_dist/plugin/o/_ydbposix.so \$gtmroutines\"" >> $basedir/etc/env
 echo "export GTMXC_ydbposix=\$gtm_dist/plugin/ydbposix.xc" >> $basedir/etc/env
+# TODO: Remove when my MR to fix this is merged (smh)
 echo "export LD_LIBRARY_PATH=\$gtm_dist" >> $basedir/etc/env
 
 # Add custom functions
@@ -101,11 +90,6 @@ su $instance -c "source $basedir/etc/env && \$gtm_dist/mumps -dir << EOF
 s ^%ydboctoocto(\"functions\",\"SQL_FN_REPLACE\")=\"\$\$REPLACE^%YDBOCTOVISTAM\"
 EOF
 > $basedir/log/OctoAddFunctions.log 2>&1"
-
-echo "Loading seed data into Octo"
-su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip load $gtm_dist/plugin/octo/octo-seed.zwr"
-su $instance -c "source $basedir/etc/env && \$gtm_dist/plugin/bin/octo -f $gtm_dist/plugin/octo/octo-seed.sql"
-
 
 echo "Mapping VistA data to Octo"
 su $instance -c "source $basedir/etc/env && \$gtm_dist/mumps -run ^%ydboctoAdmin add user admin<< EOF
