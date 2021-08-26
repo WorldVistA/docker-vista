@@ -159,6 +159,7 @@ as follows:
 | h      | n/a     | Show the list of options |
 | i      | osehra  | Instance name (Namespace/Database for Caché) |
 | m      | n/a     | Install Panorama (assumes development directories and QEWD) |
+| o      | n/a     | Install YottaDB from source. Will also enable -y (YottaDB) |
 | p      | n/a     | Post install hook (path to script) |
 | q      | n/a     | Install SQL mapping for YottaDB |
 | r      | n/a     | Alternate VistA-M repo branch (git format only) |
@@ -226,8 +227,8 @@ take and process a M[UMPS] system that is supplied by the user in one of two for
 
 |     Platform      |                       Required Files                           |
 | :---------------: | -------------------------------------------------------------- |
-|   GT.M/YottaDB    | A .zip file which contains a folder named "VistA" which contains the GT.M  instance to generate pages from. It should contain folder named ``g`` of globals (.GLD and .DAT) and a directory named ``r`` which contains the ``.m`` files for the routines.  It should be placed in the ``GTM`` directory |
-|     Caché         | The files used as part of the install will be used again. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the  cache-files directories. |
+|   GT.M/YottaDB    | Not supported. Create an issue if interested.                  |
+|     Caché         | The files used as part of the install will be used again. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the  cache-files directories.        |
 
 
 The building of ViViaN is available to executed on all three of the platforms using the same

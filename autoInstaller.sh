@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #---------------------------------------------------------------------------
 # Copyright 2011-2019 The Open Source Electronic Health Record Alliance
+# Copyright 2020-2021 Sam Habiel
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +16,9 @@
 # limitations under the License.
 #---------------------------------------------------------------------------
 
-# Turn this flag on for debugging.
+# Turn these flags on for debugging.
 #set -x
+#set -v
 
 # Make sure we are root
 if [[ $EUID -ne 0 ]]; then
@@ -68,6 +70,7 @@ usage()
       -h    Show this message
       -i    Instance name (Namespace/Database for Caché)
       -m    Install Panorama (assumes development directories and QEWD)
+      -o    Install YottaDB from latest master source
       -p    Post install hook (path to script)
       -q    Install SQL mapping for YottaDB
       -r    Alternate VistA-M repo branch (git format only)
@@ -88,7 +91,7 @@ usage()
 EOF
 }
 
-while getopts ":ha:cbxemdufgi:vp:str:wyqz" option
+while getopts ":ha:cbxemdufgi:vop:str:wyqz" option
 do
     case $option in
         h)
@@ -124,6 +127,10 @@ do
             ;;
         i)
             instance=$(echo $OPTARG |tr '[:upper:]' '[:lower:]')
+            ;;
+        o)
+            installYottaDB=true
+            installYottaDBfromSource=true
             ;;
         p)
             postInstall=true
@@ -225,6 +232,10 @@ if [ -z $installYottaDB ]; then
     installYottaDB=false
 fi
 
+if [ -z $installYottaDBfromSource ]; then
+    installYottaDBfromSource=false
+fi
+
 if [ -z $installcache ]; then
     installcache=false;
 fi
@@ -276,7 +287,7 @@ echo "Run BATS Tests: $batsTests"
 echo "Skip bootstrap: $bootstrap"
 echo "Use Cache: $installcache"
 echo "Use GT.M: $installgtm"
-echo "Use YottaDB: $installYottaDB"
+echo "Use YottaDB: $installYottaDB (from source: $installYottaDBfromSource)"
 echo "GT.M/YDB in UTF-8: $utf8"
 echo "Install RPMS scripts: $installRPMS"
 echo "Running on local repo: $localVistARepo"
@@ -390,6 +401,9 @@ if $installYottaDB; then
    installydbOptions+="-y "
    createVistaInstanceOptions+="-y "
 fi
+if $installYottaDBfromSource; then
+   installydbOptions+="-r "
+fi
 if $installRPMS; then
    createVistaInstanceOptions+="-r "
 fi
@@ -445,7 +459,7 @@ if $installgtm || $installYottaDB; then
     echo "source $basedir/etc/env" >> $USER_HOME/.bashrc
 fi
 
-if (($installgtm || $installYottaDB) && ! $generateViVDox); then
+if $installgtm || $installYottaDB; then
   echo "Getting the VistA-M Source Code"
   pushd /usr/local/src
   if [[ $repoPath == *.git ]]; then
