@@ -78,11 +78,6 @@ shortnodever=$(echo $nodever | cut -d'.' -f 2)
 # set the arch
 arch=$(uname -m | tr -d _)
 
-# This should be ran as the instance owner to keep all of VistA together
-if [[ -z $basedir ]]; then
-    echo "The required variable \$instance is not set"
-fi
-
 echo "Installing QEWD"
 
 # Copy init.d scripts to VistA etc directory

@@ -70,6 +70,7 @@ usage()
       -h    Show this message
       -i    Instance name (Namespace/Database for Caché)
       -m    Install Panorama (assumes development directories and QEWD)
+      -n    Install YottaDB GUI
       -o    Install YottaDB from latest master source
       -p    Post install hook (path to script)
       -q    Install SQL mapping for YottaDB
@@ -91,7 +92,7 @@ usage()
 EOF
 }
 
-while getopts ":ha:cbxemdufgi:vop:str:wyqz" option
+while getopts ":ha:cbxemndufgi:vop:str:wyqz" option
 do
     case $option in
         h)
@@ -121,6 +122,10 @@ do
             installEWD=true
             developmentDirectories=true
             installPanorama=true
+            ;;
+        n)
+            installYottaDBGUI=true
+            developmentDirectories=true
             ;;
         g)
             installgtm=true
@@ -198,6 +203,10 @@ fi
 
 if [[ -z $installPanorama ]]; then
     installPanorama=false
+fi
+
+if [[ -z $installYottaDBGUI ]]; then
+    installYottaDBGUI=false
 fi
 
 if [[ -z $installgtm ]]; then
@@ -287,7 +296,7 @@ echo "Run BATS Tests: $batsTests"
 echo "Skip bootstrap: $bootstrap"
 echo "Use Cache: $installcache"
 echo "Use GT.M: $installgtm"
-echo "Use YottaDB: $installYottaDB (from source: $installYottaDBfromSource)"
+echo "Use YottaDB: $installYottaDB (from source: $installYottaDBfromSource) (GUI: $installYottaDBGUI)"
 echo "GT.M/YDB in UTF-8: $utf8"
 echo "Install RPMS scripts: $installRPMS"
 echo "Running on local repo: $localVistARepo"
@@ -601,6 +610,13 @@ fi
 if $installPanorama && ($installgtm || $installYottaDB); then
     cd $scriptdir/EWD
     ./panorama.sh -f
+    cd $basedir
+fi
+
+# Install YottaDB GUI
+if $installYottaDBGUI && $installYottaDB; then
+    cd $scriptdir/GTM
+    ./installYottaDBGUI.sh -f
     cd $basedir
 fi
 

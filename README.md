@@ -3,7 +3,6 @@ Code in this repository enables you to create VistA or RPMS instances on
 Caché or GT.M/YottaDB.  A working [Docker](https://www.docker.com/community-edition#/download) installation on
 the platform of choice is required in order to be able to create instances.
 
-
 # Table of Contents
 
 * [Pre-built images](#pre-built-images)
@@ -57,7 +56,12 @@ vxVistA (YottaDB, no boostrap, skip testing, fix Kernel Routines and do post-ins
 VEHU (YottaDB, no bootstrap, skip testing, Panorama, SQL Access, BATS Test)
 
     docker build --build-arg flags="-ybsmtqa https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
-    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=vehu vehu
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 -p 1338:1338 --name=vehu vehu
+
+VEHU (YottaDB with GUI, build YottaDB from source, SQL Access)
+
+    docker build --build-arg flags="-obsqna https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 1338:1338 -p 8089:8089 --name=vehu vehu
 
 VEHU Plan VI (Internationalized Version) (YottaDB, UTF-8 enabled, no bootstrap, skip testing, Panorama)
 
@@ -110,6 +114,7 @@ The exported ports are as follows:
 | 9101        | 9101       | BMX (iCare etc) | RPMS              |
 | 57772       | 57772      | Caché Web Portal | Caché            |
 | 1338        | 1338       | SQL Listener Port | YottaDB         |
+| 8089        | 8090       | YottaDB GUI     | YottaDB           |
 
 ## Detailed Discussion and Reference
 
@@ -159,6 +164,7 @@ as follows:
 | h      | n/a     | Show the list of options |
 | i      | osehra  | Instance name (Namespace/Database for Caché) |
 | m      | n/a     | Install Panorama (assumes development directories and QEWD) |
+| n      | n/a     | Install YottaDB GUI. |
 | o      | n/a     | Install YottaDB from source. Will also enable -y (YottaDB) |
 | p      | n/a     | Post install hook (path to script) |
 | q      | n/a     | Install SQL mapping for YottaDB |
