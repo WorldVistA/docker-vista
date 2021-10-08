@@ -33,12 +33,14 @@ mkdir YDBposix/build
 cd YDBposix/build
 cmake3 .. && make && make install
 
-# Download the Octo repository
+# Download the Octo repository and the VistA Utilities
 cd $basedir
 if [ ! -d /opt/vista/octo ] ; then
   git clone https://gitlab.com/YottaDB/DBMS/YDBOcto.git
+  git clone https://gitlab.com/YottaDB/DBMS/YDBOctoVistA.git
 else
   cp -r /opt/vista/octo $basedir/YDBOcto
+  cp -r /opt/vista/YDBOctoVistA $basedir/YDBOctoVistA
 fi
 
 # Build Octo
@@ -48,15 +50,14 @@ echo $ydb_dist
 mkdir $basedir/YDBOcto/build
 cd $basedir/YDBOcto/build
 cmake3 .. && make && make install
+cd $basedir
 
 # Create the octo routines directory
 mkdir $basedir/octoroutines
 chown -R $instance:$instance $basedir/octoroutines
 
-# Get the mapping routine
-cd $basedir/r
-su $instance -c "curl -s -L https://gitlab.com/YottaDB/DBMS/ydbvistaocto/raw/master/_YDBOCTOVISTAM.m?inline=false -o _YDBOCTOVISTAM.m"
-cd $basedir
+# Get the mapping routine and functions routine
+su $instance -c "cp $basedir/YDBOctoVistA/_*.m $basedir/r"
 
 # Create Octo database
 echo "a -s OCTO -alloc=4000 -exten=5000 -glob=2000 -FILE=$basedir/g/octo.dat" > $basedir/etc/octo.gde
@@ -81,17 +82,8 @@ echo "export GTMCI=\$gtm_dist/plugin/ydbocto.ci" >> $basedir/etc/env
 echo "export ydb_dist=\$gtm_dist" >> $basedir/etc/env
 echo "export gtmroutines=\"$basedir/octoroutines \$gtm_dist/plugin/o/_ydbocto.so \$gtm_dist/plugin/o/_ydbposix.so \$gtmroutines\"" >> $basedir/etc/env
 echo "export GTMXC_ydbposix=\$gtm_dist/plugin/ydbposix.xc" >> $basedir/etc/env
-# TODO: Remove when my MR to fix this is merged (smh)
-echo "export LD_LIBRARY_PATH=\$gtm_dist" >> $basedir/etc/env
 
-# Add custom functions
-echo "Adding Octo functions, metadata, and users"
-su $instance -c "source $basedir/etc/env && \$gtm_dist/mumps -dir << EOF
-s ^%ydboctoocto(\"functions\",\"SQL_FN_REPLACE\")=\"\$\$REPLACE^%YDBOCTOVISTAM\"
-EOF
-> $basedir/log/OctoAddFunctions.log 2>&1"
-
-echo "Mapping VistA data to Octo"
+echo "Creating admin:admin Octo user"
 su $instance -c "source $basedir/etc/env && \$gtm_dist/mumps -run ^%ydboctoAdmin add user admin<< EOF
 admin
 admin
@@ -104,7 +96,7 @@ echo "*                soft    stack           unlimited" >> /etc/security/limit
 
 # Create octo configuration file
 echo "// Specifies the verbosity for logging; options are TRACE, INFO, DEBUG, ERROR, and FATAL"          > $basedir/octo.conf
-echo 'verbosity = "INFO"'                                                                                >> $basedir/octo.conf
+echo 'verbosity = "ERROR"'                                                                                >> $basedir/octo.conf
 echo "// Location to cache generated M routines which represent queries"                                 >> $basedir/octo.conf
 echo 'octo_zroutines = "'$basedir'/octoroutines"'                                                        >> $basedir/octo.conf
 echo "// Global directory to use for Octo globals; if not present, we use the ydb_gbldir"                >> $basedir/octo.conf
@@ -129,7 +121,12 @@ su $instance -c "source $basedir/etc/env && \$gtm_dist/mumps -dir << EOF
 S DUZ=.5 D Q^DI,MAPALL^%YDBOCTOVISTAM(\"vista-new.sql\")
 EOF
 > $basedir/log/OctoMapFiles.log 2>&1"
-su $instance -c "source $basedir/etc/env && octo -f vista-new.sql > $basedir/log/OctoImport.log 2>&1"
+su $instance -c "source $basedir/etc/env && octo -v -f vista-new.sql > $basedir/log/OctoImport.log 2>&1"
 echo "Done Mapping VistA data to Octo"
+
+# Load functions SQL
+echo "Loading VistA SQL functions"
+su $instance -c "source $basedir/etc/env && octo -v -f $basedir/YDBOctoVistA/_YDBOCTOVISTAF.sql > $basedir/log/OctoFunctionsImport.log 2>&1"
+echo "Done Loading VistA SQL functions"
 
 echo "Done installing Octo"

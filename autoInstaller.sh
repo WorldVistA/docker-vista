@@ -662,6 +662,8 @@ if ($installgtm || $installYottaDB) && $batsTests; then
   cd bats-core
   ./install.sh /usr/local
   cd $scriptdir
+  # Source again as some files may have edited it (like Octo)
+  source /home/$instance/etc/env
   /home/$instance/bin/start.sh &
   START_PID=$!
   sleep 5
