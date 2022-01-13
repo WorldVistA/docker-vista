@@ -74,7 +74,6 @@ su $instance -c "source $basedir/etc/env && \$gtm_dist/mumps -run GDE < $basedir
 echo "Creating Octo database"
 su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip create > $basedir/log/OctoCreateDatabase.log 2>&1"
 su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip set -journal=\"enable,on,before,file=$basedir/j/octo.mjl\" -file $basedir/g/octo.dat > $basedir/log/OctoEnableJournal.log 2>&1"
-su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip set -null=existing -file $basedir/g/vehu.dat > $basedir/log/OctoSubscriptsExisting.log 2>&1"
 echo "Done Creating Octo database"
 
 # Add additional Octo items to env script
