@@ -2,6 +2,7 @@
 #---------------------------------------------------------------------------
 # Copyright 2019 Christopher Edwards
 # Copyright 2020-2021 Sam Habiel
+# Copyright 2021-2022 YottaDB LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,72 +16,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #---------------------------------------------------------------------------
-
-# Install SQL Mapping for VistA using Octo
-echo "Begin installing Octo"
+set -e
 basedir=/home/$instance
+# Octo Install now done as part of the YottaDB Install
 
-# Install Octo Prerequisites
-yum install epel-release
-yum install -y cmake3
-yum install -y vim-common bison flex readline-devel libconfig-devel openssl-devel
-
-# Install ydb posix plugin
-echo "Installing YDB Posix Plugin"
-cd $basedir
-git clone https://gitlab.com/YottaDB/Util/YDBposix.git
-mkdir YDBposix/build
-cd YDBposix/build
-cmake3 .. && make && make install
-
-# Download the Octo repository and the VistA Utilities
+# Download the VistA Utilities
 cd $basedir
 if [ ! -d /opt/vista/octo ] ; then
-  git clone https://gitlab.com/YottaDB/DBMS/YDBOcto.git
   git clone https://gitlab.com/YottaDB/DBMS/YDBOctoVistA.git
 else
-  cp -r /opt/vista/octo $basedir/YDBOcto
   cp -r /opt/vista/YDBOctoVistA $basedir/YDBOctoVistA
 fi
-
-# Build Octo
-export ydb_dist=$gtm_dist
-echo $gtm_dist
-echo $ydb_dist
-mkdir $basedir/YDBOcto/build
-cd $basedir/YDBOcto/build
-cmake3 .. && make && make install
-cd $basedir
-
-# Create the octo routines directory
-mkdir $basedir/octoroutines
-chown -R $instance:$instance $basedir/octoroutines
 
 # Get the mapping routine and functions routine
 su $instance -c "cp $basedir/YDBOctoVistA/_*.m $basedir/r"
 
-# Create Octo database
-echo "a -s OCTO -alloc=4000 -exten=5000 -glob=2000 -FILE=$basedir/g/octo.dat" > $basedir/etc/octo.gde
-echo "a -r OCTO -RECORD_SIZE=600000 -KEY_SIZE=1019 -NULL_SUBSCRIPTS=ALWAYS -JOURNAL=(BEFORE_IMAGE,FILE_NAME=\"$basedir/j/octo.mjl\") -DYNAMIC_SEGMENT=OCTO" >> $basedir/etc/octo.gde
-echo "a -n %ydbocto* -r=OCTO" >> $basedir/etc/octo.gde
-echo "sh -a" >> $basedir/etc/octo.gde
-chown $instance:$instance $basedir/etc/db.gde
+# Create Octo Region
+cat <<EOF > $basedir/etc/octo.gde
+add -segment OCTO -allocation=4000 -extension=5000 -glob=2000 -file="$basedir/g/octo.dat"
+add -region OCTO -record_size=600000 -key_size=1019 -null_subscripts=always -journal=(before_image,file_name="$basedir/j/octo.mjl") -dynamic_segment=OCTO
+add -name %ydbocto* -region=OCTO
+show -all
+EOF
+chown $instance:$instance $basedir/etc/octo.gde
+
+# Create AIM Region
+cat <<EOF > $basedir/etc/aim.gde
+add -segment AIM -access_method=mm -allocation=10000 -extension=20000 -block_size=2048 -file="$basedir/g/aim.dat"
+add -region AIM -key_size=1019 -record_size=2048 -null_subscripts=ALWAYS -nojournal -dynamic_segment=AIM
+add -name %ydbAIMD* -r=AIM
+show -all
+EOF
+chown $instance:$instance $basedir/etc/aim.gde
 
 # create the global directory
 # have to source the environment first to have YottaDB env vars available
 su $instance -c "source $basedir/etc/env && \$gtm_dist/mumps -run GDE < $basedir/etc/octo.gde > $basedir/log/OctoGDEoutput.log 2>&1"
+su $instance -c "source $basedir/etc/env && \$gtm_dist/mumps -run GDE < $basedir/etc/aim.gde > $basedir/log/AIMGDEoutput.log 2>&1"
 
 # Create the database
-echo "Creating Octo database"
-su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip create > $basedir/log/OctoCreateDatabase.log 2>&1"
+echo "Creating Octo and AIM databases"
+su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip create -region=OCTO >  $basedir/log/OctoCreateDatabase.log 2>&1"
+su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip create -region=AIM  >> $basedir/log/OctoCreateDatabase.log 2>&1"
 su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip set -journal=\"enable,on,before,file=$basedir/j/octo.mjl\" -file $basedir/g/octo.dat > $basedir/log/OctoEnableJournal.log 2>&1"
-echo "Done Creating Octo database"
+echo "Done Creating Octo and AIM databases"
 
 # Add additional Octo items to env script
-echo "export GTMCI=\$gtm_dist/plugin/ydbocto.ci" >> $basedir/etc/env
-echo "export ydb_dist=\$gtm_dist" >> $basedir/etc/env
-echo "export gtmroutines=\"$basedir/octoroutines \$gtm_dist/plugin/o/_ydbocto.so \$gtm_dist/plugin/o/_ydbposix.so \$gtmroutines\"" >> $basedir/etc/env
-echo "export GTMXC_ydbposix=\$gtm_dist/plugin/ydbposix.xc" >> $basedir/etc/env
+cat <<EOF >> $basedir/etc/env
+export gtmroutines="$gtmroutines $gtm_dist/plugin/o/_ydbocto.so $gtm_dist/plugin/o/_ydbposix.so $gtm_dist/plugin/o/_ydbaim.so"
+export GTMXC_ydbposix="$gtm_dist/plugin/ydbposix.xc"
+EOF
 
 echo "Creating admin:admin Octo user"
 su $instance -c "source $basedir/etc/env && \$gtm_dist/mumps -run ^%ydboctoAdmin add user admin<< EOF
@@ -94,24 +79,19 @@ echo "*                soft    stack           unlimited" >> /etc/security/limit
 
 
 # Create octo configuration file
-echo "// Specifies the verbosity for logging; options are TRACE, INFO, DEBUG, ERROR, and FATAL"          > $basedir/octo.conf
-echo 'verbosity = "ERROR"'                                                                                >> $basedir/octo.conf
-echo "// Location to cache generated M routines which represent queries"                                 >> $basedir/octo.conf
-echo 'octo_zroutines = "'$basedir'/octoroutines"'                                                        >> $basedir/octo.conf
-echo "// Global directory to use for Octo globals; if not present, we use the ydb_gbldir"                >> $basedir/octo.conf
-echo '//octo_global_directory = "'$basedir'/g/'$instance'.gld"'                                          >> $basedir/octo.conf
-echo ""                                                                                                  >> $basedir/octo.conf
-echo "// Settings related to the octod process"                                                          >> $basedir/octo.conf
-echo "rocto = {"                                                                                         >> $basedir/octo.conf
-echo "  // Address and port to listen on for connections"                                                >> $basedir/octo.conf
-echo '  address = "0.0.0.0"'                                                                             >> $basedir/octo.conf
-echo "  port = 1338"                                                                                     >> $basedir/octo.conf
-echo '  // Authentication methods; supported options are "md5"'                                          >> $basedir/octo.conf
-echo '  authentication_method = "md5"'                                                                   >> $basedir/octo.conf
-echo "}"                                                                                                 >> $basedir/octo.conf
-echo ""                                                                                                  >> $basedir/octo.conf
-echo "// Settings controlling YottaDB; these get set as environment variables during startup"            >> $basedir/octo.conf
-echo "// Defined environment variables will take precedence"                                             >> $basedir/octo.conf
+cat <<EOF > $basedir/octo.conf
+// Specifies the verbosity for logging; options are TRACE, INFO, DEBUG, ERROR, and FATAL
+verbosity = "ERROR"
+
+// Settings related to the rocto process
+rocto = {
+  // Address and port to listen on for connections
+  address = "0.0.0.0"
+  port = 1338
+  // Authentication methods; supported options are "md5"
+  authentication_method = "md5"
+}
+EOF
 chown $instance:$instance $basedir/octo.conf
 
 # Perform mapping

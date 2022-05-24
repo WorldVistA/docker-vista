@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #---------------------------------------------------------------------------
 # Copyright 2011-2017 The Open Source Electronic Health Record Agent
+# Copyright 2020-2021 Sam Habiel
+# Copyright 2021-2022 YottaDB LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #---------------------------------------------------------------------------
+set -e
 
 # Install GT.M/YottaDB using ydbinstall script
 # This utility requires root privliges
@@ -72,6 +75,10 @@ do
 done
 
 # Set defaults for options
+if [ -z $source ]; then
+    source=false
+fi
+
 # GT.M
 if [ -z $gtm_ver ] && [ -z $installYottaDB ]; then
     gtm_ver="V6.3-013"
@@ -79,15 +86,15 @@ fi
 
 # YottaDB
 if [ $installYottaDB ] && [ -z $gtm_ver ]; then
-    gtm_ver="r1.32"
+    gtm_ver="r1.34"
+fi
+
+if $source; then
+    gtm_ver="master"
 fi
 
 if [ -z $sharedmem ]; then
     sharedmem=true
-fi
-
-if [ -z $source ]; then
-    source=false
 fi
 
 # Determine processor architecture - used to determine if we can use GT.M
@@ -99,6 +106,9 @@ if [ $arch == "x8664" ]; then
 else
     gtm_arch=$arch
 fi
+
+# Install requirements for Octo
+yum install -y cmake3 vim-common bison flex readline-devel libconfig-devel openssl-devel
 
 # Download ydbinstall
 if $source; then
@@ -118,14 +128,14 @@ if $source; then
         make -j `grep -c ^processor /proc/cpuinfo`
         make install
         cd yottadb_r*
-        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch"
+        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --octo --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch"
     else
         echo "Installing GT.M from source isn't supported"
         exit 1
     fi
 else
     echo "Downloading ydbinstall"
-    curl -s -L https://gitlab.com/YottaDB/DB/YDB/raw/r1.24/sr_unix/ydbinstall.sh?inline=false -o ydbinstall
+    curl -s -L https://gitlab.com/YottaDB/DB/YDB/raw/master/sr_unix/ydbinstall.sh -o ydbinstall
 
     isValidFile=`head ydbinstall | grep "Fidelity National Information"`
     if [[ ! $isValidFile ]]; then
@@ -141,7 +151,7 @@ else
     #                     this follows VistA convention of uppercase only routines
     # Force install is necessary b/c of a recent change in the YDB installer.
     if [ "$installYottaDB" = "true" ] ; then
-        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch" $gtm_ver
+        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --octo --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch" $gtm_ver
     else
         ./ydbinstall --force-install --gtm --ucaseonly-utils --utf8 default --installdir /opt/lsb-gtm/"$gtm_ver"_"$gtm_arch" $gtm_ver
     fi
@@ -170,18 +180,6 @@ if $sharedmem; then
     fi
 fi
 
-# Link GT.M shared library where the linker can find it and refresh the cache
-if [[ $RHEL || -z $ubuntu ]]; then
-    echo "/usr/local/lib" >> /etc/ld.so.conf
-fi
-
-rm -f /usr/local/lib/libgtmshr.so
-if [ "$installYottaDB" = "true" ] ; then
-    ln -s /opt/yottadb/"$gtm_ver"_"$gtm_arch"/libgtmshr.so /usr/local/lib
-else
-    ln -s /opt/lsb-gtm/"$gtm_ver"_"$gtm_arch"/libgtmshr.so /usr/local/lib
-fi
-ldconfig
 if [ "$installYottaDB" = "true" ] ; then
     echo "Done installing YottaDB"
 else

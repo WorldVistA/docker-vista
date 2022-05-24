@@ -2,6 +2,7 @@
 #---------------------------------------------------------------------------
 # Copyright 2011-2019 The Open Source Electronic Health Record Alliance
 # Copyright 2020-2021 Sam Habiel
+# Copyright 2022 YottaDB LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +16,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #---------------------------------------------------------------------------
+# Fail on errors
+set -e
 
 # Turn these flags on for debugging.
 #set -x
@@ -25,6 +28,7 @@ if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root" 1>&2
     exit 1
 fi
+
 
 # Are we running on a local repo? If so, don't clone the "VistA" repo again!
 currentDir=$(dirname "$(readlink -f "$0")")
@@ -565,7 +569,10 @@ if $installgtm || $installYottaDB; then
   echo "Compiling routines"
   cd $basedir/r/$gtmver
   rm -f *.o
+  # GTM/YDB returns non-zero statuses for compilations with errors. Turn off set -e for that.
+  set +e
   find .. -name '*.m' | xargs --max-procs=$cores --max-args=1 $gtm_dist/mumps >> $basedir/log/compile.log 2>&1
+  set -e
   echo "Done compiling routines"
 
   # Get the Auto-configurer for VistA/RPMS and run
