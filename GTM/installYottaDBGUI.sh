@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #---------------------------------------------------------------------------
 # Copyright 2021 Sam Habiel
+# Copyright 2022 YottaDB LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +16,7 @@
 # limitations under the License.
 #---------------------------------------------------------------------------
 # Script to install YottaDB GUI
+set -e
 
 #set -xv
 
@@ -35,18 +37,14 @@ usage()
 
     This script will automatically install YottaDB GUI for YottaDB
 
-    DEFAULTS:
-      Node Version = Latest 14.x
-
     OPTIONS:
       -h    Show this message
-      -v    Node Version to install
       -f    Skip setting firewall rules
 
 EOF
 }
 
-while getopts ":hfv:" option
+while getopts ":hf" option
 do
     case $option in
         h)
@@ -56,58 +54,24 @@ do
         f)
             firewall=false
             ;;
-        v)
-            nodever=$OPTARG
-            ;;
     esac
 done
-
-
-# Set defaults for options
-if [ -z $nodever ]; then
-    nodever="14"
-fi
 
 if [[ -z $firewall ]]; then
     firewall=true
 fi
 
-echo "nodever $nodever"
-
-# Set the node version
-shortnodever=$(echo $nodever | cut -d'.' -f 2)
-
-# set the arch
-arch=$(uname -m | tr -d _)
-
-# Download installer in tmp directory
-cd $basedir/tmp
-
-# Install node.js using NVM (node version manager)
-echo "Downloading NVM installer"
-curl -s -k --remote-name -L  https://raw.githubusercontent.com/creationix/nvm/master/install.sh
-echo "Done downloading NVM installer"
-
-# Execute it
-chmod +x install.sh
-su $instance -c "./install.sh"
-
-# Remove it
-rm -f ./install.sh
-
-# Install node
-su $instance -c "source $basedir/.nvm/nvm.sh && nvm install $nodever && nvm alias default $nodever && nvm use default"
-
 # Get code
-su $instance -c "cd $basedir && git clone https://gitlab.com/YottaDB/UI/YDBAdminOpsGUI.git"
-cd $basedir/YDBAdminOpsGUI
-
-# Installation 
-# Compile Quasar/Vue for serving via Web Server)
-su $instance -c "source $basedir/.nvm/nvm.sh && nvm use default && npm install && npm run build"
-
-# Then copy the routines into the p directory
-su $instance -c "find . -name '*.m' -type f -exec cp {} $basedir/p/ \;"
+mkdir /tmp/ydbgui
+cd /tmp/ydbgui
+wget https://gitlab.com/YottaDB/UI/YDBGUI/-/archive/master/YDBGUI-master.zip -O YDBGUI.zip
+wget https://github.com/shabiel/M-Web-Server/archive/refs/tags/1.1.3.zip -O mws.zip
+unzip YDBGUI.zip
+unzip mws.zip
+su $instance -c "find . -name '_*.m' -type f -exec cp {} $basedir/r/ \;"
+su $instance -c "cp -r YDBGUI-*/wwwroot/* $basedir/www"
+cd ..
+rm -rf /tmp/ydbgui
 
 # Create startup service
 cd $basedir
