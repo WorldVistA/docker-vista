@@ -94,6 +94,12 @@ rocto = {
 EOF
 chown $instance:$instance $basedir/octo.conf
 
+echo "Fix broken Set of Codes DD's introduced by patch ECX*3*178"
+echo "See https://gitlab.com/YottaDB/DBMS/YDBOctoVistA/-/issues/26"
+$gtm_dist/mumps -dir <<\EOF
+S U="^" F I=0:0 S I=$O(^DD(I)) Q:'I  F J=0:0 S J=$O(^DD(I,J)) Q:'J  I $D(^(J,0))#2,$P(^(0),U,2)="S",$P(^(0),U,3)="" S $P(^(0),U,3)="N:NO;Y:YES"
+EOF
+
 # Perform mapping
 echo "Mapping VistA data to Octo"
 su $instance -c "source $basedir/etc/env && \$gtm_dist/mumps -dir << EOF
