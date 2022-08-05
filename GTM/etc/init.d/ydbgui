@@ -44,13 +44,13 @@ export PATH=$PATH:/usr/local/bin
 # Start YottaDB GUI background task
 start() {
     echo  "Starting YottaDB GUI"
-    su - $instance -c "cd $basedir/www && $gtm_dist/yottadb -run %XCMD 'do job^%webreq(8089,\"\",1,\"\",1)'"
+    su - $instance -c "$gtm_dist/yottadb -run ^%ydbgui"
 }
 
 # Stop YottaDB GUI background tasks
 stop() {
     echo "Stopping YottaDB GUI"
-    su - $instance -c "$gtm_dist/yottadb -run stop^%webreq"
+    su - $instance -c "$gtm_dist/yottadb -run stop^%ydbgui"
 }
 
 case "$1" in

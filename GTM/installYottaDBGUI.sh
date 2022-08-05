@@ -61,21 +61,23 @@ if [[ -z $firewall ]]; then
     firewall=true
 fi
 
-# Get code
+# Get code, build, install
 mkdir /tmp/ydbgui
 cd /tmp/ydbgui
 wget https://gitlab.com/YottaDB/UI/YDBGUI/-/archive/master/YDBGUI-master.zip -O YDBGUI.zip
-wget https://github.com/shabiel/M-Web-Server/archive/refs/tags/1.1.3.zip -O mws.zip
+#wget https://gitlab.com/shabiel/YDBGUI/-/archive/ydbgui-install/YDBGUI-ydbgui-install.zip -O YDBGUI.zip
+dir=$(zipinfo -1 YDBGUI.zip | head -1 | cut -d/ -f1)
 unzip YDBGUI.zip
-unzip mws.zip
-su $instance -c "find . -name '_*.m' -type f -exec cp {} $basedir/r/ \;"
-su $instance -c "cp -r YDBGUI-*/wwwroot/* $basedir/www"
-cd ..
+mv $dir YDBGUI
+mkdir YDBGUI/build && cd YDBGUI/build
+cmake .. && make VERBOSE=1 && make install
+cd /tmp/
 rm -rf /tmp/ydbgui
 
-# Create startup service
-cd $basedir
-su $instance -c "cp etc/init.d/ydbgui $basedir/etc"
+# Add additional YDBGUI items to env script
+cat <<EOF >> $basedir/etc/env
+export gtmroutines="\$gtmroutines /home/vehu/lib/gtm/plugin/o/_ydbgui.so /home/vehu/lib/gtm/plugin/o/_ydbmwebserver.so"
+EOF
 
 # Modify init.d scripts to reflect $instance
 perl -pi -e 's#/home/foia#'$basedir'#g' $basedir/etc/init.d/ydbgui
