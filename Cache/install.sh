@@ -77,6 +77,7 @@ if [[ -z $rpms ]]; then
 fi
 
 # hack for CentOS
+# TODO: Now that moved to Rocky Linux, see if this is needed.
 cp /etc/redhat-release /etc/redhat-release.orig
 echo "Red Hat Enterprise Linux (Santiago) release 6" > /etc/redhat-release
 

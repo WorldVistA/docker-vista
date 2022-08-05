@@ -2,7 +2,7 @@
 set(CTEST_SITE "$ENV{buildid}.docker")
 
 # Hardset buildname with {OS}-{Mversion}_{arch} convention
-set(CTEST_BUILD_NAME "CentOS-$ENV{mumps_implementation}-$ENV{gtmver}")
+set(CTEST_BUILD_NAME "Rocky-$ENV{mumps_implementation}-$ENV{gtmver}")
 
 # Set build type to experimental by default
 set(dashboard_model "Experimental")

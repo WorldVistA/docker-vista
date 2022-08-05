@@ -1,9 +1,8 @@
-FROM centos:7
+FROM rockylinux/rockylinux
 
 RUN echo "multilib_policy=best" >> /etc/yum.conf
 RUN yum update  -y && \
     yum install -y \
-                   coreutils \
                    util-linux \
                    gcc-c++ \
                    git \
@@ -24,7 +23,6 @@ RUN yum update  -y && \
                    file \
                    unzip \
                    net-tools \
-                   java-devel \
                    libicu \
                    libicu-devel \
                    recode \
@@ -35,10 +33,9 @@ RUN yum update  -y && \
                    vim \
                    bind-utils \
                    perl-Digest-SHA \
-                   epel-release \
+                   initscripts \
                    || true && \
     yum install -y http://libslack.org/daemon/download/daemon-0.6.4-1.i686.rpm > /dev/null && \
-    package-cleanup --cleandupes && \
     yum  -y clean all && \
     rm -rf /var/cache/yum
 
@@ -48,7 +45,8 @@ RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa && \
     ssh-keygen -t ed25519 -N "" -f /etc/ssh/ssh_host_ed25519_key && \
     sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
-    echo 'root:docker' | chpasswd
+    echo 'root:docker' | chpasswd && \
+    rm -f /run/nologin
 
 WORKDIR /opt/vista
 # Add each folder individually to improve rebuild times

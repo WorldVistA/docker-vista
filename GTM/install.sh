@@ -108,23 +108,27 @@ else
 fi
 
 # Install requirements for Octo
-yum install -y cmake3 vim-common bison flex readline-devel libconfig-devel openssl-devel
+yum --enablerepo=powertools install -y cmake vim-common bison flex readline-devel libconfig-devel openssl-devel
 
 # Download ydbinstall
 if $source; then
     if $installYottaDB; then
-        yum install -y \
+       yum install -y \
                     git \
                     gcc \
-                    cmake3 \
+                    make \
+                    cmake \
                     tcsh \
-                    {libconfig,gpgme,libicu,libgpg-error,libgcrypt,ncurses,openssl,zlib,elfutils-libelf}-devel \
-                    binutils
+                    libconfig \
+                    libicu-devel \
+                    ncurses-devel \
+                    elfutils-libelf-devel \
+                    binutils-devel
         git clone https://gitlab.com/YottaDB/DB/YDB.git
         cd YDB
         mkdir build
         cd build
-        cmake3 -D CMAKE_INSTALL_PREFIX:PATH=$PWD ../
+        cmake -D CMAKE_INSTALL_PREFIX:PATH=$PWD ../
         make -j `grep -c ^processor /proc/cpuinfo`
         make install
         cd yottadb_r*
