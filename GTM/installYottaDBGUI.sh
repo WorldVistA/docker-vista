@@ -64,8 +64,8 @@ fi
 # Get code, build, install
 mkdir /tmp/ydbgui
 cd /tmp/ydbgui
-wget https://gitlab.com/YottaDB/UI/YDBGUI/-/archive/master/YDBGUI-master.zip -O YDBGUI.zip
-#wget https://gitlab.com/shabiel/YDBGUI/-/archive/ydbgui-install/YDBGUI-ydbgui-install.zip -O YDBGUI.zip
+#wget https://gitlab.com/YottaDB/UI/YDBGUI/-/archive/master/YDBGUI-master.zip -O YDBGUI.zip
+wget https://gitlab.com/stefyottadb/YDBGUI/-/archive/v0.10.0/YDBGUI-v0.10.0.zip -O YDBGUI.zip
 dir=$(zipinfo -1 YDBGUI.zip | head -1 | cut -d/ -f1)
 unzip YDBGUI.zip
 mv $dir YDBGUI
