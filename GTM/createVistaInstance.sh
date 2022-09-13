@@ -97,21 +97,8 @@ fi
 
 echo "Creating $instance..."
 
-# Determine processor architecture - used to determine if we can use GT.M
-#                                    Shared Libraries
-# Default to x86 (32bit) - algorithm similar to gtminstall script
-arch=$(uname -m | tr -d _)
-if [ $arch == "x8664" ]; then
-    gtm_arch="x86_64"
-else
-    gtm_arch="x86"
-fi
 
-# Find GT.M:
-# Use path of /opt/lsb-gtm we can list the directories
-# if > 1 directory fail
-# Default GT.M install path is /usr/lib/fis-gtm/{gtm_ver}_{gtm_arch}
-# where gtm_arch=(x86 | x86_64) for linux
+# Find GT.M/YottaDB:
 # TODO: take GT.M path as the an argument to bypass logic and force GT.M
 #       location
 # list directory contents (1 per line) | count lines | strip leading and
@@ -208,7 +195,6 @@ echo "export gtm_lvnullsubs=2"                  >> $basedir/etc/env
 echo "export gtm_zquit_anyway=1"                >> $basedir/etc/env
 echo "export PATH=\$PATH:\$gtm_dist"            >> $basedir/etc/env
 echo "export basedir=$basedir"                  >> $basedir/etc/env
-echo "export gtm_arch=$gtm_arch"                >> $basedir/etc/env
 echo "export gtmver=$gtmver"                    >> $basedir/etc/env
 echo "export instance=$instance"                >> $basedir/etc/env
 echo "export gtm_sysid=$instance"               >> $basedir/etc/env
@@ -237,21 +223,11 @@ echo "source $basedir/etc/env" >> $basedir/.bashrc
 gtmroutines="\$basedir/r/\$gtmver*(\$basedir/r)"
 
 # This block: Set gtmroutines
-# 64bit GT.M can use a shared library instead of $gtm_dist
-# Also handle utf8 stuff
-if [[ $gtm_arch == "x86_64" && -e $basedir/lib/gtm/libgtmutil.so ]]; then
-  if $utf8; then
-    echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm/utf8/libgtmutil.so $basedir/lib/gtm/utf8\"" >> $basedir/etc/env
-  else
-    echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm/libgtmutil.so $basedir/lib/gtm\"" >> $basedir/etc/env
-  fi #utf8
+if $utf8; then
+  echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm/utf8/libgtmutil.so $basedir/lib/gtm/utf8\"" >> $basedir/etc/env
 else
-  if $utf8; then
-    echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm/utf8\"" >> $basedir/etc/env
-  else
-    echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm\"" >> $basedir/etc/env
-  fi
-fi
+  echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm/libgtmutil.so $basedir/lib/gtm\"" >> $basedir/etc/env
+fi #utf8
 
 # This block: Set utf-8 variables
 # LC_ALL & LC_LANG get set to C for a lot of time. We need these here.

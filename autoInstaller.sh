@@ -364,7 +364,6 @@ if $bootstrap; then
                        bind-utils \
                        perl-Digest-SHA \
                        > /dev/null
-    yum install -y http://libslack.org/daemon/download/daemon-0.6.4-1.i686.rpm > /dev/null
     package-cleanup --cleandupes
     yum  -y clean all
     rm -rf /var/cache/yum

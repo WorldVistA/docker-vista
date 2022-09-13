@@ -1,4 +1,4 @@
-FROM rockylinux/rockylinux
+FROM rockylinux:8.6
 
 RUN echo "multilib_policy=best" >> /etc/yum.conf
 RUN yum update  -y && \
@@ -35,7 +35,6 @@ RUN yum update  -y && \
                    perl-Digest-SHA \
                    initscripts \
                    || true && \
-    yum install -y http://libslack.org/daemon/download/daemon-0.6.4-1.i686.rpm > /dev/null && \
     yum  -y clean all && \
     rm -rf /var/cache/yum
 
