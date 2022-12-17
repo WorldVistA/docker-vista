@@ -343,6 +343,6 @@ There are two special tests:
 
    This test installs java, retrieves a zip file of a github repo and makes a VistALink
    connection. This test does take a few seconds to complete and modifies the installed
-   packages of the system. It also needs to have 2 environemnt variables defined: accessCode
+   packages of the system. It also needs to have 2 environment variables defined: accessCode
    and verifyCode. These should be a valid access/verify code of a system manager user
    that has access to VistALink
