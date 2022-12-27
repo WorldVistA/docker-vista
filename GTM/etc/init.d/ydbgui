@@ -41,16 +41,16 @@ fi
 source /home/foia/etc/env
 export PATH=$PATH:/usr/local/bin
 
-# Start YottaDB GUI background task
+# Start YottaDB GUI @ 8089
 start() {
     echo  "Starting YottaDB GUI"
-    su - $instance -c "$gtm_dist/yottadb -run ^%ydbgui"
+    su - $instance -c "$gtm_dist/yottadb -run ^%ydbgui --port 8089 > $basedir/log/ydbgui.log 2>&1 &"
 }
 
-# Stop YottaDB GUI background tasks
+# Stop YottaDB GUI 
 stop() {
     echo "Stopping YottaDB GUI"
-    su - $instance -c "$gtm_dist/yottadb -run stop^%ydbgui"
+    su - $instance -c "$gtm_dist/yottadb -run stop^%ydbgui --port 8089"
 }
 
 case "$1" in

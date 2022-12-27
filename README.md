@@ -109,7 +109,7 @@ The exported ports are as follows:
 | 9101        | 9101       | BMX (iCare etc) | RPMS              |
 | 57772       | 57772      | Caché Web Portal | Caché            |
 | 1338        | 1338       | SQL Listener Port | YottaDB         |
-| 8089        | 8090       | YottaDB GUI     | YottaDB           |
+| 8089        | 8089       | YottaDB GUI     | YottaDB           |
 
 ## Detailed Discussion and Reference
 

@@ -272,7 +272,7 @@ chmod +x $basedir/bin/tied.sh
 
 # create startup script used by docker
 echo "#!/bin/bash"                                           > $basedir/bin/start.sh
-echo 'trap "/etc/init.d/'${instance}'vista stop" SIGTERM'   >> $basedir/bin/start.sh
+echo 'trap "/etc/init.d/'${instance}'vista stop; /etc/init.d/'${instance}'vista-ydbgui stop" SIGTERM'   >> $basedir/bin/start.sh
 echo 'echo "Starting xinetd"'                               >> $basedir/bin/start.sh
 echo "/usr/sbin/xinetd"                                     >> $basedir/bin/start.sh
 echo 'echo "Starting sshd"'                                 >> $basedir/bin/start.sh
@@ -284,7 +284,6 @@ echo '	echo "Starting QEWD process"'                       >> $basedir/bin/start
 echo "	/etc/init.d/${instance}vista-qewd start"            >> $basedir/bin/start.sh
 echo 'fi'                                                   >> $basedir/bin/start.sh
 echo "if [ -f /etc/init.d/${instance}vista-ydbgui ] ; then" >> $basedir/bin/start.sh
-echo '	echo "Starting YottaDB GUI process"'                >> $basedir/bin/start.sh
 echo "	/etc/init.d/${instance}vista-ydbgui start"          >> $basedir/bin/start.sh
 echo 'fi'                                                   >> $basedir/bin/start.sh
 echo "chmod ug+rw $basedir/tmp/*"                           >> $basedir/bin/start.sh

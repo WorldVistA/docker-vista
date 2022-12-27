@@ -82,12 +82,6 @@ EOF"
     echo "Waiting for TaskMan to stop (2 sec)"
     sleep 2
 
-    # Stop PIP
-    if [ -d $basedir/pip ] ; then
-        echo "Stopping PIP"
-        su $instance -c "source $basedir/etc/env && $basedir/pip/pipstop"
-    fi
-
     # Look for M processes and terminate them nicely
     processes=$(pgrep mumps)
     if [ ! -z "${processes}" ] ; then

@@ -1,4 +1,4 @@
-FROM rockylinux:8.6
+FROM rockylinux:8.7
 
 RUN echo "multilib_policy=best" >> /etc/yum.conf
 RUN yum update  -y && \
