@@ -40,7 +40,7 @@ Default: "OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)"
 
 Plan VI (Internationalized Version) OSEHRA VistA (YottaDB, UTF-8 enabled, no bootstrap, with QEWD and Panorama)
 
-    docker build --build-arg flags="-byuma https://github.com/OSEHRA-Sandbox/VistA-M/archive/plan-vi.zip -p ./Common/ov6piko.sh" --build-arg instance="ov6" -t ov6 .
+    docker build --build-arg flags="-byuma https://github.com/WorldVistA/VistA-M/archive/plan-vi.zip -p ./Common/ov6piko.sh" --build-arg instance="ov6" -t ov6 .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=ov6 ov6
 
 WorldVistA (YottaDB, Panorama, no boostrap, skip testing):
@@ -48,25 +48,20 @@ WorldVistA (YottaDB, Panorama, no boostrap, skip testing):
     docker build --build-arg flags="-bymsa http://opensourcevista.net/NancysVistAServer/BetaWVEHR-3.0-Ver2-16Without-CPT-20181004/FileForDockerBuildWVEHR3.0WithoutCPT.zip -p Common/wvDemopi.sh" --build-arg instance="wv" -t wv .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=wv wv
 
-vxVistA (YottaDB, no boostrap, skip testing, fix Kernel Routines and do post-install as well):
-
-    docker build --build-arg flags="-ybsfa https://github.com/OSEHRA/vxVistA-M/archive/master.zip -p ./Common/vxvistaPostInstall.sh" --build-arg instance="vxvista" -t vxvista .
-    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 9080:9080 --name=vxvista vxvista
-
 VEHU (YottaDB, no bootstrap, skip testing, Panorama, SQL Access, BATS Test)
 
-    docker build --build-arg flags="-ybsmtqa https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
+    docker build --build-arg flags="-ybsmtqa https://github.com/WorldVistA/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 -p 1338:1338 --name=vehu vehu
 
 VEHU (YottaDB with GUI, build YottaDB from source, SQL Access)
 
-    docker build --build-arg flags="-obsqna https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
+    docker build --build-arg flags="-obsqna https://github.com/WorldVistA/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 1338:1338 -p 8089:8089 --name=vehu vehu
 
 VEHU Plan VI (Internationalized Version) (YottaDB, UTF-8 enabled, no bootstrap, skip testing, Panorama)
 
-    docker build --build-arg flags="-bysuma https://github.com/OSEHRA-Sandbox/VistA-VEHU-M/archive/plan-vi.zip" --build-arg instance="vehu6" -t osehra/vehu6:201808 -t osehra/vehu6:latest .
-    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=vehu osehra/vehu6
+    docker build --build-arg flags="-bysuma https://github.com/WorldVistA/VistA-VEHU-M/archive/plan-vi.zip" --build-arg instance="vehu6" -t worldvista/vehu6:201808 -t worldvista/vehu6:latest .
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=vehu worldvista/vehu6
 
 RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
 
@@ -154,7 +149,7 @@ as follows:
 
 | Option | Default | Description |
 | ------ | ------- | ----------- |
-| a      | https://github.com/OSEHRA/VistA-M/archive/master.zip |  Alternate VistA-M repo (zip or git format) (Must be in OSEHRA format) |
+| a      | https://github.com/WorldVistA/VistA-M/archive/master.zip |  Alternate VistA-M repo (zip or git format) (Must be in OSEHRA format) |
 | b      | n/a     | Skip bootstrapping system (used for docker) |
 | c      | n/a     | Use Caché |
 | d      | n/a     | Create development directories (s & p) (GT.M and YottaDB only) |
