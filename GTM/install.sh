@@ -2,7 +2,7 @@
 #---------------------------------------------------------------------------
 # Copyright 2011-2017 The Open Source Electronic Health Record Agent
 # Copyright 2020-2021 Sam Habiel
-# Copyright 2021-2022 YottaDB LLC
+# Copyright 2021-2023 YottaDB LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ usage()
 
     DEFAULTS:
       GT.M Version = V6.3-013
-      YottaDB Version = r1.32
+      YottaDB Version = r1.36
 
     OPTIONS:
       -h    Show this message
@@ -86,7 +86,7 @@ fi
 
 # YottaDB
 if [ $installYottaDB ] && [ -z $gtm_ver ]; then
-    gtm_ver="r1.34"
+    gtm_ver="r1.36"
 fi
 
 if $source; then
