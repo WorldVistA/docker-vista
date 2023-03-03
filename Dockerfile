@@ -64,8 +64,6 @@ ADD ./*.sh /opt/vista/
 ARG instance=foia
 ENV instance_name=$instance
 ARG flags="-y -b -e -m -p ./Common/ovydbPostInstall.sh"
-ARG entry="/home"
-ENV entry_path="${entry}/${instance_name}"
 ENV install_flags="$flags -i ${instance_name}"
 
 RUN dos2unix /opt/vista/* >/dev/null 2>&1 && \
@@ -81,5 +79,6 @@ RUN dos2unix /opt/vista/* >/dev/null 2>&1 && \
     dos2unix /opt/vista/ViViaN/* >/dev/null 2>&1
 
 RUN ./autoInstaller.sh ${install_flags}
-ENTRYPOINT ${entry_path}/bin/start.sh
+ENTRYPOINT [ "/bin/start.sh" ]
+CMD [ "primary" ]
 EXPOSE 22 8001 9100 9101 61012 9430 8080 8081 8089 9080 57772 5001

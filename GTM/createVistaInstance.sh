@@ -208,6 +208,8 @@ fi
 echo 'if [ -d $gtm_dist/plugin/bin ]; then'     >> $basedir/etc/env
 echo " export PATH=\$gtm_dist/plugin/bin:\$PATH" >> $basedir/etc/env
 echo "fi"                                       >> $basedir/etc/env
+echo "export gtm_repl_instance=$basedir/g/db.repl" >> $basedir/etc/env
+
 
 # NB: gtm_side_effects and gtm_boolean intentionally omitted here.
 # While I would use them on production; I want to see if we ever have problems
@@ -273,32 +275,32 @@ chown $instance:$instance $basedir/bin/tied.sh
 chmod +x $basedir/bin/tied.sh
 
 # create startup script used by docker
-echo "#!/bin/bash"                                           > $basedir/bin/start.sh
-echo 'trap "/etc/init.d/'${instance}'vista stop; /etc/init.d/'${instance}'vista-ydbgui stop" SIGTERM'   >> $basedir/bin/start.sh
-echo 'echo "Starting xinetd"'                               >> $basedir/bin/start.sh
-echo "/usr/sbin/xinetd"                                     >> $basedir/bin/start.sh
-echo 'echo "Starting sshd"'                                 >> $basedir/bin/start.sh
-echo "/usr/sbin/sshd"                                       >> $basedir/bin/start.sh
-echo 'echo "Starting vista processes"'                      >> $basedir/bin/start.sh
-echo "/etc/init.d/${instance}vista start"                   >> $basedir/bin/start.sh
-echo "if [ -f /etc/init.d/${instance}vista-qewd ] ; then"   >> $basedir/bin/start.sh
-echo '	echo "Starting QEWD process"'                       >> $basedir/bin/start.sh
-echo "	/etc/init.d/${instance}vista-qewd start"            >> $basedir/bin/start.sh
-echo 'fi'                                                   >> $basedir/bin/start.sh
-echo "if [ -f /etc/init.d/${instance}vista-ydbgui ] ; then" >> $basedir/bin/start.sh
-echo "	/etc/init.d/${instance}vista-ydbgui start"          >> $basedir/bin/start.sh
-echo 'fi'                                                   >> $basedir/bin/start.sh
-echo "chmod ug+rw $basedir/tmp/*"                           >> $basedir/bin/start.sh
-echo '# Create a fifo so that bash can read from it to'     >> $basedir/bin/start.sh
-echo '# catch signals from docker'                          >> $basedir/bin/start.sh
-echo 'rm -f ~/fifo'                                         >> $basedir/bin/start.sh
-echo 'mkfifo ~/fifo || exit'                                >> $basedir/bin/start.sh
-echo 'chmod 400 ~/fifo'                                     >> $basedir/bin/start.sh
-echo 'read < ~/fifo'                                        >> $basedir/bin/start.sh
+echo "#!/bin/bash"                                           > /bin/start.sh
+echo 'trap "/etc/init.d/'${instance}'vista stop; /etc/init.d/'${instance}'vista-ydbgui stop" SIGTERM'   >> /bin/start.sh
+echo 'echo "Starting xinetd"'                               >> /bin/start.sh
+echo "/usr/sbin/xinetd"                                     >> /bin/start.sh
+echo 'echo "Starting sshd"'                                 >> /bin/start.sh
+echo "/usr/sbin/sshd"                                       >> /bin/start.sh
+echo 'echo "Starting vista processes"'                      >> /bin/start.sh
+echo "/etc/init.d/${instance}vista start${$1}"              >> /bin/start.sh
+echo "if [ -f /etc/init.d/${instance}vista-qewd ] ; then"   >> /bin/start.sh
+echo '	echo "Starting QEWD process"'                       >> /bin/start.sh
+echo "	/etc/init.d/${instance}vista-qewd start"            >> /bin/start.sh
+echo 'fi'                                                   >> /bin/start.sh
+echo "if [ -f /etc/init.d/${instance}vista-ydbgui ] ; then" >> /bin/start.sh
+echo "	/etc/init.d/${instance}vista-ydbgui start"          >> /bin/start.sh
+echo 'fi'                                                   >> /bin/start.sh
+echo "chmod ug+rw /tmp/*"                                   >> /bin/start.sh
+echo '# Create a fifo so that bash can read from it to'     >> /bin/start.sh
+echo '# catch signals from docker'                          >> /bin/start.sh
+echo 'rm -f ~/fifo'                                         >> /bin/start.sh
+echo 'mkfifo ~/fifo || exit'                                >> /bin/start.sh
+echo 'chmod 400 ~/fifo'                                     >> /bin/start.sh
+echo 'read < ~/fifo'                                        >> /bin/start.sh
 
 # Ensure correct permissions for start.sh
-chown $instance:$instance $basedir/bin/start.sh
-chmod +x $basedir/bin/start.sh
+chown $instance:$instance /bin/start.sh
+chmod +x /bin/start.sh
 
 # Create Global mapping
 # Thanks to Sam Habiel, Gus Landis, and others for the inital values

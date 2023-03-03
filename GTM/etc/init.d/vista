@@ -52,6 +52,15 @@ start() {
     # Remove relinkctl files
     su $instance -c "source $basedir/etc/env && rm -f $basedir/tmp/*relink*"
 
+    # Set-up replication
+    # Only do this once on first start-up
+    if [ ! -f $basedir/g/db.repl ]; then
+        su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/repl_setup.sh"
+    fi
+
+    # Start Origin replication
+    su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/start.sh"
+
     # Start TaskMan
     echo "Starting TaskMan"
     su $instance -c "source $basedir/etc/env && cd $basedir/tmp && $gtm_dist/mumps -run START^ZTMB"
@@ -70,6 +79,38 @@ start() {
         su $instance -c "source $basedir/etc/env && cd $basedir && $basedir/lib/gtm/plugin/bin/rocto > $basedir/log/rocto.log 2>&1 &"
     fi
 }
+
+startprimary() {
+	start
+}
+
+startsecondary() {
+    # If a database is shutdown cleanly there shouldn't be anything in the
+    # journals to replay, so we can run this without worry
+    echo "Ensuring a consistant database (mupip recover -backward)"
+    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip journal -recover -backward $basedir/j/$instance.mjl >> $basedir/log/journalRecovery.log 2>&1 && $basedir/bin/enableJournal.sh"
+
+    # Delete temp and then recreate
+    echo "Deleting and recreating temp region"
+    rm -vf $basedir/g/temp.dat
+    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip create -region=TEMP"
+
+    # Rundown readonly GT.M/YDB databases
+    for f in $gtm_dist/*.dat; do $gtm_dist/mupip rundown -f $f; done
+
+    # Remove relinkctl files
+    su $instance -c "source $basedir/etc/env && rm -f $basedir/tmp/*relink*"
+
+    # Set-up replication
+    # Only do this once on first start-up
+    if [ ! -f $basedir/g/db.repl ]; then
+        su $instance -c "source $basedir/etc/env && $basedir/bin/repl/recv/repl_setup.sh"
+    fi
+
+    # Start Receiving replication
+    su $instance -c "source $basedir/etc/env && $basedir/bin/repl/recv/start.sh"
+}
+
 stop() {
     # Stop TaskMan
     su $instance -c "source $basedir/etc/env && mumps -run ^%XCMD 'S U=\"^\" D STOP^ZTMKU' << EOF
@@ -101,6 +142,11 @@ EOF"
         #TODO: logging required here
         echo "M process are being shutdown forcefully!"
         pkill -9 mumps
+    fi
+
+    # Stop replication
+    if [ -f $basedir/g/db.repl ] ; then
+        su $instance -c "source $basedir/etc/env && $basedir/bin/originating_stop.sh"
     fi
 }
 
