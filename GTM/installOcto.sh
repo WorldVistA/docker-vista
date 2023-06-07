@@ -63,8 +63,7 @@ echo "Done Creating Octo and AIM databases"
 
 # Add additional Octo items to env script
 cat <<EOF >> $basedir/etc/env
-export gtmroutines="\$gtmroutines $gtm_dist/plugin/o/_ydbocto.so $gtm_dist/plugin/o/_ydbposix.so $gtm_dist/plugin/o/_ydbaim.so"
-export GTMXC_ydbposix="$gtm_dist/plugin/ydbposix.xc"
+export gtmroutines="\$gtmroutines $gtm_dist/plugin/o/_ydbocto.so $gtm_dist/plugin/o/_ydbaim.so"
 EOF
 
 echo "Creating admin:admin Octo user"

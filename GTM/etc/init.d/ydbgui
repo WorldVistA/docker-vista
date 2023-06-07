@@ -44,7 +44,7 @@ export PATH=$PATH:/usr/local/bin
 # Start YottaDB GUI @ 8089
 start() {
     echo  "Starting YottaDB GUI"
-    su - $instance -c "$gtm_dist/yottadb -run ^%ydbgui --port 8089 --readwrite > $basedir/log/ydbgui.log 2>&1 &"
+    su - $instance -c "$gtm_dist/yottadb -run ^%ydbgui --port 8089 --auth-file /home/foia/etc/users.json > $basedir/log/ydbgui.log 2>&1 &"
 }
 
 # Stop YottaDB GUI 

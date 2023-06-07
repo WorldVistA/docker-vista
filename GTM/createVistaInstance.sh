@@ -223,11 +223,13 @@ echo "source $basedir/etc/env" >> $basedir/.bashrc
 gtmroutines="\$basedir/r/\$gtmver*(\$basedir/r)"
 
 # This block: Set gtmroutines
+# Include Posix as that's required by Octo and GUI
 if $utf8; then
-  echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm/utf8/libgtmutil.so $basedir/lib/gtm/utf8\"" >> $basedir/etc/env
+  echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm/plugin/o/utf8/_ydbposix.so $basedir/lib/gtm/utf8/libgtmutil.so\"" >> $basedir/etc/env
 else
-  echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm/libgtmutil.so $basedir/lib/gtm\"" >> $basedir/etc/env
+  echo "export gtmroutines=\"$gtmroutines $basedir/lib/gtm/plugin/o/_ydbposix.so $basedir/lib/gtm/libgtmutil.so\"" >> $basedir/etc/env
 fi #utf8
+echo "export GTMXC_ydbposix=\"$gtm_dist/plugin/ydbposix.xc\"" >> $basedir/etc/env
 
 # This block: Set utf-8 variables
 # LC_ALL & LC_LANG get set to C for a lot of time. We need these here.

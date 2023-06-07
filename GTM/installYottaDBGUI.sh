@@ -57,27 +57,24 @@ do
     esac
 done
 
-if [[ -z $firewall ]]; then
+if [ -z $firewall ]; then
     firewall=true
 fi
-
-# Get code, build, install
-mkdir /tmp/ydbgui
-cd /tmp/ydbgui
-wget https://gitlab.com/YottaDB/UI/YDBGUI/-/archive/master/YDBGUI-master.zip -O YDBGUI.zip
-#wget https://gitlab.com/shabiel/YDBGUI/-/archive/ydbgui-install/YDBGUI-ydbgui-install.zip -O YDBGUI.zip
-dir=$(zipinfo -1 YDBGUI.zip | head -1 | cut -d/ -f1)
-unzip YDBGUI.zip
-mv $dir YDBGUI
-mkdir YDBGUI/build && cd YDBGUI/build
-cmake .. && make VERBOSE=1 && make install
-cd /tmp/
-rm -rf /tmp/ydbgui
 
 # Add additional YDBGUI items to env script
 cat <<EOF >> $basedir/etc/env
 export gtmroutines="\$gtmroutines /home/vehu/lib/gtm/plugin/o/_ydbgui.so /home/vehu/lib/gtm/plugin/o/_ydbmwebserver.so"
 EOF
+
+# Add users for the GUI
+cat <<EOF >> $basedir/etc/users.json
+[{
+	"username": "admin",
+	"password": "admin",
+	"authorization": "RW"
+}]
+EOF
+chown $instance:$instance $basedir/etc/users.json
 
 # Modify init.d scripts to reflect $instance
 perl -pi -e 's#/home/foia#'$basedir'#g' $basedir/etc/init.d/ydbgui

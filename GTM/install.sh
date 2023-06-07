@@ -107,23 +107,13 @@ else
     gtm_arch=$arch
 fi
 
-# Install requirements for Octo
-yum --enablerepo=powertools install -y cmake vim-common bison flex readline-devel libconfig-devel openssl-devel
+# Install requirements for YDB Source/Octo/YDBGUI
+yum --enablerepo=powertools install -y cmake vim-common bison flex readline-devel libconfig-devel openssl-devel epel-release tcsh ncurses-devel elfutils-libelf-devel
+yum install -y libsodium-devel # Must install epel-release first
 
 # Download ydbinstall
 if $source; then
     if $installYottaDB; then
-       yum install -y \
-                    git \
-                    gcc \
-                    make \
-                    cmake \
-                    tcsh \
-                    libconfig \
-                    libicu-devel \
-                    ncurses-devel \
-                    elfutils-libelf-devel \
-                    binutils-devel
         git clone https://gitlab.com/YottaDB/DB/YDB.git
         cd YDB
         mkdir build
@@ -132,7 +122,7 @@ if $source; then
         make -j `grep -c ^processor /proc/cpuinfo`
         make install
         cd yottadb_r*
-        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --octo --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch"
+        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --octo --gui --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch"
     else
         echo "Installing GT.M from source isn't supported"
         exit 1
@@ -155,7 +145,7 @@ else
     #                     this follows VistA convention of uppercase only routines
     # Force install is necessary b/c of a recent change in the YDB installer.
     if [ "$installYottaDB" = "true" ] ; then
-        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --octo --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch" $gtm_ver
+        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --octo --gui --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch" $gtm_ver
     else
         ./ydbinstall --force-install --gtm --ucaseonly-utils --utf8 default --installdir /opt/lsb-gtm/"$gtm_ver"_"$gtm_arch" $gtm_ver
     fi
