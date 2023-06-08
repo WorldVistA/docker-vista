@@ -162,23 +162,23 @@ rm -rf $tempdir
 mv /etc/redhat-release.orig /etc/redhat-release
 
 # create startup script used by docker
-echo "#!/bin/bash"                                      > $basedir/bin/start.sh
-echo 'trap "ccontrol stop CACHE quietly" SIGTERM'       >> $basedir/bin/start.sh
-echo 'echo "Starting sshd"'                             >> $basedir/bin/start.sh
-echo "/usr/sbin/sshd"                                   >> $basedir/bin/start.sh
-echo 'echo "Starting vista processes"'                  >> $basedir/bin/start.sh
-echo 'cp '${basedir}'/cache.cpf '${basedir}'/cache.cpf-old' >> $basedir/bin/start.sh
-echo 'rm '${basedir}'/cache.cpf_*'                      >> $basedir/bin/start.sh
-echo 'cp '${basedir}'/cache.cpf-new '${basedir}'/cache.cpf' >> $basedir/bin/start.sh
-echo 'find '${basedir}'/ -iname CACHE.DAT -exec touch {} \;' >>$basedir/bin/start.sh
-echo "ccontrol start CACHE"                             >> $basedir/bin/start.sh
-echo '# Create a fifo so that bash can read from it to' >> $basedir/bin/start.sh
-echo '# catch signals from docker'                      >> $basedir/bin/start.sh
-echo 'rm -f ~/fifo'                                     >> $basedir/bin/start.sh
-echo 'mkfifo ~/fifo || exit'                            >> $basedir/bin/start.sh
-echo 'chmod 400 ~/fifo'                                 >> $basedir/bin/start.sh
-echo 'read < ~/fifo'                                    >> $basedir/bin/start.sh
+echo "#!/bin/bash"                                      > /bin/start.sh
+echo 'trap "ccontrol stop CACHE quietly" SIGTERM'       >> /bin/start.sh
+echo 'echo "Starting sshd"'                             >> /bin/start.sh
+echo "/usr/sbin/sshd"                                   >> /bin/start.sh
+echo 'echo "Starting vista processes"'                  >> /bin/start.sh
+echo 'cp '${basedir}'/cache.cpf '${basedir}'/cache.cpf-old' >> /bin/start.sh
+echo 'rm '${basedir}'/cache.cpf_*'                      >> /bin/start.sh
+echo 'cp '${basedir}'/cache.cpf-new '${basedir}'/cache.cpf' >> /bin/start.sh
+echo 'find '${basedir}'/ -iname CACHE.DAT -exec touch {} \;' >>/bin/start.sh
+echo "ccontrol start CACHE"                             >> /bin/start.sh
+echo '# Create a fifo so that bash can read from it to' >> /bin/start.sh
+echo '# catch signals from docker'                      >> /bin/start.sh
+echo 'rm -f ~/fifo'                                     >> /bin/start.sh
+echo 'mkfifo ~/fifo || exit'                            >> /bin/start.sh
+echo 'chmod 400 ~/fifo'                                 >> /bin/start.sh
+echo 'read < ~/fifo'                                    >> /bin/start.sh
 
 # Ensure correct permissions for start.sh
-chown cacheusr:cachegrp $basedir/bin/start.sh
-chmod +x $basedir/bin/start.sh
+chown cacheusr:cachegrp /bin/start.sh
+chmod +x /bin/start.sh
