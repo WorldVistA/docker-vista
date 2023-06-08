@@ -41,7 +41,7 @@ usage()
 
     DEFAULTS:
       GT.M Version = V6.3-013
-      YottaDB Version = r1.36
+      YottaDB Version = r1.38
 
     OPTIONS:
       -h    Show this message
@@ -86,7 +86,7 @@ fi
 
 # YottaDB
 if [ $installYottaDB ] && [ -z $gtm_ver ]; then
-    gtm_ver="r1.36"
+    gtm_ver="r1.38"
 fi
 
 if $source; then
