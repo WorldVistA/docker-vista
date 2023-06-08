@@ -34,8 +34,7 @@
 # is created. This script will need to have it hardcoded
 source /home/foia/etc/env
 
-# Start VistA background tasks
-start() {
+cleanup() {
     # If a database is shutdown cleanly there shouldn't be anything in the
     # journals to replay, so we can run this without worry
     echo "Ensuring a consistant database (mupip recover -backward)"
@@ -51,16 +50,10 @@ start() {
 
     # Remove relinkctl files
     su $instance -c "source $basedir/etc/env && rm -f $basedir/tmp/*relink*"
+}
 
-    # Set-up replication
-    # Only do this once on first start-up
-    if [ ! -f $basedir/g/db.repl ]; then
-        su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/repl_setup.sh"
-    fi
-
-    # Start Origin replication
-    su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/start.sh"
-
+# Start VistA background tasks
+startvista() {
     # Start TaskMan
     echo "Starting TaskMan"
     su $instance -c "source $basedir/etc/env && cd $basedir/tmp && $gtm_dist/mumps -run START^ZTMB"
@@ -81,26 +74,17 @@ start() {
 }
 
 startprimary() {
-	start
+    # Set-up replication
+    # Only do this once on first start-up
+    if [ ! -f $basedir/g/db.repl ]; then
+        su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/repl_setup.sh"
+    fi
+
+    # Start Origin replication
+    su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/start.sh"
 }
 
 startsecondary() {
-    # If a database is shutdown cleanly there shouldn't be anything in the
-    # journals to replay, so we can run this without worry
-    echo "Ensuring a consistant database (mupip recover -backward)"
-    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip journal -recover -backward $basedir/j/$instance.mjl >> $basedir/log/journalRecovery.log 2>&1 && $basedir/bin/enableJournal.sh"
-
-    # Delete temp and then recreate
-    echo "Deleting and recreating temp region"
-    rm -vf $basedir/g/temp.dat
-    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip create -region=TEMP"
-
-    # Rundown readonly GT.M/YDB databases
-    for f in $gtm_dist/*.dat; do $gtm_dist/mupip rundown -f $f; done
-
-    # Remove relinkctl files
-    su $instance -c "source $basedir/etc/env && rm -f $basedir/tmp/*relink*"
-
     # Set-up replication
     # Only do this once on first start-up
     if [ ! -f $basedir/g/db.repl ]; then
@@ -110,6 +94,8 @@ startsecondary() {
     # Start Receiving replication
     su $instance -c "source $basedir/etc/env && $basedir/bin/repl/recv/start.sh"
 }
+
+#TODO: Implement stop for secondaries
 
 stop() {
     # Stop TaskMan
@@ -150,10 +136,21 @@ EOF"
     fi
 }
 
+echo "I am starting with $1"
 case "$1" in
     start)
-        start
+	cleanup
+        startvista
         ;;
+    startprimary)
+	cleanup
+	startprimary
+	startvista
+	;;
+    startsecondary)
+	cleanup
+	startsecondary
+	;;
     stop)
         stop
         ;;
@@ -162,6 +159,6 @@ case "$1" in
         start
         ;;
     *)
-        echo "Usage: $0 {start|stop|restart}"
+        echo "Usage: $0 {start|startprimary|startsecondary|stop|restart}"
         ;;
 esac
