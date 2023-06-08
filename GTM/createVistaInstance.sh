@@ -282,7 +282,7 @@ echo "/usr/sbin/xinetd"                                     >> /bin/start.sh
 echo 'echo "Starting sshd"'                                 >> /bin/start.sh
 echo "/usr/sbin/sshd"                                       >> /bin/start.sh
 echo 'echo "Starting vista processes"'                      >> /bin/start.sh
-echo "/etc/init.d/${instance}vista start${$1}"              >> /bin/start.sh
+echo "/etc/init.d/${instance}vista start\${1}"              >> /bin/start.sh
 echo "if [ -f /etc/init.d/${instance}vista-qewd ] ; then"   >> /bin/start.sh
 echo '	echo "Starting QEWD process"'                       >> /bin/start.sh
 echo "	/etc/init.d/${instance}vista-qewd start"            >> /bin/start.sh
