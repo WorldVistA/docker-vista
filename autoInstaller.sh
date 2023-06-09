@@ -585,18 +585,8 @@ if $installgtm || $installYottaDB; then
   su $instance -c "source $basedir/etc/env && $scriptdir/GTM/fixHL7Port.sh"
   echo "Adding Audit 0 node"
   su $instance -c "source $basedir/etc/env && $gtm_dist/mumps -r %XCMD 'S ^DIA(0)=\"AUDIT^1.1I\"'"
-  echo "Enabling Journaling"
-  su $instance -c "source $basedir/etc/env && $basedir/bin/enableJournal.sh"
-fi
-
-# if we are running on docker we must shutdown gracefully or else corruption will occur
-# there is also no need to restart xinetd if we are running in docker as we are going to
-# shut it down
-if $bootstrap && ($installgtm || $installYottaDB); then
-    # Restart xinetd
-    service xinetd restart
-elif ($installgtm || $installYottaDB); then
-    service ${instance}vista stop
+  # Set-up the source server for replication/journaling
+  su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/setup.sh"
 fi
 
 # Add p and s directories to gtmroutines environment variable
@@ -686,4 +676,14 @@ if ! $devMode; then
     else
         rm -rf $basedir/Dashboard/VistA-M
     fi
+fi
+
+# if we are running on docker we must shutdown gracefully or else corruption will occur
+# there is also no need to restart xinetd if we are running in docker as we are going to
+# shut it down
+if $bootstrap && ($installgtm || $installYottaDB); then
+    # Restart xinetd
+    service xinetd restart
+elif ($installgtm || $installYottaDB); then
+    service ${instance}vista stop
 fi

@@ -38,7 +38,16 @@ cleanup() {
     # If a database is shutdown cleanly there shouldn't be anything in the
     # journals to replay, so we can run this without worry
     echo "Ensuring a consistant database (mupip recover -backward)"
-    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip journal -recover -backward $basedir/j/$instance.mjl >> $basedir/log/journalRecovery.log 2>&1 && $basedir/bin/enableJournal.sh"
+    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip journal -recover -backward $basedir/j/$instance.mjl"
+
+    # Recover Octo region
+    # TODO: AIM region is not journaled... Need to fix that and do that later
+    # This doesn't work, with replication, as it needs to be replicated with journaling.
+    # TODO: Move Octo to its own SI replicated container
+    #if [ -f $basedir/lib/gtm/plugin/bin/octo ] ; then
+    #    echo "Recovering Octo"
+    #    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip journal -recover -backward $basedir/j/octo.mjl"
+    #fi
 
     # Delete temp and then recreate
     echo "Deleting and recreating temp region"
@@ -54,6 +63,9 @@ cleanup() {
 
 # Start VistA background tasks
 startvista() {
+    # Start Dummy Replication (needed to activate journal pool)
+    su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/setup.sh"
+
     # Start TaskMan
     echo "Starting TaskMan"
     su $instance -c "source $basedir/etc/env && cd $basedir/tmp && $gtm_dist/mumps -run START^ZTMB"
@@ -65,31 +77,23 @@ startvista() {
     fi
 
     # Start Octo
-    if [ -d $basedir/lib/gtm/plugin/bin ] ; then
+    if [ -f $basedir/lib/gtm/plugin/bin/rocto ] ; then
         echo "Starting Rocto"
-        su $instance -c "source $basedir/etc/env && $gtm_dist/mupip journal -recover -backward $basedir/j/octo.mjl >> $basedir/log/OctoJournalRecovery.log 2>&1"
-        su $instance -c "source $basedir/etc/env && $gtm_dist/mupip set -journal=\"enable,on,before,file=$basedir/j/octo.mjl\" -file $basedir/g/octo.dat >> $basedir/log/OctoJournal.log 2>&1"
+	# The next line doesn't work with replication, as the region needs to be replicated too.
+	# TODO: move Octo to its own SI replicated container
+        #su $instance -c "source $basedir/etc/env && $gtm_dist/mupip set -journal=\"enable,on,before,file=$basedir/j/octo.mjl\" -file $basedir/g/octo.dat"
         su $instance -c "source $basedir/etc/env && cd $basedir && $basedir/lib/gtm/plugin/bin/rocto > $basedir/log/rocto.log 2>&1 &"
     fi
 }
 
 startprimary() {
-    # Set-up replication
-    # Only do this once on first start-up
-    if [ ! -f $basedir/g/db.repl ]; then
-        su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/repl_setup.sh"
-    fi
-
     # Start Origin replication
     su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/start.sh"
 }
 
 startsecondary() {
-    # Set-up replication
-    # Only do this once on first start-up
-    if [ ! -f $basedir/g/db.repl ]; then
-        su $instance -c "source $basedir/etc/env && $basedir/bin/repl/recv/repl_setup.sh"
-    fi
+    # Set-up replication instance file
+    su $instance -c "source $basedir/etc/env && $basedir/bin/repl/recv/setup.sh"
 
     # Start Receiving replication
     su $instance -c "source $basedir/etc/env && $basedir/bin/repl/recv/start.sh"
@@ -130,10 +134,28 @@ EOF"
         pkill -9 mumps
     fi
 
+    # Stop Rocto processes
+    processes=$(pgrep rocto)
+    if [ ! -z "${processes}" ] ; then
+	    echo "Stopping Rocto"
+	    pkill rocto
+	    sleep 1
+    fi
+
+    # If Rocto is still running, force kill it
+    processes=$(pgrep rocto)
+    if [ ! -z "${processes}" ] ; then
+	    echo "Force Stopping Rocto"
+	    pkill -9 rocto
+    fi
+
     # Stop replication
     if [ -f $basedir/g/db.repl ] ; then
-        su $instance -c "source $basedir/etc/env && $basedir/bin/originating_stop.sh"
+        su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/stop.sh"
     fi
+
+    # Rundown everything
+    mupip rundown -reg '*'
 }
 
 echo "I am starting with $1"
