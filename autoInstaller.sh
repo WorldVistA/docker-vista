@@ -67,13 +67,12 @@ usage()
       -a    Alternate VistA-M repo (zip or git format) (Must be in OSEHRA format)
       -b    Skip bootstrapping system (used for docker)
       -c    Use Caché
-      -d    Create development directories (s & p) (GT.M and YottaDB only)
-      -e    Install QEWD (assumes development directories)
+      -e    Install QEWD
       -f    Apply Kernel-GTM fixes after import
       -g    Use GT.M
       -h    Show this message
       -i    Instance name (Namespace/Database for Caché)
-      -m    Install Panorama (assumes development directories and QEWD)
+      -m    Install Panorama (assumes QEWD)
       -n    Install YottaDB GUI
       -o    Install YottaDB from latest master source
       -p    Post install hook (path to script)
@@ -91,12 +90,12 @@ usage()
     NOTE:
     The Caché install only supports using .DAT files for the VistA DB, and
     installs using minimal security. Most other options are not valid for
-    Caché installation including EWD, Panorama, and development directories.
+    Caché installation including EWD, Panorama.
 
 EOF
 }
 
-while getopts ":ha:cbxemndufgi:vop:str:wyqz" option
+while getopts ":ha:cbxemnufgi:vop:str:wyqz" option
 do
     case $option in
         h)
@@ -112,24 +111,18 @@ do
         c)
             installcache=true
             ;;
-        d)
-            developmentDirectories=true
-            ;;
         e)
             installEWD=true
-            developmentDirectories=true
             ;;
         f)
             kernelGTMFixes=true
             ;;
         m)
             installEWD=true
-            developmentDirectories=true
             installPanorama=true
             ;;
         n)
             installYottaDBGUI=true
-            developmentDirectories=true
             ;;
         g)
             installgtm=true
@@ -171,7 +164,6 @@ do
             installYottaDB=true
             ;;
         q)
-            developmentDirectories=true
             installSQL=true
             ;;
         z)
@@ -195,10 +187,6 @@ fi
 
 if [[ -z $bootstrap ]]; then
     bootstrap=true
-fi
-
-if [[ -z $developmentDirectories ]]; then
-    developmentDirectories=false
 fi
 
 if [[ -z $installEWD ]]; then
@@ -289,7 +277,6 @@ fi
 
 # Summarize options
 echo "Using $repoPath for routines and globals"
-echo "Create development directories: $developmentDirectories"
 echo "Installing an instance named: $instance"
 echo "Installing QEWD: $installEWD"
 echo "Installing Panorama: $installPanorama"
@@ -427,6 +414,9 @@ if $installgtm || $installYottaDB ; then
     cd GTM
     ./install.sh $installydbOptions
     ./createVistaInstance.sh -i $instance $createVistaInstanceOptions
+    # Previous command created that env file
+    # We will now use its variables in the script
+    source /home/$instance/etc/env
 fi
 
 if $installcache; then
@@ -444,13 +434,6 @@ fi
 if $installgtm || $installYottaDB; then
     usermod -a -G $instance $primaryuser
     chmod g+x /home/$instance
-fi
-
-# Setup environment variables so the dashboard can build
-# have to assume $basedir since this sourcing of this script will provide it in
-# future commands
-if $installgtm || $installYottaDB; then
-    source /home/$instance/etc/env
 fi
 
 # Get running user's home directory
@@ -565,6 +548,12 @@ if $installgtm || $installYottaDB; then
     su $instance -c "rm -fv r/$gtmver/_*.o && rm -f virgin_install.zip"
   fi
 
+  # Get the Auto-configurer for VistA/RPMS and run
+  echo "Running KBANTCLN"
+  mv $scriptdir/Common/KBANTCLN.m $basedir/r/
+  chown $instance:$instance $basedir/r/KBANTCLN.m
+  su $instance -c "source $basedir/etc/env && mumps -run START^KBANTCLN"
+
   echo "Compiling routines"
   cd $basedir/r/$gtmver
   rm -f *.o
@@ -574,25 +563,11 @@ if $installgtm || $installYottaDB; then
   set -e
   echo "Done compiling routines"
 
-  # Get the Auto-configurer for VistA/RPMS and run
-  echo "Running KBANTCLN"
-  mv $scriptdir/Common/KBANTCLN.m $basedir/r/
-  chown $instance:$instance $basedir/r/KBANTCLN.m
-  su $instance -c "source $basedir/etc/env && mumps -run START^KBANTCLN"
-
   # Extra stuff
   echo "Fixing HL7 Port"
   su $instance -c "source $basedir/etc/env && $scriptdir/GTM/fixHL7Port.sh"
   echo "Adding Audit 0 node"
   su $instance -c "source $basedir/etc/env && $gtm_dist/mumps -r %XCMD 'S ^DIA(0)=\"AUDIT^1.1I\"'"
-  # Set-up the source server for replication/journaling
-  su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/setup.sh"
-fi
-
-# Add p and s directories to gtmroutines environment variable
-if $developmentDirectories && ($installgtm || $installYottaDB); then
-    su $instance -c "mkdir $basedir/{p,p/$gtmver,s,s/$gtmver}"
-    perl -pi -e 's#export gtmroutines=\"#export gtmroutines=\"\$basedir/p/\$gtmver*\(\$basedir/p\) \$basedir/s/\$gtmver*\(\$basedir/s\) #' $basedir/etc/env
 fi
 
 # Install QEWD
@@ -666,6 +641,11 @@ if ($installgtm || $installYottaDB) && $batsTests; then
   bats tests/vista.bats
   kill -SIGTERM $START_PID
   sleep 5
+fi
+
+if $installgtm || $installYottaDB; then
+  # Set-up the source server for replication/journaling
+  su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/setup.sh"
 fi
 
 # Clean up the VistA-M source directories to save space

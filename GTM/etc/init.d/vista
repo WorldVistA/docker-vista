@@ -38,8 +38,10 @@ cleanup() {
     # If a database is shutdown cleanly there shouldn't be anything in the
     # journals to replay, so we can run this without worry
     echo "Ensuring a consistant database (mupip recover -backward)"
-    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip journal -recover -backward $basedir/j/$instance.mjl"
+    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip journal -rollback -backward '*'"
 
+    # Rundown relinkctl files
+    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip rundown -relinkctl"
     # Recover Octo region
     # TODO: AIM region is not journaled... Need to fix that and do that later
     # This doesn't work, with replication, as it needs to be replicated with journaling.
@@ -53,12 +55,6 @@ cleanup() {
     echo "Deleting and recreating temp region"
     rm -vf $basedir/g/temp.dat
     su $instance -c "source $basedir/etc/env && $gtm_dist/mupip create -region=TEMP"
-
-    # Rundown readonly GT.M/YDB databases
-    for f in $gtm_dist/*.dat; do $gtm_dist/mupip rundown -f $f; done
-
-    # Remove relinkctl files
-    su $instance -c "source $basedir/etc/env && rm -f $basedir/tmp/*relink*"
 }
 
 # Start VistA background tasks
@@ -69,6 +65,10 @@ startvista() {
     # Start TaskMan
     echo "Starting TaskMan"
     su $instance -c "source $basedir/etc/env && cd $basedir/tmp && $gtm_dist/mumps -run START^ZTMB"
+    
+    # Add group ownership to relinkctl files
+    echo "Adding group ownership to relinkctl files"
+    su $instance -c "source $basedir/etc/env && cd $basedir/tmp && chmod g+w *relinkctl* && ls -l *relinkctl*"
 
     # Start M-Web-Server @ 9080
     if [ -f $basedir/r/_webreq.m ] || [ -f $basedir/p/_webreq.m ]; then

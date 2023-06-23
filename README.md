@@ -152,13 +152,12 @@ as follows:
 | a      | https://github.com/WorldVistA/VistA-M/archive/master.zip |  Alternate VistA-M repo (zip or git format) (Must be in OSEHRA format) |
 | b      | n/a     | Skip bootstrapping system (used for docker) |
 | c      | n/a     | Use Caché |
-| d      | n/a     | Create development directories (s & p) (GT.M and YottaDB only) |
-| e      | n/a     | Install QEWD (assumes development directories) |
+| e      | n/a     | Install QEWD |
 | f      | n/a     | Apply Kernel-GTM fixes after import |
 | g      | n/a     | Use GT.M |
 | h      | n/a     | Show the list of options |
 | i      | osehra  | Instance name (Namespace/Database for Caché) |
-| m      | n/a     | Install Panorama (assumes development directories and QEWD) |
+| m      | n/a     | Install Panorama (assumes QEWD) |
 | n      | n/a     | Install YottaDB GUI. |
 | o      | n/a     | Install YottaDB from source. Will also enable -y (YottaDB) |
 | p      | n/a     | Post install hook (path to script) |

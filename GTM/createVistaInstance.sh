@@ -290,7 +290,6 @@ echo 'fi'                                                   >> /bin/start.sh
 echo "if [ -f /etc/init.d/${instance}vista-ydbgui ] ; then" >> /bin/start.sh
 echo "	/etc/init.d/${instance}vista-ydbgui start"          >> /bin/start.sh
 echo 'fi'                                                   >> /bin/start.sh
-echo "chmod ug+rw /tmp/*"                                   >> /bin/start.sh
 echo '# Create a fifo so that bash can read from it to'     >> /bin/start.sh
 echo '# catch signals from docker'                          >> /bin/start.sh
 echo 'rm -f ~/fifo'                                         >> /bin/start.sh
