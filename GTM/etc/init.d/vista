@@ -37,43 +37,43 @@ source /home/foia/etc/env
 cleanup() {
     # If a database is shutdown cleanly there shouldn't be anything in the
     # journals to replay, so we can run this without worry
-    echo "Ensuring a consistant database (mupip recover -backward)"
-    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip journal -rollback -backward '*'"
+    echo "Ensuring a consistent database (mupip journal -rollback -backward)"
+    su $instance -c "$gtm_dist/mupip journal -rollback -backward '*'"
 
     # Rundown relinkctl files
-    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip rundown -relinkctl"
+    su $instance -c "$gtm_dist/mupip rundown -relinkctl"
     # Recover Octo region
     # TODO: AIM region is not journaled... Need to fix that and do that later
     # This doesn't work, with replication, as it needs to be replicated with journaling.
     # TODO: Move Octo to its own SI replicated container
     #if [ -f $basedir/lib/gtm/plugin/bin/octo ] ; then
     #    echo "Recovering Octo"
-    #    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip journal -recover -backward $basedir/j/octo.mjl"
+    #    su $instance -c "$gtm_dist/mupip journal -recover -backward $basedir/j/octo.mjl"
     #fi
 
     # Delete temp and then recreate
     echo "Deleting and recreating temp region"
     rm -vf $basedir/g/temp.dat
-    su $instance -c "source $basedir/etc/env && $gtm_dist/mupip create -region=TEMP"
+    su $instance -c "$gtm_dist/mupip create -region=TEMP"
 }
 
 # Start VistA background tasks
 startvista() {
     # Start Dummy Replication (needed to activate journal pool)
-    su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/setup.sh"
+    su $instance -c "$basedir/bin/repl/orig/setup.sh"
 
     # Start TaskMan
     echo "Starting TaskMan"
-    su $instance -c "source $basedir/etc/env && cd $basedir/tmp && $gtm_dist/mumps -run START^ZTMB"
+    su $instance -c "cd $basedir/tmp && $gtm_dist/mumps -run START^ZTMB"
     
     # Add group ownership to relinkctl files
     echo "Adding group ownership to relinkctl files"
-    su $instance -c "source $basedir/etc/env && cd $basedir/tmp && chmod g+w *relinkctl* && ls -l *relinkctl*"
+    su $instance -c "cd $basedir/tmp && chmod g+w *relinkctl* && ls -l *relinkctl*"
 
     # Start M-Web-Server @ 9080
     if [ -f $basedir/r/_webreq.m ] || [ -f $basedir/p/_webreq.m ]; then
         echo "Starting M Web Server"
-        su $instance -c "source $basedir/etc/env && cd $basedir/tmp && $gtm_dist/mumps -r %XCMD 'do job^%webreq(9080)'"
+        su $instance -c "cd $basedir/tmp && $gtm_dist/mumps -r %XCMD 'do job^%webreq(9080)'"
     fi
 
     # Start Octo
@@ -81,29 +81,36 @@ startvista() {
         echo "Starting Rocto"
 	# The next line doesn't work with replication, as the region needs to be replicated too.
 	# TODO: move Octo to its own SI replicated container
-        #su $instance -c "source $basedir/etc/env && $gtm_dist/mupip set -journal=\"enable,on,before,file=$basedir/j/octo.mjl\" -file $basedir/g/octo.dat"
-        su $instance -c "source $basedir/etc/env && cd $basedir && $basedir/lib/gtm/plugin/bin/rocto > $basedir/log/rocto.log 2>&1 &"
+        #su $instance -c "$gtm_dist/mupip set -journal=\"enable,on,before,file=$basedir/j/octo.mjl\" -file $basedir/g/octo.dat"
+        su $instance -c "cd $basedir && $basedir/lib/gtm/plugin/bin/rocto > $basedir/log/rocto.log 2>&1 &"
     fi
 }
 
-startprimary() {
+primary() {
+    # $1 -> Who to connect to
     # Start Origin replication
-    su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/start.sh"
+    su $instance -c "$basedir/bin/repl/orig/start.sh $1"
+    su $instance -c "$basedir/bin/repl/orig/mon.sh"
 }
 
-startsecondary() {
+secondary() {
+    # $1 -> Name of the secondary.
+    # TODO: This could be the hostname, but I am not sure
+    #       Think about it.
     # Set-up replication instance file
-    su $instance -c "source $basedir/etc/env && $basedir/bin/repl/recv/setup.sh"
+    su $instance -c "$basedir/bin/repl/recv/setup.sh $1"
 
     # Start Receiving replication
-    su $instance -c "source $basedir/etc/env && $basedir/bin/repl/recv/start.sh"
+    su $instance -c "$basedir/bin/repl/recv/start.sh"
+    su $instance -c "$basedir/bin/repl/recv/mon.sh"
 }
 
 #TODO: Implement stop for secondaries
+#TODO: Add $3 to pass a port number
 
 stop() {
     # Stop TaskMan
-    su $instance -c "source $basedir/etc/env && mumps -run ^%XCMD 'S U=\"^\" D STOP^ZTMKU' << EOF
+    su $instance -c "mumps -run ^%XCMD 'S U=\"^\" D STOP^ZTMKU' << EOF
 Y
 Y
 Y
@@ -149,16 +156,18 @@ EOF"
 	    pkill -9 rocto
     fi
 
+    lsof $basedir/g/*
+
     # Stop replication
     if [ -f $basedir/g/db.repl ] ; then
-        su $instance -c "source $basedir/etc/env && $basedir/bin/repl/orig/stop.sh"
+        su $instance -c "$basedir/bin/repl/orig/stop.sh"
     fi
 
     # Rundown everything
     mupip rundown -reg '*'
 }
 
-echo "I am starting with $1"
+echo "Running init script with arguments $1 and $2"
 case "$1" in
     start)
 	cleanup
@@ -166,12 +175,12 @@ case "$1" in
         ;;
     startprimary)
 	cleanup
-	startprimary
 	startvista
+	primary $2
 	;;
     startsecondary)
 	cleanup
-	startsecondary
+	secondary $2
 	;;
     stop)
         stop

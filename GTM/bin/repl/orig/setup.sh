@@ -1,6 +1,6 @@
 #!/bin/bash
-$gtm_dist/mupip set -replication=on -region DEFAULT
 if [ ! -f ${gtm_repl_instance} ]; then
+	$gtm_dist/mupip set -replication=on -region DEFAULT
 	$gtm_dist/mupip replicate -instance_create -noreplace -name=primary
 fi
 rm -f $basedir/log/repl_setup.log

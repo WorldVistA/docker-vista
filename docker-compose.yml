@@ -1,0 +1,19 @@
+services:
+  primary:
+    image: vehu
+    ports:
+      - "2222:22"
+      - "8001:8001"
+      - "9430:9430"
+      - "8089:8089"
+    command: primary bc_replica
+  bc_replica:
+    image: vehu
+    command: secondary bc_replica
+      - "8090:8089"
+  si_replica:
+    image: vehu
+    ports:
+      - "1338:1338"
+      - "8091:8089"
+    command: secondary
