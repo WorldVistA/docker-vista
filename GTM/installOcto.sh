@@ -33,8 +33,8 @@ su $instance -c "cp $basedir/YDBOctoVistA/_*.m $basedir/r"
 
 # Create Octo Region
 cat <<EOF > $basedir/etc/octo.gde
-add -segment OCTO -allocation=4000 -extension=5000 -glob=2000 -file="$basedir/g/octo.dat"
-add -region OCTO -record_size=600000 -key_size=1019 -null_subscripts=always -journal=(before_image,file_name="$basedir/j/octo.mjl") -dynamic_segment=OCTO
+add -segment OCTO -noasyncio -block_size=2048 -allocation=10000 -extension=20000 -global_buffer_count=2000 -file="$basedir/g/octo.dat"
+add -region OCTO -record_size=1048576 -key_size=1019 -null_subscripts=always -journal=(before_image,file_name="$basedir/j/octo.mjl") -dynamic_segment=OCTO
 add -name %ydbocto* -region=OCTO
 show -all
 EOF
@@ -42,9 +42,9 @@ chown $instance:$instance $basedir/etc/octo.gde
 
 # Create AIM Region
 cat <<EOF > $basedir/etc/aim.gde
-add -segment AIM -access_method=mm -allocation=10000 -extension=20000 -block_size=2048 -file="$basedir/g/aim.dat"
-add -region AIM -key_size=1019 -record_size=2048 -null_subscripts=ALWAYS -nojournal -dynamic_segment=AIM
-add -name %ydbAIMD* -r=AIM
+add -segment AIM -noasyncio -block_size=2048 -allocation=10000 -extension=20000 -global_buffer_count=2000 -file="$basedir/g/aim.dat"
+add -region AIM -key_size=1019 -record_size=1048576 -null_subscripts=ALWAYS -journal=(before_image,file_name="$basedir/j/aim.mjl") -dynamic_segment=AIM
+add -name %ydbAIM* -r=AIM
 show -all
 EOF
 chown $instance:$instance $basedir/etc/aim.gde
@@ -58,7 +58,8 @@ su $instance -c "source $basedir/etc/env && \$gtm_dist/mumps -run GDE < $basedir
 echo "Creating Octo and AIM databases"
 su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip create -region=OCTO >  $basedir/log/OctoCreateDatabase.log 2>&1"
 su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip create -region=AIM  >> $basedir/log/OctoCreateDatabase.log 2>&1"
-su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip set -journal=\"enable,on,before,file=$basedir/j/octo.mjl\" -file $basedir/g/octo.dat > $basedir/log/OctoEnableJournal.log 2>&1"
+su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip set -journal=\"on\" -file $basedir/g/octo.dat > $basedir/log/OctoAIMEnableJournal.log 2>&1"
+su $instance -c "source $basedir/etc/env && \$gtm_dist/mupip set -journal=\"on\" -file $basedir/g/aim.dat >> $basedir/log/OctoAIMEnableJournal.log 2>&1"
 echo "Done Creating Octo and AIM databases"
 
 # Add additional Octo items to env script
