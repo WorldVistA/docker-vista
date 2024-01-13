@@ -48,7 +48,8 @@ if [[ -z $extractOnly ]]; then
 fi
 
 yum install -y httpd graphviz java-1.8.0-openjdk-devel php
-curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && \
+# was: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && \
+curl "https://bootstrap.pypa.io/pip/3.6/get-pip.py" -o "get-pip.py" && \
     python3 get-pip.py
 # cp $scriptdir/ViViaN/viv.conf /etc/httpd/conf.d
 
@@ -106,7 +107,12 @@ mkdir -p /opt/VistA-docs
 mkdir -p /opt/viv-out
 pushd /opt
 echo "Acquiring DBIA/ICR Information from https://foia-vista.worldvista.org/VistA_Integration_Agreement/"
-curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2021_December_14_IA_Listing_Descriptions.TXT -o ICRDescription.txt
+
+curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2023_December_11_IA_Listing_Description.txt -o ICRDescription.txt
+#curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2022_October_05_IA_Listings_Description.txt -o ICRDescription.txt
+#curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2022_February_17_IA_Listing_Descriptions.txt -o ICRDescription.txt
+#curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2022_March_15_IA_Listing_Descriptions.txt -o ICRDescription.txt
+#curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2022_April_07_IA_Listing_Descriptions.txt -o ICRDescription.txt
 echo "Downloading OSEHRA VistA Testing Repository"
 curl -fsSL --progress-bar https://github.com/WorldVistA/VistA/archive/master.zip -o VistA-master.zip
 dir=$(zipinfo -1 VistA-master.zip | head -1 | cut -d/ -f1)
