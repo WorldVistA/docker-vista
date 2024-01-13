@@ -26,6 +26,11 @@ S U="^"
 D GETENV^%ZOSV S UCI=\$P(Y,U),VOL=\$P(Y,U,2)
 D START^KBANTCLN(VOL,UCI,999,"SANDBOX","SANDBOX.OSEHRA.ORG",1)
 ;
+; Cleaning HL7 messages from VistA, which can contain non-ISO-8859 characters
+K ^HLMA,^HL(772)
+S ^HLMA(0)="HL7 MESSAGE ADMINISTRATION^773PI"
+S ^HL(772,0)="HL7 MESSAGE TEXT^772DI"
+;
 ; Save ZSTU in the %SYS - Warning: TABS below are required.
 W "Saving ZSTU in %SYS",!
 ZN "%SYS"
