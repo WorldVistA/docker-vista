@@ -1,4 +1,4 @@
-FROM rockylinux:8.8
+FROM rockylinux:8.9
 
 RUN echo "multilib_policy=best" >> /etc/yum.conf
 RUN yum update  -y && \
@@ -50,8 +50,8 @@ RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa && \
 
 WORKDIR /opt/vista
 # Add each folder individually to improve rebuild times
-ADD ./Cache /opt/vista/Cache
-ADD ./cache-files /opt/vista/cache-files
+ADD ./IRIS /opt/vista/IRIS
+ADD ./iris-files /opt/vista/iris-files
 ADD ./zwr-zip /opt/vista/zwr-zip
 ADD ./Common /opt/vista/Common
 ADD ./Dashboard /opt/vista/Dashboard
@@ -70,8 +70,8 @@ ENV entry_path="${entry}/${instance_name}"
 ENV install_flags="$flags -i ${instance_name}"
 
 RUN dos2unix /opt/vista/* >/dev/null 2>&1 && \
-    dos2unix /opt/vista/Cache/* >/dev/null 2>&1 && \
-    dos2unix /opt/vista/Cache/etc/init.d/* >/dev/null 2>&1 && \
+    dos2unix /opt/vista/IRIS/* >/dev/null 2>&1 && \
+    dos2unix /opt/vista/IRIS/etc/init.d/* >/dev/null 2>&1 && \
     dos2unix /opt/vista/Common/* >/dev/null 2>&1 && \
     dos2unix /opt/vista/Dashboard/* >/dev/null 2>&1 && \
     dos2unix /opt/vista/EWD/* >/dev/null 2>&1 && \

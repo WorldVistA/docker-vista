@@ -1,6 +1,6 @@
 # Dockerized VistA/RPMS instances
 Code in this repository enables you to create VistA or RPMS instances on
-Caché or GT.M/YottaDB.  A working [Docker](https://www.docker.com/community-edition#/download) installation on
+IRIS or GT.M/YottaDB.  A working [Docker](https://www.docker.com/community-edition#/download) installation on
 the platform of choice is required in order to be able to create instances.
 
 # Table of Contents
@@ -68,29 +68,29 @@ RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
     docker build --build-arg flags="-wfybsa https://github.com/shabiel/FOIA-RPMS/archive/master.zip -p ./Common/rpmsPostInstall.sh" --build-arg instance="rpms" -t rpms .
     docker run -d -p 2222:22 -p 9100:9100 -p 9101:9101 -p 9080:9080 --name=rpms rpms
 
-Caché Install with local VistA DAT file. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the cache-files directories.
+IRIS Install with local VistA DAT file. You need to supply your own IRIS.DAT and IRIS.key and .tar.gz installer for RHEL.  These files need to be added to the iris-files directories.
 
-    docker build --build-arg flags="-cbsp ./Common/pvPostInstall.sh" --build-arg instance="foia" --build-arg entry="/opt/cachesys" -t cache .
-    docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -p 9080:9080 -d -P --name=cache cache
+    docker build --build-arg flags="-cbsp ./Common/pvPostInstall.sh" --build-arg instance="foia" --build-arg entry="/opt/irissys" -t iris .
+    docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -p 9080:9080 -d -P --name=iris iris
 
-Caché Install with local RPMS DAT file.
+IRIS Install with local RPMS DAT file.
 
-    docker build --build-arg flags="-cbswp ./Common/foiaRPMSPostInstall.sh" --build-arg instance="rpms" --build-arg entry="/opt/cachesys" -t rpms .
+    docker build --build-arg flags="-cbswp ./Common/foiaRPMSPostInstall.sh" --build-arg instance="rpms" --build-arg entry="/opt/irissys" -t rpms .
     docker run -d -p 2222:22 -p 9100:9100 -p 9101:9101 -p 9080:9080 --name=rpms rpms
 
-Caché Install with local DAT file to stop after exporting the code from the Cache instance. You need to supply your own CACHE.DAT and .tar.gz installer for RHEL.
-When available, the system will also install a "cache.key" file when the system is built.  If it is not present, the extraction will be performed serially.
-These files need to be added to the cache-files directories.
+IRIS Install with local DAT file to stop after exporting the code from the IRIS instance. You need to supply your own IRIS.DAT and .tar.gz installer for RHEL.
+When available, the system will also install a "IRIS.key" file when the system is built.  If it is not present, the extraction will be performed serially.
+These files need to be added to the iris-files directories.
 
-    docker build --build-arg flags="-cbsxp ./Common/foiaPostInstall.sh" --build-arg instance="cachevista" --build-arg entry="/opt/cachesys" -t cachevista .
-    docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -p 9080:9080 -d -P --name=cache cachevista
+    docker build --build-arg flags="-cbsxp ./Common/foiaPostInstall.sh" --build-arg instance="irisvista" --build-arg entry="/opt/irissys" -t irisvista .
+    docker run -p 9430:9430 -p 8001:8001 -p2222:22 -p57772:57772 -p 9080:9080 -d -P --name=iris irisvista
 
 To capture the exported code from the container and remove the Docker objects, execute the following commands:
 
-    docker cp cache:/opt/VistA-M /tmp/ # no need to put a cp -r
-    docker stop cache
-    docker rm cache
-    docker rmi cachevista
+    docker cp iris:/opt/VistA-M /tmp/ # no need to put a cp -r
+    docker stop iris
+    docker rm iris
+    docker rmi irisvista
 
 A [volume](https://docs.docker.com/storage/volumes/) could also be mounted to the container.
 
@@ -107,7 +107,7 @@ The exported ports are as follows:
 | 9080        | 9080       | M Web Server    | VistA             |
 | 9100        | 9100       | CIA (RPMS-EHR)  | RPMS              |
 | 9101        | 9101       | BMX (iCare etc) | RPMS              |
-| 57772       | 57772      | Caché Web Portal | Caché            |
+| 57772       | 57772      | IRIS Web Portal | IRIS            |
 | 1338        | 1338       | SQL Listener Port | YottaDB         |
 | 8089        | 8089       | YottaDB GUI     | YottaDB           |
 | 8090        | 8090       | YottaDB GUI Socket Server  | YottaDB           |
@@ -120,20 +120,20 @@ build step runs the script [autoInstaller.sh](./autoInstaller.sh) which does
 the actual installation. Post-install scripts (supplied after the argument -p)
 allow customization of the built image.
 
-Caché will not have any pre-built images due to license restrictions.  The
-Caché install assumes that you are using a pre-built CACHE.DAT. The default
+IRIS will not have any pre-built images due to license restrictions.  The
+IRIS install assumes that you are using a pre-built IRIS.DAT. The default
 install is done with "minimal" security.  Also, some options (EWD, Panorama,
-etc) are not valid for Caché installs and will be ignored. The Cache Steps are
+etc) are not valid for IRIS installs and will be ignored. The IRIS Steps are
 as follows:
 
-1) Copy the Caché installer (.tar.gz RHEL kit) to the root of this repository
-2) Copy your cache.key to the cache-files directory of this repository (optional)
-3) Copy your CACHE.DAT to the cache-files directory of this repository
+1) Copy the IRIS installer (.tar.gz RHEL kit) to the root of this repository
+2) Copy your iris.key to the iris-files directory of this repository (optional)
+3) Copy your IRIS.DAT to the iris-files directory of this repository
 4) Build and run the image
 
    ```sh
-   docker build --build-arg flags="-cbsp ./Common/pvPostInstall.sh" --build-arg instance="cachevista" --build-arg entry="/opt/cachesys" -t cachevista .
-   docker run -p9430:9430 -p8001:8001 -p2222:22 -p57772:57772 -d --name=cache cachevista
+   docker build --build-arg flags="-cbsp ./Common/pvPostInstall.sh" --build-arg instance="irisvista" --build-arg entry="/opt/irissys" -t irisvista .
+   docker run -p9430:9430 -p8001:8001 -p2222:22 -p57772:57772 -d --name=iris irisvista
    ```
 
 ### Build Options
@@ -144,7 +144,7 @@ as follows:
 | ----------- | ------- | ----------- | ------- |
 | instance    | `osehra` | The `instance` argument allows you to define the instance Name Space and directory inside the docker container. MUST BE lowercase. | `docker build --build-arg instance=vxvista -t vxvista` |
 | flags       | `-y -b -e -m -p ./Common/ovydbPostInstall.sh` | Command Line arguments to [autoInstaller.sh](./autoInstaller.sh) | See table below for more details and examples above |
-| entry       | `/home` | The `entry` argument allows you to adjust where docker looks for the entryfile | `docker build --build-arg entry="/opt/cachesys" -t cache .` |
+| entry       | `/home` | The `entry` argument allows you to adjust where docker looks for the entryfile | `docker build --build-arg entry="/opt/irissys" -t iris .` |
 
 [autoInstaller.sh](./autoInstaller.sh) options:
 
@@ -152,13 +152,13 @@ as follows:
 | ------ | ------- | ----------- |
 | a      | https://github.com/WorldVistA/VistA-M/archive/master.zip |  Alternate VistA-M repo (zip or git format) (Must be in OSEHRA format) |
 | b      | n/a     | Skip bootstrapping system (used for docker) |
-| c      | n/a     | Use Caché |
+| c      | n/a     | Use IRIS |
 | d      | n/a     | Create development directories (s & p) (GT.M and YottaDB only) |
 | e      | n/a     | Install QEWD (assumes development directories) |
 | f      | n/a     | Apply Kernel-GTM fixes after import |
 | g      | n/a     | Use GT.M |
 | h      | n/a     | Show the list of options |
-| i      | osehra  | Instance name (Namespace/Database for Caché) |
+| i      | osehra  | Instance name (Namespace/Database for IRIS) |
 | m      | n/a     | Install Panorama (assumes development directories and QEWD) |
 | n      | n/a     | Install YottaDB GUI. |
 | o      | n/a     | Install YottaDB from source. Will also enable -y (YottaDB) |
@@ -169,8 +169,8 @@ as follows:
 | t      | n/a     | Run BATS Tests |
 | u      | n/a     | Install GTM/YottaDB with UTF-8 enabled |
 | v      | n/a     | Build ViViaN Documentation |
-| w      | n/a     | Install RPMS scripts (GT.M/YDB or Caché) |
-| x      | n/a     | Extract Routines and Globals from GT.M/Caché into .m/.zwr |
+| w      | n/a     | Install RPMS scripts (GT.M/YDB or IRIS) |
+| x      | n/a     | Extract Routines and Globals from GT.M/IRIS into .m/.zwr |
 | y      | n/a     | Use YottaDB |
 | z      | n/a     | Dev Mode: Don't clean-up and set -x |
 
@@ -188,7 +188,7 @@ Then you need to tag your image. First find the image ID using `docker images`. 
     wv                   latest              4d088aa275ff        13 hours ago        6.06GB
     vehu                 latest              ed6175534a1c        20 hours ago        4.29GB
     vxvista              latest              3866735fcfc0        21 hours ago        2.96GB
-    cachevista           latest              071386cb0e80        46 hours ago        15.4GB
+    irisvista            latest              071386cb0e80        46 hours ago        15.4GB
     centos               latest              75835a67d134        11 days ago         200MB
     osehra/osehravista   latest              8d58b9b985d7        5 weeks ago         4.63GB
     hello-world          latest              e38bc07ac18e        6 months ago        1.85kB
@@ -229,41 +229,34 @@ take and process a M[UMPS] system that is supplied by the user in one of two for
 
 |     Platform      |                       Required Files                           |
 | :---------------: | -------------------------------------------------------------- |
-|   GT.M/YottaDB    | Not supported. Create an issue if interested.                  |
-|     Caché         | The files used as part of the install will be used again. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the  cache-files directories.        |
+|   GT.M/YottaDB    | Not supported.                                                 |
+|      IRIS         | The files used as part of the install will be used again. You need to supply your own IRIS.DAT and .tar.gz installer for RHEL 8.  These files need to be added to the iris-files directory.         |
 
+``-v`` and ``-b`` options need to be combined together when the docker build
+command is instantiated.
 
-The building of ViViaN is available to executed on all three of the platforms using the same
-arguments as above: ``-c`` for Caché, ``-y`` for YottaDB, and ``-g`` for GT.M.  Each of these
-options should be combined with the ``-v`` and ``-b`` options when the docker build command is
-instantiated.
+For a IRIS instance, the command would look as follows:
 
-For a Caché instance, the command would look as follows:
-
-    docker build --build-arg flags="-c -b -v -p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" --build-arg instance="osehra" -t cacheviv .
-    docker run -p 9430:9430 -p 8001:8001 -p 8080:8080 -p 2222:22 -p 57772:57772 -p 3080:80 -d -P --name=cache cacheviv
-
-For a YottaDB instance, the command would look as follows:
-
-    docker build --build-arg flags="-y -b -v -p ./Common/pvPostInstall.sh" --build-arg instance="osehra" -t yottaviv .
-    docker run -p 9430:9430 -p 8001:8001 -p 8080:8080 -p 2222:22 -p 57772:57772 -p 3080:80 -d -P --name=cache yottaviv
+    docker build --progress=plain --no-cache --build-arg flags="-c -b -v -p ./Common/vivianPostInstall.sh" --build-arg entry="/opt/irissys" --build-arg instance="foia" -t irisviv .
+    docker run -p 2222:22 -p 57772:57772 -p 3080:80 -d -P --name=irisviv irisviv
 
 Once the container is running, the ViViaN and DOX pages can be accessed via
-a web browser at http://localhost:3080/vivian and http://localhost:3080/vivian/files/dox
+a web browser at http://localhost:3080/vivian and http://localhost:3080/dox
 
 ### Post Installs that you can apply with -p flag
 
-| Script                              | GTM-YDB/Caché? | What it does? |
+| Script                              | GTM-YDB/IRIS? | What it does? |
 | ----------------------------------- | ---------------| ------------- |
-| `./Common/pvPostInstall.sh`         | Caché          | FOIA VistA Cache Set-up  |
+| `./Common/pvPostInstall.sh`         | IRIS           | FOIA VistA IRIS Set-up  |
+| `./Common/vivianPostInstall.sh`     | IRIS           | FOIA VistA Vivian Extraction Set-up  |
 | `./Common/syntheaPostInstall.sh`    | GTM-YDB        | Install Synthetic Patient Ingestor and FHIR Exporter |
 | `./Common/vxvistaPostInstall.sh`    | GTM-YDB        | vxVistA GT.M/YDB specific set-up |
 | `./Common/rpmsPostInstall.sh`       | GTM-YDB        | RPMS GT.M/YDB specific set-up |
-| `./Common/foiaPostInstall.sh`       | Caché          | Fix FOIA Console Set-up |
+| `./Common/foiaPostInstall.sh`       | IRIS           | Fix FOIA Console Set-up |
 | `./Common/ov6piko.sh`               | GTM-YDB        | Add Korean ICD-10 and Korean demo data for Plan VI images |
 | `./Common/ovydbPostInstall.sh`      | Sample Only    | DO NOT USE |
 | `./Common/wvDemopi.sh`              | GTM-YDB        | Create Demo Users for an instance (physician, pharmacist, and nurse) |
-| `./Common/foiaRPMSPostInstall.sh`   | Caché          | FOIA RPMS CACHE.DAT Post-Installer |
+| `./Common/foiaRPMSPostInstall.sh`   | IRIS           | FOIA RPMS IRIS.DAT Post-Installer |
 | `./Common/vehu6piko.sh`             | GTM-YDB        | Add Korean ICD-10 to VEHU instance |
 
 ### Installing SQL Mapping
@@ -309,17 +302,6 @@ Mapping all FileMan files can be accomplished by running:
 Then load it using the octo command line tool:
 
     octo -f /path/for/ddl.sql
-
-#### Connecting with SquirrelSQL
-
-[SquirrelSQL](http://www.squirrelsql.org) is the preferred client to use with Octo as that is what is used in
-development and testing. Other clients may have varying degress of success connecting to Octo due to certain
-queries sent by the tool.
-
-## QEWD passwords for non Caché installs
-
-Monitor:
-keepThisSecret!
 
 ## Tests
 

@@ -1,5 +1,5 @@
-cache-files/cache-*
-cache-files/cache.dat
-cache-files/CACHE.DAT
-cache-files/cache.key
+iris-files/cache-*
+iris-files/cache.dat
+iris-files/CACHE.DAT
+iris-files/cache.key
 zwr-zip/*.zip
