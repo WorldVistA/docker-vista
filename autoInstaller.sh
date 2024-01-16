@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #---------------------------------------------------------------------------
 # Copyright 2011-2019 The Open Source Electronic Health Record Alliance
-# Copyright 2020-2021 Sam Habiel
+# Copyright 2020-2021,2024 Sam Habiel
 # Copyright 2022 YottaDB LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -110,7 +110,7 @@ do
             bootstrap=false
             ;;
         c)
-            installcache=true
+            installiris=true
             ;;
         d)
             developmentDirectories=true
@@ -249,8 +249,8 @@ if [ -z $installYottaDBfromSource ]; then
     installYottaDBfromSource=false
 fi
 
-if [ -z $installcache ]; then
-    installcache=false;
+if [ -z $installiris ]; then
+    installiris=false;
 fi
 
 if [ -z $installRPMS ]; then
@@ -282,7 +282,7 @@ if $devMode; then
 fi
 
 # Quit if no M environment viable
-if [[ ! $installgtm || ! $installcache || ! $installYottaDB ]]; then
+if [[ ! $installgtm || ! $installiris || ! $installYottaDB ]]; then
     echo "You need to either install Caché, GT.M or YottaDB!"
     exit 1
 fi
@@ -298,7 +298,7 @@ echo "Post install hook: $postInstallScript"
 echo "Skip Testing: $skipTests"
 echo "Run BATS Tests: $batsTests"
 echo "Skip bootstrap: $bootstrap"
-echo "Use Cache: $installcache"
+echo "Use IRIS: $installiris"
 echo "Use GT.M: $installgtm"
 echo "Use YottaDB: $installYottaDB (from source: $installYottaDBfromSource) (GUI: $installYottaDBGUI)"
 echo "GT.M/YDB in UTF-8: $utf8"
@@ -429,8 +429,8 @@ if $installgtm || $installYottaDB ; then
     ./createVistaInstance.sh -i $instance $createVistaInstanceOptions
 fi
 
-if $installcache; then
-    cd Cache
+if $installiris; then
+    cd IRIS
     if $installRPMS; then
       ./install.sh -i $instance -r
     else
@@ -439,6 +439,9 @@ if $installcache; then
     # Create the VistA instance
     #./createVistaInstance.sh
 fi
+
+#TEST
+exit 0
 
 # Modify the primary user to be able to use the VistA instance
 if $installgtm || $installYottaDB; then
@@ -642,7 +645,7 @@ if $postInstall; then
   echo "Executing post install hook..."
   if $installgtm || $installYottaDB; then
     su $instance -c "source $basedir/etc/env && pushd $scriptdir && $postInstallScript && popd"
-  elif $installcache; then
+  elif $installiris; then
     pushd $scriptdir
     $postInstallScript $instance
     popd

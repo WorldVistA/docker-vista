@@ -15,7 +15,7 @@
 # limitations under the License.
 #---------------------------------------------------------------------------
 
-# Add cacheusr to system to own Caché files
+# Add irisusr to system to own IRIS files
 # This utility requires root privliges
 
 # Make sure we are root
@@ -33,7 +33,7 @@ usage()
     cat << EOF
     usage: $0 options
 
-    This script will create the necessary users and groups for Caché
+    This script will create the necessary users and groups for IRIS
 
     OPTIONS:
       -h    Show this message
@@ -54,10 +54,10 @@ done
 # http://www.debian.org/doc/manuals/securing-debian-howto/ch9.en.html
 # to create daemon accounts & groups
 
-SERVER_HOME=/opt/cachesys/
-SERVER_USER=cacheusr
-SERVER_NAME="Intersystems Cache CACHE instance"
-SERVER_GROUP=cachegrp
+SERVER_HOME=/opt/irissys/
+SERVER_USER=irisusr
+SERVER_NAME="Intersystems IRIS instance"
+SERVER_GROUP=irisgrp
 
 # create user to avoid running server as root
 # create group if not existing
@@ -88,4 +88,4 @@ usermod -c "$SERVER_NAME" \
         $SERVER_USER
 # adjust file and directory permissions
 chown -R $SERVER_USER:$SERVER_GROUP $SERVER_HOME
-chmod u=rwx,g=rxs,o= $SERVER_HOME
+chmod u=rwx,g=rxs,o=r $SERVER_HOME
