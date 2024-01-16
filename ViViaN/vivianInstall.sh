@@ -47,11 +47,7 @@ if [[ -z $extractOnly ]]; then
     extractOnly=false
 fi
 
-yum install -y httpd graphviz java-1.8.0-openjdk-devel php
-# was: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && \
-curl "https://bootstrap.pypa.io/pip/3.6/get-pip.py" -o "get-pip.py" && \
-    python3 get-pip.py
-# cp $scriptdir/ViViaN/viv.conf /etc/httpd/conf.d
+yum install -y httpd graphviz java-1.8.0-openjdk-devel php python3-pip rust cargo python3-devel openssl-devel
 
 if [[ -f /home/$instance/etc/env ]]; then
   basedir=/home/$instance
@@ -79,19 +75,19 @@ if [[ -f /home/$instance/etc/env ]]; then
   popd
 else
   namespace=$(echo $instance |tr '[:lower:]' '[:upper:]')
-  basedir=/opt/cachesys/$instance
+  basedir=/opt/irissys/$instance
   echo "
 //Path to Cache ccontrol
-CCONTROL_EXECUTABLE:FILEPATH=/usr/bin/ccontrol
+CCONTROL_EXECUTABLE:FILEPATH=/usr/bin/iris
 
 //Cache instance name
-VISTA_CACHE_INSTANCE:STRING=cache
+VISTA_CACHE_INSTANCE:STRING=IRIS
 
 //Cache namespace to store VistA
 VISTA_CACHE_NAMESPACE:STRING=$namespace" >> $scriptdir/ViViaN/CMakeCache.txt
   connectionArg="-S 1 -CN $namespace"
   sh $basedir/bin/start.sh &
-  if [[ ! -f $basedir/mgr/cache.key ]]; then
+  if [[ ! -f $basedir/mgr/iris.key ]]; then
     serialExport="-sx"
   fi
 fi
@@ -100,7 +96,7 @@ fi
 awk -v n=5 -v s='echo "Starting Apache"' 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
 awk -v n=6 -v s="/usr/sbin/apachectl" 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
 # Fix start.sh permissions
-chown cacheusr:cachegrp $basedir/bin/start.sh
+chown root:irisusr $basedir/bin/start.sh
 chmod +x $basedir/bin/start.sh
 
 mkdir -p /opt/VistA-docs
@@ -124,7 +120,8 @@ mkdir -p /opt/VistA-M/Packages
 cp /opt/VistA/Packages.csv /opt/VistA-M/
 
 # Install requirements from Testing repository
-pip install -r /opt/VistA/requirements.txt
+pip3 install setuptools_rust wheel
+pip3 install -r /opt/VistA/requirements.txt
 
 #  Export first so the configuration can find the correct files to query for
 echo "Starting VistAMComponentExtractor at:" $(timestamp)

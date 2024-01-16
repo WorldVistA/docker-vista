@@ -78,10 +78,10 @@ if [[ -z $rpms ]]; then
     rpms=false
 fi
 
-# Install Apache
+# Install Apache and ip command
 yum install -y httpd iproute
 
-# Hack for Rocky Linux - Pretend to be RHEL
+# Hack for Rocky Linux - Pretend to be RHEL, we undo that below
 cp /etc/os-release{,.orig}
 sed -i 's/ID="rocky"/ID="rhel"/g' /etc/os-release
 
@@ -91,10 +91,9 @@ scriptdir=`dirname $0`
 # BaseDir
 basedir=/opt/irissys/$instance
 
+# TODO: Sam remove this file
 # Create Daemon User accounts
-# TEST
 #./createDaemonAccount.sh
-# TEST
 #usermod root -G irisgrp
 
 # unzip the iriskit in a temp directory
@@ -108,12 +107,8 @@ tar xzf $iriskit
 
 # Create environment variables for install
 export ISC_PACKAGE_INITIAL_SECURITY="minimal"
-#export ISC_PACKAGE_MGRUSER=irisusr
-#export ISC_PACKAGE_MGRGROUP=irisgrp
 export ISC_PACKAGE_INSTANCENAME=IRIS
 export ISC_PACKAGE_INSTALLDIR=$basedir
-#export ISC_PACKAGE_IRISUSER=irisusr
-#export ISC_PACKAGE_IRISGROUP=irisgrp
 export ISC_PACKAGE_STARTIRIS="N"
 if $rpms; then
   export ISC_PACKAGE_UNICODE="Y"
@@ -129,6 +124,7 @@ else
 fi
 
 # Bug workaround! --> OSE/SMH - Cache starts, but shouldn't have due to ISC_PACKAGE_STARTIRIS
+# TODO: see if this is still needed
 iris stop IRIS quietly
 
 popd
@@ -164,6 +160,8 @@ fi
 # Clean up from install
 cd $scriptdir
 rm -rf $tempdir
+
+# Undo Rocky Linux pretending to be RHEL
 mv /etc/os-release{.orig,}
 
 # create startup script used by docker
@@ -175,6 +173,7 @@ echo 'echo "Starting vista processes"'                       >> $basedir/bin/sta
 echo 'cp '${basedir}'/iris.cpf '${basedir}'/iris.cpf-old'    >> $basedir/bin/start.sh
 echo 'rm '${basedir}'/iris.cpf_*'                            >> $basedir/bin/start.sh
 echo 'cp '${basedir}'/iris.cpf-new '${basedir}'/iris.cpf'    >> $basedir/bin/start.sh
+#TODO: see if we need this
 echo 'find '${basedir}'/ -iname IRIS.DAT -exec touch {} \;'  >>$basedir/bin/start.sh
 echo "iris start IRIS"                                       >> $basedir/bin/start.sh
 echo '# Create a fifo so that bash can read from it to'      >> $basedir/bin/start.sh

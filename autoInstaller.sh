@@ -440,9 +440,6 @@ if $installiris; then
     #./createVistaInstance.sh
 fi
 
-#TEST
-exit 0
-
 # Modify the primary user to be able to use the VistA instance
 if $installgtm || $installYottaDB; then
     usermod -a -G $instance $primaryuser
@@ -534,12 +531,7 @@ if $installgtm || $installYottaDB; then
       cd $basedir/Dashboard
 
       echo "Installing pip"
-      # fixing error in February 2022 build
-      # was :curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
-      # was :python3 get-pip.py
-
-      curl "https://bootstrap.pypa.io/pip/3.6/get-pip.py" -o "get-pip.py"
-      python3 get-pip.py
+      yum install python3-pip
 
       echo "Downloading OSEHRA VistA Tester Repo"
       curl -fsSL --progress-bar https://github.com/WorldVistA/VistA/archive/master.zip -o VistA-master.zip
