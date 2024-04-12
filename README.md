@@ -21,11 +21,11 @@ for running them are available on the URL, including usernames/passwords:
 
 | Image Name   | M Imp | Versions Available | Docker Hub URL |
 | ----------   | ----- | ------------------ | -------------- |
-| FOIA VistA   | YDB   | Monthly Images     | https://hub.docker.com/r/worldvista/foiavista |
-| OSEHRA VistA | YDB   | Quarterly Images   | https://hub.docker.com/r/worldvista/osehravista |
+| FOIA VistA   | YDB   | No New Images      | https://hub.docker.com/r/worldvista/foiavista |
+| OSEHRA VistA | YDB   | No New Images      | https://hub.docker.com/r/worldvista/osehravista |
 | vxVistA      | GTM   | 15.0               | https://hub.docker.com/r/worldvista/vxvista |
-| VEHU         | GTM   | Quarterly Images   | https://hub.docker.com/r/worldvista/vehu |
-| RPMS         | YDB   | Half yearly        | https://hub.docker.com/r/worldvista/rpms |
+| VEHU         | YDB   | Monthly            | https://hub.docker.com/r/worldvista/vehu |
+| RPMS         | YDB   | No New Images      | https://hub.docker.com/r/worldvista/rpms |
 | OSEHRA Plan VI | YDB | 3; last 201902     | https://hub.docker.com/r/worldvista/ov6  |
 | VEHU Plan VI | YDB   | 2; last 201901     | https://hub.docker.com/r/worldvista/vehu6 |
 | WorldVistA   | YDB   | 3.0                | https://hub.docker.com/r/worldvista/worldvista-ehr |
@@ -48,15 +48,15 @@ WorldVistA (YottaDB, Panorama, no boostrap, skip testing):
     docker build --build-arg flags="-bymsa http://opensourcevista.net/NancysVistAServer/BetaWVEHR-3.0-Ver2-16Without-CPT-20181004/FileForDockerBuildWVEHR3.0WithoutCPT.zip -p Common/wvDemopi.sh" --build-arg instance="wv" -t wv .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=wv wv
 
-VEHU (YottaDB, no bootstrap, skip testing, Panorama, SQL Access, BATS Test)
+VEHU (YottaDB with GUI, no bootstrap, skip testing, SQL Access)
 
-    docker build --build-arg flags="-ybsmtqa https://github.com/WorldVistA/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
-    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 -p 1338:1338 --name=vehu vehu
+    docker build --build-arg flags="-ybsqna https://github.com/WorldVistA/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8089-8090:8089-8090 -p 1338:1338 --name=vehu vehu
 
 VEHU (YottaDB with GUI, build YottaDB from source, SQL Access)
 
     docker build --build-arg flags="-obsqna https://github.com/WorldVistA/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
-    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 1338:1338 -p 8089:8089 --name=vehu vehu
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 1338:1338 -p 8089-8090:8089-8090 --name=vehu vehu
 
 VEHU Plan VI (Internationalized Version) (YottaDB, UTF-8 enabled, no bootstrap, skip testing, Panorama)
 
@@ -110,6 +110,7 @@ The exported ports are as follows:
 | 57772       | 57772      | Caché Web Portal | Caché            |
 | 1338        | 1338       | SQL Listener Port | YottaDB         |
 | 8089        | 8089       | YottaDB GUI     | YottaDB           |
+| 8090        | 8090       | YottaDB GUI Socket Server  | YottaDB           |
 
 ## Detailed Discussion and Reference
 
@@ -266,10 +267,9 @@ a web browser at http://localhost:3080/vivian and http://localhost:3080/vivian/f
 | `./Common/vehu6piko.sh`             | GTM-YDB        | Add Korean ICD-10 to VEHU instance |
 
 ### Installing SQL Mapping
-SQL Mapping of FileMan Files is in development at
-https://gitlab.com/YottaDB/DBMS/YDBOcto. SQL Mapping is supported only for
-YottaDB. There are some special command line arguments that are required for
-proper running:
+SQL Mapping of FileMan Files is at https://gitlab.com/YottaDB/DBMS/YDBOcto. SQL
+Mapping is supported only for YottaDB. There are some special command line
+arguments that are required for proper running:
 
 #### Installation Command Line flag
 

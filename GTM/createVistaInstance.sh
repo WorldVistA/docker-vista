@@ -200,6 +200,8 @@ echo "export instance=$instance"                >> $basedir/etc/env
 echo "export gtm_sysid=$instance"               >> $basedir/etc/env
 echo "export gtm_zstep='n oldio s oldio=\$i u 0 zp @\$zpos b  u oldio'">> $basedir/etc/env
 echo "export gtm_link=RECURSIVE"                >> $basedir/etc/env
+echo "export gtm_statshare=1"                   >> $basedir/etc/env
+echo "export ydb_readline=1"                    >> $basedir/etc/env
 if $installYottaDB; then
   echo "export mumps_implementation=YottaDB"    >> $basedir/etc/env
 else

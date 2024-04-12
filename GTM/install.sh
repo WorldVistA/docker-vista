@@ -108,7 +108,7 @@ else
 fi
 
 # Install requirements for YDB Source/Octo/YDBGUI
-yum --enablerepo=powertools install -y cmake vim-common bison flex readline-devel libconfig-devel openssl-devel epel-release tcsh ncurses-devel elfutils-libelf-devel gawk libgcrypt-devel
+yum --enablerepo=powertools install -y cmake vim-common bison flex readline-devel libconfig-devel openssl-devel epel-release tcsh ncurses-devel elfutils-libelf-devel gawk libgcrypt-devel nodejs
 yum install -y libsodium-devel # Must install epel-release first
 
 # Download ydbinstall
