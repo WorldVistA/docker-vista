@@ -2,7 +2,7 @@
 #---------------------------------------------------------------------------
 # Copyright 2011-2017 The Open Source Electronic Health Record Agent
 # Copyright 2020-2021 Sam Habiel
-# Copyright 2021-2023 YottaDB LLC
+# Copyright 2021-2024 YottaDB LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@ usage()
     This script will automatically install GT.M/YottaDB
 
     DEFAULTS:
-      GT.M Version = V6.3-013
-      YottaDB Version = r1.36
+      GT.M Version = V7.0-001
+      YottaDB Version = r2.00
 
     OPTIONS:
       -h    Show this message
@@ -81,12 +81,12 @@ fi
 
 # GT.M
 if [ -z $gtm_ver ] && [ -z $installYottaDB ]; then
-    gtm_ver="V6.3-013"
+    gtm_ver="V7.0-001"
 fi
 
 # YottaDB
 if [ $installYottaDB ] && [ -z $gtm_ver ]; then
-    gtm_ver="r1.36"
+    gtm_ver="r2.00"
 fi
 
 if $source; then
