@@ -337,6 +337,7 @@ if $bootstrap; then
                        xinetd \
                        perl \
                        curl \
+		       libcurl-devel \
                        python \
                        openssh-server \
                        openssh-clients \

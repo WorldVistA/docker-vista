@@ -9,6 +9,7 @@ RUN yum update  -y && \
                    xinetd \
                    perl \
                    curl \
+                   libcurl-devel \
                    python3 \
                    openssh-server \
                    openssh-clients \
