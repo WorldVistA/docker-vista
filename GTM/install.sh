@@ -108,7 +108,7 @@ else
 fi
 
 # Install requirements for YDB Source/Octo/YDBGUI
-yum --enablerepo=powertools install -y cmake vim-common bison flex readline-devel libconfig-devel openssl-devel epel-release tcsh ncurses-devel elfutils-libelf-devel gawk libgcrypt-devel nodejs
+yum --enablerepo=powertools install -y cmake vim-common bison flex readline-devel libconfig-devel openssl-devel epel-release tcsh ncurses-devel elfutils-libelf-devel gawk libgcrypt-devel nodejs gpgme-devel
 yum install -y libsodium-devel # Must install epel-release first
 
 # Download ydbinstall
@@ -118,11 +118,11 @@ if $source; then
         cd YDB
         mkdir build
         cd build
-        cmake -D CMAKE_INSTALL_PREFIX:PATH=$PWD ../
-        make -j `grep -c ^processor /proc/cpuinfo`
+        cmake ..
+	make -j $(($(getconf _NPROCESSORS_ONLN) - 1))
         make install
         cd yottadb_r*
-        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --octo --gui --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch"
+        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --octo --gui --encplugin --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch"
     else
         echo "Installing GT.M from source isn't supported"
         exit 1
@@ -145,7 +145,7 @@ else
     #                     this follows VistA convention of uppercase only routines
     # Force install is necessary b/c of a recent change in the YDB installer.
     if [ "$installYottaDB" = "true" ] ; then
-        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --octo --gui --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch" $gtm_ver
+        ./ydbinstall --force-install --ucaseonly-utils --utf8 default --octo --gui --encplugin --installdir /opt/yottadb/"$gtm_ver"_"$gtm_arch" $gtm_ver
     else
         ./ydbinstall --force-install --gtm --ucaseonly-utils --utf8 default --installdir /opt/lsb-gtm/"$gtm_ver"_"$gtm_arch" $gtm_ver
     fi

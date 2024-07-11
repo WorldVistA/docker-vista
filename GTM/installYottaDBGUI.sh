@@ -61,10 +61,40 @@ if [ -z $firewall ]; then
     firewall=true
 fi
 
+# Create Certificates
+mkdir -p /YDBGUI/certs
+openssl genrsa -aes128 -passout pass:ydbgui -out /YDBGUI/certs/ydbgui.key 2048
+openssl req -new -key /YDBGUI/certs/ydbgui.key -passin pass:ydbgui -subj '/C=US/ST=Pennsylvania/L=Malvern/CN=localhost' -out /YDBGUI/certs/ydbgui.csr
+openssl req -x509 -days 365 -sha256 -in /YDBGUI/certs/ydbgui.csr -key /YDBGUI/certs/ydbgui.key -passin pass:ydbgui -out /YDBGUI/certs/ydbgui.pem
+
+# YottaDB Certificate Config
+cat <<EOF >> /YDBGUI/certs/ydbgui.ydbcrypt
+tls: {
+  session-timeout: 600;
+  ydbgui: {
+    format: "PEM";
+    cert: "/YDBGUI/certs/ydbgui.pem";
+    key:  "/YDBGUI/certs/ydbgui.key";
+  };
+  client: {
+    CAfile: "/YDBGUI/certs/ydbgui.pem";
+  };
+};
+EOF
+
+# Needed because YottaDB server needs to read the key, which is rw and owned by root.
+chown $instance:$instance /YDBGUI/certs/*
+
 # Add additional YDBGUI items to env script
+export USER=$instance # necessary so that the maskpass script would work. Also needed at runtime.
 cat <<EOF >> $basedir/etc/env
 export gtmroutines="\$gtmroutines /home/vehu/lib/gtm/plugin/o/_ydbgui.so /home/vehu/lib/gtm/plugin/o/_ydbmwebserver.so"
+export gtmcrypt_config="/YDBGUI/certs/ydbgui.ydbcrypt"
+export USER=$instance
+export gtmtls_passwd_ydbgui="$(echo ydbgui | $gtm_dist/plugin/gtmcrypt/maskpass | cut -d ":" -f2 | tr -d '[:space:]')"
+export NODE_TLS_REJECT_UNAUTHORIZED=0
 EOF
+unset USER
 
 # Add users for the GUI
 cat <<EOF >> $basedir/etc/users.json
@@ -91,7 +121,7 @@ fi
 # Add firewall rules
 if $firewall; then
   if [[ $RHEL || -z $ubuntu ]]; then
-      firewall-cmd --zone=public --add-port=8089/tcp --permanent
+      firewall-cmd --zone=public --add-port=8089-8092/tcp --permanent
       firewall-cmd --reload
   fi
 fi

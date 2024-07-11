@@ -43,14 +43,20 @@ export PATH=$PATH:/usr/local/bin
 
 # Start YottaDB GUI @ 8089
 start() {
-    echo  "Starting YottaDB GUI"
-    su - $instance -c "$gtm_dist/yottadb -run ^%ydbgui --port 8089 --auth-file /home/foia/etc/users.json > $basedir/log/ydbgui.log 2>&1 &"
+    echo  "Starting YottaDB GUI on HTTP at 8089"
+    su - $instance -c "$gtm_dist/yottadb -run ^%ydbgui --port 8089 --auth-file /home/foia/etc/users.json > $basedir/log/ydbgui-http.log 2>&1 &"
+    echo  "Starting YottaDB GUI on HTTPS at 8091"
+    su - $instance -c "$gtm_dist/yottadb -run ^%ydbgui --tlsconfig ydbgui --port 8091 --auth-file /home/foia/etc/users.json > $basedir/log/ydbgui-https.log 2>&1 &"
 }
 
 # Stop YottaDB GUI 
 stop() {
-    echo "Stopping YottaDB GUI"
+    export USER=$instance
+    export ydb_tls_passwd_ydbgui="$(echo ydbgui | $gtm_dist/plugin/gtmcrypt/maskpass | cut -d ":" -f2 | tr -d '[:space:]')"
+    echo "Stopping YottaDB GUI on HTTP at 8089"
     su - $instance -c "$gtm_dist/yottadb -run stop^%ydbgui --port 8089"
+    echo "Stopping YottaDB GUI on HTTP at 8091"
+    su - $instance -c "$gtm_dist/yottadb -run stop^%ydbgui --tlsconfig client --port 8091"
 }
 
 case "$1" in
