@@ -110,7 +110,8 @@ curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Ag
 #curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2022_March_15_IA_Listing_Descriptions.txt -o ICRDescription.txt
 #curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2022_April_07_IA_Listing_Descriptions.txt -o ICRDescription.txt
 echo "Downloading OSEHRA VistA Testing Repository"
-curl -fsSL --progress-bar https://github.com/WorldVistA/VistA/archive/master.zip -o VistA-master.zip
+#curl -fsSL --progress-bar https://github.com/WorldVistA/VistA/archive/master.zip -o VistA-master.zip
+curl -fsSL https://github.com/WorldVistA/VistA/archive/refs/heads/iris-support-269.zip -o VistA-master.zip
 dir=$(zipinfo -1 VistA-master.zip | head -1 | cut -d/ -f1)
 unzip -q VistA-master.zip
 rm VistA-master.zip
