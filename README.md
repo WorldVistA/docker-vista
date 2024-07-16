@@ -1,6 +1,6 @@
 # Dockerized VistA/RPMS instances
 Code in this repository enables you to create VistA or RPMS instances on
-Caché or GT.M/YottaDB.  A working [Docker](https://www.docker.com/community-edition#/download) installation on
+IRIS or GT.M/YottaDB.  A working [Docker](https://www.docker.com/community-edition#/download) installation on
 the platform of choice is required in order to be able to create instances.
 
 # Table of Contents
@@ -229,26 +229,18 @@ take and process a M[UMPS] system that is supplied by the user in one of two for
 |     Platform      |                       Required Files                           |
 | :---------------: | -------------------------------------------------------------- |
 |   GT.M/YottaDB    | Not supported. Create an issue if interested.                  |
-|     Caché         | The files used as part of the install will be used again. You need to supply your own CACHE.DAT and CACHE.key and .tar.gz installer for RHEL.  These files need to be added to the  cache-files directories.        |
+|      IRIS         | The files used as part of the install will be used again. You need to supply your own IRIS.DAT and IRIS.key and .tar.gz installer for RHEL.  These files need to be added to the iris-files directory.         |
 
+``-v`` and ``-b`` options need to be combined together when the docker build
+command is instantiated.
 
-The building of ViViaN is available to executed on all three of the platforms using the same
-arguments as above: ``-c`` for Caché, ``-y`` for YottaDB, and ``-g`` for GT.M.  Each of these
-options should be combined with the ``-v`` and ``-b`` options when the docker build command is
-instantiated.
+For a IRIS instance, the command would look as follows:
 
-For a Caché instance, the command would look as follows:
-
-    docker build --build-arg flags="-c -b -v -p ./Common/pvPostInstall.sh" --build-arg entry="/opt/cachesys" --build-arg instance="osehra" -t cacheviv .
-    docker run -p 9430:9430 -p 8001:8001 -p 8080:8080 -p 2222:22 -p 57772:57772 -p 3080:80 -d -P --name=cache cacheviv
-
-For a YottaDB instance, the command would look as follows:
-
-    docker build --build-arg flags="-y -b -v -p ./Common/pvPostInstall.sh" --build-arg instance="osehra" -t yottaviv .
-    docker run -p 9430:9430 -p 8001:8001 -p 8080:8080 -p 2222:22 -p 57772:57772 -p 3080:80 -d -P --name=cache yottaviv
+    docker build --build-arg flags="-c -b -v -p ./Common/pvPostInstall.sh" --build-arg entry="/opt/irissys" --build-arg instance="foia" -t irisviv .
+    docker run -p 9430:9430 -p 8001:8001 -p 8080:8080 -p 2222:22 -p 57772:57772 -p 3080:80 -d -P --name=irisviv irisviv
 
 Once the container is running, the ViViaN and DOX pages can be accessed via
-a web browser at http://localhost:3080/vivian and http://localhost:3080/vivian/files/dox
+a web browser at http://localhost:3080/vivian and http://localhost:3080/dox
 
 ### Post Installs that you can apply with -p flag
 
