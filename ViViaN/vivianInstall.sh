@@ -92,9 +92,11 @@ VISTA_CACHE_NAMESPACE:STRING=$namespace" >> $scriptdir/ViViaN/CMakeCache.txt
   fi
 fi
 
-# Add apache to start.sh
-awk -v n=5 -v s='echo "Starting Apache"' 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
-awk -v n=6 -v s="/usr/sbin/apachectl" 'NR == n {print s} {print}' $basedir/bin/start.sh > $basedir/bin/start.tmp && mv $basedir/bin/start.tmp $basedir/bin/start.sh
+# Add apache and php-fpm to start.sh
+# php-fpm needed for run PHP from Apache starting in RHEL 8
+sed -i '5i echo "Starting Apache"' $basedir/bin/start.sh
+sed -i '6i /usr/sbin/php-fpm' $basedir/bin/start.sh
+sed -i '7i /usr/sbin/apachectl' $basedir/bin/start.sh
 # Fix start.sh permissions
 chown root:irisusr $basedir/bin/start.sh
 chmod +x $basedir/bin/start.sh
@@ -104,14 +106,12 @@ mkdir -p /opt/viv-out
 pushd /opt
 echo "Acquiring DBIA/ICR Information from https://foia-vista.worldvista.org/VistA_Integration_Agreement/"
 
-curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2023_December_11_IA_Listing_Description.txt -o ICRDescription.txt
-#curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2022_October_05_IA_Listings_Description.txt -o ICRDescription.txt
-#curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2022_February_17_IA_Listing_Descriptions.txt -o ICRDescription.txt
-#curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2022_March_15_IA_Listing_Descriptions.txt -o ICRDescription.txt
-#curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2022_April_07_IA_Listing_Descriptions.txt -o ICRDescription.txt
+curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2024_May_03_IA_Listing_Description.txt -o ICRDescription.txt
 echo "Downloading OSEHRA VistA Testing Repository"
+#TODO: TEMP for IRIS support
 #curl -fsSL --progress-bar https://github.com/WorldVistA/VistA/archive/master.zip -o VistA-master.zip
 curl -fsSL https://github.com/WorldVistA/VistA/archive/refs/heads/iris-support-269.zip -o VistA-master.zip
+#END TEMP
 dir=$(zipinfo -1 VistA-master.zip | head -1 | cut -d/ -f1)
 unzip -q VistA-master.zip
 rm VistA-master.zip

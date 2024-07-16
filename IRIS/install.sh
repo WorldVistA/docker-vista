@@ -91,11 +91,6 @@ scriptdir=`dirname $0`
 # BaseDir
 basedir=/opt/irissys/$instance
 
-# TODO: Sam remove this file
-# Create Daemon User accounts
-#./createDaemonAccount.sh
-#usermod root -G irisgrp
-
 # unzip the iriskit in a temp directory
 iriskit=$(ls -1 /opt/vista/iris-files/IRIS*.tar.gz)
 echo "Using iris installer: $iriskit"
