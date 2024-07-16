@@ -47,7 +47,7 @@ if [[ -z $extractOnly ]]; then
     extractOnly=false
 fi
 
-yum install -y httpd graphviz java-1.8.0-openjdk-devel php python3-pip rust cargo python3-devel openssl-devel
+yum install -y httpd graphviz java-1.8.0-openjdk-devel php python3-pip rust cargo python3-devel openssl-devel python3-cffi
 
 if [[ -f /home/$instance/etc/env ]]; then
   basedir=/home/$instance
