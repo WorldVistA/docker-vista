@@ -47,7 +47,7 @@ if [[ -z $extractOnly ]]; then
     extractOnly=false
 fi
 
-yum install -y httpd graphviz java-1.8.0-openjdk-devel php python3-pip rust cargo python3-devel openssl-devel python3-cffi
+yum install -y httpd graphviz java-1.8.0-openjdk-devel php python3-pip rust cargo python3-devel openssl-devel python3-cffi php-fpm
 
 if [[ -f /home/$instance/etc/env ]]; then
   basedir=/home/$instance
@@ -126,13 +126,13 @@ pip3 install -r /opt/VistA/requirements.txt
 
 #  Export first so the configuration can find the correct files to query for
 echo "Starting VistAMComponentExtractor at:" $(timestamp)
-python3 /opt/VistA/Scripts/VistAMComponentExtractor.py $connectionArg -r /opt/VistA-M/ -o /tmp/ -l /tmp/ $serialExport
+python3 /opt/VistA/Scripts/VistAMComponentExtractor.py $connectionArg -r /opt/VistA-M/ -o /tmp/ -l /tmp/ # $serialExport
 echo "Ending VistAMComponentExtractor at:" $(timestamp)
 # Uncomment to debug VistAMComponentExtractor
 # @TODO Make debugging a script option
-# echo "Start of Log Dump:"
-# cat /tmp/VistAPExpect.log
-# echo "End of Log Dump"
+echo "Start of Log Dump:"
+cat /tmp/VistAPExpect.log
+echo "End of Log Dump"
 find ./VistA-M -type f -print0 | xargs -0 dos2unix > /dev/null 2>&1
 find ./VistA-M -type f -name "MPIPSIM*.m" -print0 | xargs -0 rm
 

@@ -32,24 +32,20 @@ S ^HLMA(0)="HL7 MESSAGE ADMINISTRATION^773PI"
 S ^HL(772,0)="HL7 MESSAGE TEXT^772DI"
 ;
 ; Save ZSTU in the %SYS - Warning: TABS below are required.
-W "Saving ZSTU in %SYS",!
-ZN "%SYS"
-ZR  ZS ZSTU
-ZSTU	;Boot up stuff
-	;
-	J ZISTCP^XWBTCPM1(9430):"$instance"
-	;
-	; START TaskMan
-	J ^ZTMB:"$instance"
-	;
-	; START VistALink
-	J START^XOBVLL(8001):"$instance"
-	QUIT
-ZS ZSTU
+;W "Saving ZSTU in %SYS",!
+;ZN "%SYS"
+;ZR  ZS ZSTU
+;ZSTU	;Boot up stuff
+;	;
+;	J ZISTCP^XWBTCPM1(9430):"$instance"
+;	;
+;	; START TaskMan
+;	J ^ZTMB:"$instance"
+;	;
+;	; START VistALink
+;	J START^XOBVLL(8001):"$instance"
+;	QUIT
+;ZS ZSTU
 HALT
-;
-W "Fixing ISO-8859-1 to ASCII as ISO-8859-1 cannot be exported to JSON in Vivian",!
-S ^ONCO(164.33,55,7,5,0)="    (plaque +/- patch)'. The T1a & T1b values are not part of the AJCC algorithm."
-S ^ONCO(164.33,55,7,8,0)="    (plaque +/- patch)'. The T2a & T2b values are not part of the AJCC algorithm."
 END
 iris stop IRIS quietly
