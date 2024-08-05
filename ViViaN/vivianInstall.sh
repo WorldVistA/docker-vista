@@ -124,15 +124,31 @@ cp /opt/VistA/Packages.csv /opt/VistA-M/
 pip3 install setuptools_rust wheel
 pip3 install -r /opt/VistA/requirements.txt
 
-#  Export first so the configuration can find the correct files to query for
+# Clone ViViaN repository
+echo "Cloning ViViaN Repository"
+curl -fsSL --progress-bar https://github.com/WorldVistA/vivian/archive/master.zip -o vivian-master.zip
+dir=$(zipinfo -1 vivian-master.zip | head -1 | cut -d/ -f1)
+unzip -q vivian-master.zip
+rm vivian-master.zip
+mv $dir /var/www/html/vivian
+
+#TEMP
+exit 0
+#TEMP
+
+# Export first so the configuration can find the correct files to query for
+#TEMP
+irissession IRIS -U FOIA THIS^%SS
+#TEMP
 echo "Starting VistAMComponentExtractor at:" $(timestamp)
-python3 /opt/VistA/Scripts/VistAMComponentExtractor.py $connectionArg -r /opt/VistA-M/ -o /tmp/ -l /tmp/ # $serialExport
+# NB: I tried removing serial export, but IRIS freezes up, so that doesn't work actually.
+python3 /opt/VistA/Scripts/VistAMComponentExtractor.py $connectionArg -r /opt/VistA-M/ -o /tmp/ -l /tmp/ $serialExport
 echo "Ending VistAMComponentExtractor at:" $(timestamp)
 # Uncomment to debug VistAMComponentExtractor
 # @TODO Make debugging a script option
-echo "Start of Log Dump:"
-cat /tmp/VistAPExpect.log
-echo "End of Log Dump"
+#echo "Start of Log Dump:"
+# cat /tmp/VistAPExpect.log
+#echo "End of Log Dump"
 find ./VistA-M -type f -print0 | xargs -0 dos2unix > /dev/null 2>&1
 find ./VistA-M -type f -name "MPIPSIM*.m" -print0 | xargs -0 rm
 
@@ -145,23 +161,31 @@ cp $scriptdir/ViViaN/CMakeCache.txt /opt/VistA-docs
 mkdir /var/www/html/vivian-data
 # =====================================================
 echo "Starting CTest at:" $(timestamp)
+
+# Editing next one to prevent starting taskman (double check?)
 echo "Installing XINDEX patch"
-/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "XINDEX"
+#/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "XINDEX"
+#TEMP
+irissession IRIS -U FOIA THIS^%SS
+#TEMP
+/opt/VistA/Scripts/DefaultKIDSBuildInstaller.py -S 1 -d 17 -CN FOIA /opt/VistA/Utilities/Dox/Patches/XT-7p3-10001T4.KID -bub IN
+#TEMP
+irissession IRIS -U FOIA THIS^%SS
+#TEMP
+
+# Single user IRIS allows 8 jobs (and thus -j 8)
 echo "Executing XINDEX reports"
-/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "CALLERGRAPH"
+/usr/bin/ctest -V -j 8 -R "CALLERGRAPH"
+
+# Runs serially GetFilemanSchema, MRoutineAnalyzer (needs internet connection), FileManGlobalDataParser
+# Maybe convert over to each one manually
 echo "Executing data-gathering tasks"
 /usr/bin/ctest -V -E "CALLERGRAPH|XINDEX|WebPageGenerator"
+
 echo "Generating ViViaN and DOX HTML"
-/usr/bin/ctest -V -j $(grep -c ^processor /proc/cpuinfo) -R "WebPageGenerator"
+/usr/bin/ctest -V -R "WebPageGenerator"
 echo "Ending CTest at:" $(timestamp)
 # =====================================================
-# Clone ViViaN repository
-echo "Cloning ViViaN Repository"
-curl -fsSL --progress-bar https://github.com/WorldVistA/vivian/archive/master.zip -o vivian-master.zip
-dir=$(zipinfo -1 vivian-master.zip | head -1 | cut -d/ -f1)
-unzip -q vivian-master.zip
-rm vivian-master.zip
-mv $dir /var/www/html/vivian
 pushd /var/www/html/vivian/scripts
 python3 setup.py -fd /var/www/html/vivian-data -dd /var/www/html/dox
 chown -R apache:apache /var/www/html
