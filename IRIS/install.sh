@@ -101,7 +101,7 @@ pushd $tempdir
 tar xzf $iriskit
 
 # Create environment variables for install
-export ISC_PACKAGE_INITIAL_SECURITY="minimal"
+export ISC_PACKAGE_INITIAL_SECURITY="Minimal"
 export ISC_PACKAGE_INSTANCENAME=IRIS
 export ISC_PACKAGE_INSTALLDIR=$basedir
 export ISC_PACKAGE_STARTIRIS="N"
