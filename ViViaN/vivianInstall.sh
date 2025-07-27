@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #---------------------------------------------------------------------------
 # Copyright 2018-2019 The Open Source Electronic Health Record Alliance
-# Copyright 2020-2024 Sam Habiel
+# Copyright 2020-2025 Sam Habiel
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -120,7 +120,7 @@ mkdir -p /opt/viv-out
 pushd /opt
 
 echo "Acquiring DBIA/ICR Information from https://foia-vista.worldvista.org/VistA_Integration_Agreement/"
-curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2024_August_13_IA_Listing_Description.txt -o ICRDescription.txt
+curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2025_July_11_IA_Listings_Description.txt -o ICRDescription.txt
 
 echo "Downloading OSEHRA VistA Testing Repository"
 curl -fsSL --progress-bar https://github.com/WorldVistA/VistA/archive/master.zip -o VistA-master.zip
