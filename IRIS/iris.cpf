@@ -1,6 +1,6 @@
 [ConfigFile]
 Product=IRIS
-Version=2023.3
+Version=2025.1
 
 [Databases]
 IRISSYS=/opt/irissys/zzzz/mgr/
@@ -8,6 +8,7 @@ IRISLIB=/opt/irissys/zzzz/mgr/irislib/
 IRISTEMP=/opt/irissys/zzzz/mgr/iristemp/
 IRISLOCALDATA=/opt/irissys/zzzz/mgr/irislocaldata/
 IRISAUDIT=/opt/irissys/zzzz/mgr/irisaudit/
+IRISMETRICS=/opt/irissys/zzzz/mgr/irismetrics/
 USER=/opt/irissys/zzzz/mgr/user/
 ZZZZ=/opt/irissys/zzzz/vista/
 
@@ -88,18 +89,30 @@ TerminalPrompt=8,2
 WebServer=1
 WebServerName=
 WebServerPort=57772
+WebServerProtocol=http
+WebServerSSLConfiguration=
 WebServerURLPrefix=
 ZSTU=1
 
 [WorkQueues]
 Default=
 SQL=
+Utility=8,8,,,1
+
+[Logging]
+ChildProcessLaunchCommand=irislogd.exe -f /tmp/irislogd.log
+Enabled=0
+EventFilter=
+Format=NVP
+Interval=10
+Level=WARN
 
 [Gateways]
 %DotNet Server=.NET,53372,%Gateway_Object,N6.0
 %IntegratedML Server=ML,53572,%Gateway_ML
 %JDBC Server=JDBC,53772,%Gateway_SQL,,,,,,,0
 %Java Server=Java,53272,%Gateway_Object
+%ODBC Server=ODBC,53972,%Gateway_SQL
 %Python Server=Python,53472,%Gateway_Object
 %R Server=R,53872,%Gateway_Object
 %XSLT Server=XSLT,53672,%Gateway_Object,,,,,,,0
@@ -158,6 +171,9 @@ MaxServerConn=1
 MaxServers=2
 Path=
 PythonPath=
+PythonRuntimeLibrary=
+PythonRuntimeLibraryVersion=
+UUIDv1RandomMac=0
 bbsiz=-1
 console=,
 errlog=500
@@ -191,7 +207,7 @@ GlobalKillEnabled=1
 IEEEError=1
 LicenseAltHeaders=0
 LineRecall=1
-ListFormat=0
+ListFormat=1
 LogRollback=0
 MVDefined=0
 NodeNameInPid=0
@@ -224,9 +240,13 @@ CommIPAddress=
 JoinCluster=0
 
 [LicenseServers]
-LOCAL=127.0.0.1,4001
+LOCAL=127.0.0.1,4002
 
 [Monitor]
+OTELInterval=10
+OTELLogLevel=WARN
+OTELLogs=0
+OTELMetrics=0
 SNMPEnabled=0
 
 [IO]
@@ -307,6 +327,7 @@ DECIMAL(%1)=%Library.Numeric(MAXVAL=<|'$$maxval^%apiSQL(%1,0)'|>,MINVAL=<|'$$min
 DECIMAL(%1,%2)=%Library.Numeric(MAXVAL=<|'$$maxval^%apiSQL(%1,%2)'|>,MINVAL=<|'$$minval^%apiSQL(%1,%2)'|>,SCALE=%2)
 DOUBLE=%Library.Double
 DOUBLE PRECISION=%Library.Double
+EMBEDDING(%1,%2)=%Library.Embedding(MODEL=%1,SOURCE=%2)
 FLOAT=%Library.Double
 FLOAT(%1)=%Library.Double
 IMAGE=%Stream.GlobalBinary
@@ -375,11 +396,14 @@ VARCHAR(%1)=%Library.String(MAXLEN=%1)
 VARCHAR(%1,%2)=%Library.String(MAXLEN=%1)
 VARCHAR(MAX)=%Stream.GlobalCharacter
 VARCHAR2(%1)=%Library.String(MAXLEN=%1)
+VECTOR=%Library.Vector(DATATYPE="DOUBLE")
+VECTOR(%1)=%Library.Vector(DATATYPE=%1)
+VECTOR(%1,%2)=%Library.Vector(DATATYPE=%1,LEN=%2)
 
 [Telnet]
 DNSLookup=ON
 Port=23
 
 [Conversions]
-LastConvertTime=2023-11-08 13:50:21
+LastConvertTime=2025-06-04 19:16:44
 
