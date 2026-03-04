@@ -1,0 +1,6 @@
+# Pass 1: Create RPMS database and namespace
+# Applied FIRST before mappings can reference them
+
+[Actions]
+CreateDatabase:Name=RPMS,Directory=/usr/irissys/mgr/rpms/
+CreateNamespace:Name=RPMS,Globals=RPMS,Routines=RPMS,Library=IRISLIB

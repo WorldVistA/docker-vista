@@ -2,8 +2,23 @@
 # NB NB NB: There are tabs in this code. They MUST be kept.
 # Needs a parameter: instance name ($1)
 instance=$1
-ccontrol start CACHE
-csession CACHE -U $instance <<END
+
+# Detect whether we have IRIS or Caché
+if command -v iris &>/dev/null; then
+    IRISCTL="iris"
+    IRISSESSION="iris session"
+    IRISINSTANCE="IRIS"
+elif command -v ccontrol &>/dev/null; then
+    IRISCTL="ccontrol"
+    IRISSESSION="csession"
+    IRISINSTANCE="CACHE"
+else
+    echo "ERROR: Neither iris nor ccontrol found"
+    exit 1
+fi
+
+$IRISCTL start $IRISINSTANCE
+$IRISSESSION $IRISINSTANCE -U $instance <<END
 ; Recompile
 W "Recompiling Routines",!
 D Compile^%R("*.*")
@@ -36,4 +51,4 @@ ZSTU	;Boot up stuff
 ZS ZSTU
 HALT
 END
-ccontrol stop CACHE quietly
+$IRISCTL stop $IRISINSTANCE quietly

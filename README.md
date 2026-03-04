@@ -68,6 +68,11 @@ RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
     docker build --build-arg flags="-wfybsa https://github.com/shabiel/FOIA-RPMS/archive/master.zip -p ./Common/rpmsPostInstall.sh" --build-arg instance="rpms" -t rpms .
     docker run -d -p 2222:22 -p 9100:9100 -p 9101:9101 -p 9080:9080 --name=rpms rpms
 
+RPMS on IRIS Community Edition (no license required, imports from git repo):
+
+    docker build -f Dockerfile.iris-ce --build-arg RPMS_REPO=https://github.com/WorldVistA/FOIA-RPMS.git --build-arg instance="rpms" -t rpms-iris .
+    docker run -d -p 1972:1972 -p 52773:52773 --name=rpms rpms-iris
+
 IRIS Install with local VistA DAT file. You need to supply your own IRIS.DAT and IRIS.key and .tar.gz installer for RHEL.  These files need to be added to the iris-files directories.
 
     docker build --build-arg flags="-cbsp ./Common/pvPostInstall.sh" --build-arg instance="foia" --build-arg entry="/opt/irissys" -t iris .
@@ -108,6 +113,8 @@ The exported ports are as follows:
 | 9100        | 9100       | CIA (RPMS-EHR)  | RPMS              |
 | 9101        | 9101       | BMX (iCare etc) | RPMS              |
 | 57772       | 57772      | IRIS Web Portal | IRIS            |
+| 1972        | 1972       | IRIS Superserver | IRIS CE          |
+| 52773       | 52773      | IRIS CE Management Portal | IRIS CE  |
 | 1338        | 1338       | SQL Listener Port | YottaDB         |
 | 8089        | 8089       | YottaDB GUI     | YottaDB           |
 | 8090        | 8090       | YottaDB GUI Socket Server  | YottaDB           |
@@ -119,6 +126,34 @@ are defaults if you don't supply arguments, which are discussed below. The
 build step runs the script [autoInstaller.sh](./autoInstaller.sh) which does
 the actual installation. Post-install scripts (supplied after the argument -p)
 allow customization of the built image.
+
+### IRIS Community Edition (Dockerfile.iris-ce)
+
+A separate [Dockerfile.iris-ce](./Dockerfile.iris-ce) is provided for building
+RPMS images using the freely available IRIS Community Edition container image
+from InterSystems. Unlike the licensed IRIS path below, this does **not** require
+a pre-built IRIS.DAT or IRIS installer — it clones a FOIA-RPMS git repository
+and imports all routines and globals directly.
+
+| Option Name  | Default | Description |
+| ------------ | ------- | ----------- |
+| RPMS_REPO    | `https://github.com/WorldVistA/FOIA-RPMS.git` | Git URL for the FOIA-RPMS source repository |
+| RPMS_BRANCH  | `master` | Branch to clone |
+| instance     | `rpms` | Namespace name (uppercase in IRIS) |
+
+Build example:
+
+   ```sh
+   docker build -f Dockerfile.iris-ce \
+     --build-arg RPMS_REPO=https://github.com/CivicActions/FOIA-RPMS.git \
+     --build-arg instance=rpms \
+     -t rpms-iris .
+   docker run -d -p 1972:1972 -p 52773:52773 --name=rpms rpms-iris
+   ```
+
+The Management Portal is available at http://localhost:52773/csp/sys/UtilHome.csp.
+
+### Licensed IRIS (Dockerfile)
 
 IRIS will not have any pre-built images due to license restrictions.  The
 IRIS install assumes that you are using a pre-built IRIS.DAT. The default

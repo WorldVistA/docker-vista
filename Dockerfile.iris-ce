@@ -1,0 +1,98 @@
+# RPMS/VistA on IRIS Community Edition
+#
+# Builds an IRIS CE image by cloning a VistA-M or FOIA-RPMS repository
+# (routines + globals in OSEHRA filesystem format) and importing them
+# into an IRIS Community Edition instance.
+#
+# Unlike the main Dockerfile (which requires a licensed IRIS .tar.gz kit
+# and a pre-built IRIS.DAT), this Dockerfile uses the freely available
+# IRIS Community Edition container image from InterSystems.
+#
+# Build examples:
+#   RPMS (CivicActions fork):
+#     docker build -f Dockerfile.iris-ce \
+#       --build-arg RPMS_REPO=https://github.com/CivicActions/FOIA-RPMS.git \
+#       --build-arg instance=rpms --build-arg rpms=true \
+#       -t rpms-iris .
+#
+#   RPMS (WorldVistA):
+#     docker build -f Dockerfile.iris-ce \
+#       --build-arg RPMS_REPO=https://github.com/WorldVistA/FOIA-RPMS.git \
+#       --build-arg instance=rpms --build-arg rpms=true \
+#       -t rpms-iris .
+#
+# Run:
+#   docker run -d -p 1972:1972 -p 52773:52773 --name=rpms rpms-iris
+
+# --- Stage 1: Clone the source repository ---
+FROM ubuntu:22.04 AS source
+
+RUN apt-get update && apt-get -y install --no-install-recommends \
+        git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+ARG RPMS_REPO=https://github.com/WorldVistA/FOIA-RPMS.git
+ARG RPMS_BRANCH=master
+RUN git clone --depth 1 -b ${RPMS_BRANCH} ${RPMS_REPO} FOIA-RPMS
+
+# --- Stage 2: IRIS CE with imported routines and globals ---
+FROM intersystems/iris-community:latest-cd
+
+ARG instance=rpms
+ARG rpms=true
+
+USER root
+
+RUN apt-get update && apt-get -y install --no-install-recommends \
+        dos2unix \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create directories
+RUN mkdir -p /opt/vista/source /opt/vista/scripts \
+             /usr/irissys/mgr/${instance} \
+    && chown -R irisowner:irisowner /opt/vista /usr/irissys/mgr/${instance}
+
+USER irisowner
+
+# Copy source from stage 1
+COPY --from=source --chown=irisowner:irisowner /src/FOIA-RPMS/Packages/ /opt/vista/source/Packages/
+
+# Copy IRIS CE import scripts and configuration
+COPY --chown=irisowner:irisowner IRIS/ce/merge-create.cpf IRIS/ce/merge-map.cpf /opt/vista/
+COPY --chown=irisowner:irisowner IRIS/ce/import.sh /opt/vista/scripts/
+COPY --chown=irisowner:irisowner IRIS/ce/importrtn.m IRIS/ce/importgbl.m /opt/vista/scripts/
+COPY --chown=irisowner:irisowner IRIS/ce/postinstall.m /opt/vista/scripts/
+
+# Copy common scripts (for KBANTCLN, etc.)
+COPY --chown=irisowner:irisowner Common/KBANTCLN.m /opt/vista/scripts/
+
+# Fix line endings and permissions
+USER root
+RUN dos2unix /opt/vista/scripts/*.sh /opt/vista/*.cpf 2>/dev/null || true \
+    && chmod +x /opt/vista/scripts/*.sh
+USER irisowner
+
+# Uppercase the instance name for IRIS namespace (dash doesn't support ${var^^})
+# and pass it through as an ENV so import.sh picks it up at build & run time
+RUN UPPER=$(echo "${instance}" | tr '[:lower:]' '[:upper:]') \
+    && sed -i "s/RPMS/${UPPER}/g" /opt/vista/merge-create.cpf \
+    && sed -i "s|/usr/irissys/mgr/rpms/|/usr/irissys/mgr/${instance}/|g" /opt/vista/merge-create.cpf \
+    && sed -i "s/RPMS/${UPPER}/g" /opt/vista/merge-map.cpf \
+    && echo "${UPPER}" > /tmp/.iris-namespace
+# ENV cannot use shell commands, so we set it from the ARG directly.
+# IRIS namespaces are case-insensitive; the CPF files are already uppercased above.
+ENV NAMESPACE=${instance}
+
+# Create namespace, apply mappings, import routines/globals, post-install
+RUN iris start IRIS \
+    && iris merge IRIS /opt/vista/merge-create.cpf \
+    && iris merge IRIS /opt/vista/merge-map.cpf \
+    && /opt/vista/scripts/import.sh \
+    && iris stop IRIS quietly
+
+EXPOSE 1972 52773
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD iris qlist IRIS 2>/dev/null | grep -q running || exit 1

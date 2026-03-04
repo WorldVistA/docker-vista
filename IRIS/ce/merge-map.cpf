@@ -1,0 +1,65 @@
+# Pass 2: Apply RPMS global and routine mappings
+# Applied AFTER merge-create.cpf has created the RPMS namespace
+
+[Map.RPMS]
+# System routines mapped to the RPMS database
+Routine_%=RPMS
+Routine_%DT*=RPMS
+Routine_%HOSTCMD=RPMS
+Routine_%INET=RPMS
+Routine_%RCR=RPMS
+Routine_%XB*=RPMS
+Routine_%XU*=RPMS
+Routine_%Z*=RPMS
+Routine_%ut*=RPMS
+
+# System globals mapped to the RPMS database
+Global_%Z*=RPMS
+Global_%ut*=RPMS
+Global_%z*=RPMS
+
+# Temporary globals mapped to IRISTEMP for performance
+Global_HLTMP=IRISTEMP
+Global_TMP=IRISTEMP
+Global_TEMP=IRISTEMP
+Global_UTILITY=IRISTEMP
+Global_XTMP=IRISTEMP
+Global_XUTL=IRISTEMP
+Global_BMXTMP=IRISTEMP
+Global_KMPTMP=IRISTEMP
+Global_DISV=IRISTEMP
+Global_DOSV=IRISTEMP
+Global_SPOOL=IRISTEMP
+
+# RPMS-specific temporary globals
+Global_ABMDTMP=IRISTEMP
+Global_ACPTEMP=IRISTEMP
+Global_AGSSTEMP=IRISTEMP
+Global_AGSSTMP1=IRISTEMP
+Global_AGSTEMP=IRISTEMP
+Global_AGTMP=IRISTEMP
+Global_APCHTMP=IRISTEMP
+Global_ATXTMP=IRISTEMP
+Global_AUMDDTMP=IRISTEMP
+Global_AUMDOTMP=IRISTEMP
+Global_AUTTEMP=IRISTEMP
+Global_BARTMP=IRISTEMP
+Global_BDMTMP=IRISTEMP
+Global_BDWBLOG=IRISTEMP
+Global_BDWTMP=IRISTEMP
+Global_BGOTEMP=IRISTEMP
+Global_BGOTMP=IRISTEMP
+Global_BGPELLDBA=IRISTEMP
+Global_BPATEMP=IRISTEMP
+Global_BPCTMP=IRISTEMP
+Global_BSDZTMP=IRISTEMP
+Global_BGPTMP=IRISTEMP
+Global_BIPDUE=IRISTEMP
+Global_BITEMP=IRISTEMP
+Global_BITMP=IRISTEMP
+Global_BQIFAC=IRISTEMP
+Global_BQIPAT=IRISTEMP
+Global_BQIPROV=IRISTEMP
+Global_BTPWPQ=IRISTEMP
+Global_BTPWQ=IRISTEMP
+Global_BUSAD=IRISTEMP
