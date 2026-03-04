@@ -85,12 +85,23 @@ RUN UPPER=$(echo "${instance}" | tr '[:lower:]' '[:upper:]') \
 # IRIS namespaces are case-insensitive; the CPF files are already uppercased above.
 ENV NAMESPACE=${instance}
 
+# Disable superserver during build — avoids "port 1972 in use" errors
+# that occur under QEMU emulation (arm64 cross-builds in buildkit).
+# iris merge while stopped modifies the CPF file directly.
+RUN printf '[Startup]\nDefaultPort=0\n' > /tmp/merge-noport.cpf \
+    && iris merge IRIS /tmp/merge-noport.cpf
+
 # Create namespace, apply mappings, import routines/globals, post-install
 RUN iris start IRIS \
     && iris merge IRIS /opt/vista/merge-create.cpf \
     && iris merge IRIS /opt/vista/merge-map.cpf \
     && /opt/vista/scripts/import.sh \
     && iris stop IRIS quietly
+
+# Re-enable superserver on port 1972 for runtime
+RUN printf '[Startup]\nDefaultPort=1972\n' > /tmp/merge-port.cpf \
+    && iris merge IRIS /tmp/merge-port.cpf \
+    && rm -f /tmp/merge-noport.cpf /tmp/merge-port.cpf
 
 EXPOSE 1972 52773
 
