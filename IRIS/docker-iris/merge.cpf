@@ -1,0 +1,37 @@
+#---------------------------------------------------------------------------
+# Copyright 2026 Sam Habiel
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#---------------------------------------------------------------------------
+[Actions]
+CreateResource:Name=%DB_VISTA,Description="VistA database resource"
+CreateDatabase:Name=VISTA,Directory=/usr/irissys/mgr/VISTA,ResourceName=%DB_VISTA
+CreateNamespace:Name=VISTA,Globals=VISTA,Routines=VISTA,Interop=0
+
+CreateMapGlobal:Namespace=VISTA,Name="%Z*",Database=VISTA
+CreateMapGlobal:Namespace=VISTA,Name="%ut",Database=VISTA
+CreateMapGlobal:Namespace=VISTA,Name="%Serenj*",Database=VISTA
+CreateMapGlobal:Namespace=VISTA,Name="HLTMP",Database=IRISTEMP
+CreateMapGlobal:Namespace=VISTA,Name="TMP",Database=IRISTEMP
+CreateMapGlobal:Namespace=VISTA,Name="UTILITY",Database=IRISTEMP
+CreateMapGlobal:Namespace=VISTA,Name="XTMP",Database=IRISTEMP
+CreateMapGlobal:Namespace=VISTA,Name="XUTL",Database=IRISTEMP
+
+CreateMapRoutine:Namespace=VISTA,Name="%DT*",Database=VISTA
+CreateMapRoutine:Namespace=VISTA,Name="%RCR",Database=VISTA
+CreateMapRoutine:Namespace=VISTA,Name="%XUCI",Database=VISTA
+CreateMapRoutine:Namespace=VISTA,Name="%",Database=VISTA
+CreateMapRoutine:Namespace=VISTA,Name="%Z*",Database=VISTA
+CreateMapRoutine:Namespace=VISTA,Name="%KIDS",Database=VISTA
+CreateMapRoutine:Namespace=VISTA,Name="%ut*",Database=VISTA
+CreateMapRoutine:Namespace=VISTA,Name="%Serenj*",Database=VISTA
