@@ -37,10 +37,13 @@ RUN mkdir -p /usr/irissys/mgr/VISTA && chown -R 51773:51773 /usr/irissys/mgr/VIS
 
 USER 51773
 
+ADD --chown=51773:51773 https://github.com/shabiel/VPE/releases/download/v15.2/VPE15P2.RSA /tmp/VPE15P2.RSA
 COPY --chown=51773:51773 IRIS.DAT /usr/irissys/mgr/VISTA/IRIS.DAT
 COPY --chown=51773:51773 merge.cpf /tmp/
+ADD --chown=51773:51773 install_vpe.sh /tmp/
 
 RUN iris start IRIS \
  && iris merge IRIS /tmp/merge.cpf \
+ && /tmp/install_vpe.sh \
  && iris stop IRIS quietly \
- && rm /tmp/merge.cpf
+ && rm /tmp/merge.cpf /tmp/VPE15P2.RSA /tmp/install_vpe.sh
