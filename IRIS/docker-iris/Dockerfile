@@ -23,12 +23,12 @@
 # Build, run,
 # $ docker build -t foia .
 # $ rm IRIS.DAT
-# $ docker run --name foia -d -p 1972:1972 -p 52773:52773 foia
+# Create a file called 'password.txt' containing your password for _SYSTEM user
+# $ docker run --name foia -d -p 1972:1972 -p 52773:52773 -v $PWD:/password foia --password-file /password/password.txt
 # $ docker exec -it foia bash
 # $ iris session IRIS -U VISTA
 #
 # Management console at http://localhost:52773/csp/sys/%25CSP.Portal.Home.zen
-# To use VSCode, you need to login there first and change your password
 
 FROM containers.intersystems.com/intersystems/iris-community:latest-em
 
