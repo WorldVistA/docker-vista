@@ -16,6 +16,8 @@
 #
 #!/bin/bash
 set -xve
+
+# Install VPE from 15.2 RSA file
 iris session IRIS -U VISTA %RI<<END
 /tmp/VPE15P2.RSA
 
@@ -25,4 +27,11 @@ A
 Y
 Y
 Y
+END
+
+# Load Linter Hook so that VSCode saves will get linted like Eclipse's M-Tools
+iris session IRIS -U VISTA<<'END'
+do $system.OBJ.Load("/tmp/kban.SourceControl.LintHook.cls","ck")
+do ##class(%Studio.SourceControl.Interface).SourceControlClassSet("kban.SourceControl.LintHook")
+HALT
 END

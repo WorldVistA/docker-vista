@@ -40,10 +40,11 @@ USER 51773
 ADD --chown=51773:51773 https://github.com/shabiel/VPE/releases/download/v15.2/VPE15P2.RSA /tmp/VPE15P2.RSA
 COPY --chown=51773:51773 IRIS.DAT /usr/irissys/mgr/VISTA/IRIS.DAT
 COPY --chown=51773:51773 merge.cpf /tmp/
-ADD --chown=51773:51773 install_vpe.sh /tmp/
+COPY --chown=51773:51773 kban.SourceControl.LintHook.cls /tmp/
+ADD --chown=51773:51773 utilities_install.sh /tmp/
 
 RUN iris start IRIS \
  && iris merge IRIS /tmp/merge.cpf \
- && /tmp/install_vpe.sh \
+ && /tmp/utilities_install.sh \
  && iris stop IRIS quietly \
- && rm /tmp/merge.cpf /tmp/VPE15P2.RSA /tmp/install_vpe.sh
+ && rm /tmp/merge.cpf /tmp/VPE15P2.RSA /tmp/utilities_install.sh /tmp/kban.SourceControl.LintHook.cls
