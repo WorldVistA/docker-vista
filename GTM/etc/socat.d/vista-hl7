@@ -1,0 +1,6 @@
+#!/bin/bash
+# VistA HL7 v2.x TCP listener (port 5001)
+# Replaces xinetd.d/vista-hl7. Launched by bin/start.sh.
+exec socat \
+    TCP-LISTEN:5001,fork,reuseaddr \
+    SYSTEM:'REMOTE_HOST="$SOCAT_PEERADDR" exec /home/foia/bin/hl7.sh',su=foia,stderr

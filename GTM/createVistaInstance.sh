@@ -133,50 +133,48 @@ basedir=/home/$instance
 # $instance group is auto created by adduser script
 echo "Running useradd"
 useradd -c "$instance instance owner" -m -U $instance -s /bin/bash
+
+# Pre-create empty executable stubs for tied.sh / prog.sh so useradd -s does not
+# warn about a missing shell (Rocky 9 shadow-utils is stricter). The real
+# contents are written further down in this script and overwrite the stubs.
+mkdir -p /home/$instance/bin
+touch /home/$instance/bin/tied.sh /home/$instance/bin/prog.sh
+chmod +x /home/$instance/bin/tied.sh /home/$instance/bin/prog.sh
+chown -R $instance:$instance /home/$instance/bin
+
 useradd -c "Tied user account for $instance" -M -N -g $instance -s /home/$instance/bin/tied.sh -d /home/$instance ${instance}tied
 useradd -c "Programmer user account for $instance" -M -N -g $instance -s /home/$instance/bin/prog.sh -d /home/$instance ${instance}prog
 
-# Change password for tied accounts
-echo ${instance}tied:tied | chpasswd
-echo ${instance}prog:prog | chpasswd
+# Passwords for tied/prog are set at container start-up by start.sh
+# (random by default, overridable via TIED_PASSWORD / PROG_PASSWORD env vars).
 
 # Make instance Directories
-su $instance -c "mkdir -p $basedir/{r,r/$gtmver,g,j,etc,etc/xinetd.d,log,tmp,bin,lib,www,backup}"
+su $instance -c "mkdir -p $basedir/{r,r/$gtmver,g,j,etc,etc/socat.d,log,tmp,bin,lib,www,backup}"
 
 # chmod instance directories to be readable by group
-su $instance -c "chmod g+rw $basedir/{r,r/$gtmver,g,j,etc,etc/xinetd.d,log,tmp,bin,lib,www,backup}"
+su $instance -c "chmod g+rw $basedir/{r,r/$gtmver,g,j,etc,etc/socat.d,log,tmp,bin,lib,www,backup}"
 
 # Copy standard etc and bin items from repo
 su $instance -c "cp -R etc $basedir"
 su $instance -c "cp -R bin $basedir"
 
-# Modify xinetd.d scripts to reflect $instance
+# Modify socat.d scripts to reflect $instance
 perl -pi -e 's/foia/'$instance'/g' $basedir/bin/*.sh
-perl -pi -e 's/foia/'$instance'/g' $basedir/etc/xinetd.d/vista-*
+perl -pi -e 's/foia/'$instance'/g' $basedir/etc/socat.d/vista-*
+
+# Disable services not needed for the RPMS build
+if ! $rpmsScripts; then
+    rm -f $basedir/etc/socat.d/vista-bmxnet $basedir/etc/socat.d/vista-cia
+fi
 
 # Modify init.d script to reflect $instance
 perl -pi -e 's/foia/'$instance'/g' $basedir/etc/init.d/vista
 
-# Create symbolic link to enable brokers
-ln -s $basedir/etc/xinetd.d/vista-rpcbroker /etc/xinetd.d/$instance-vista-rpcbroker
-ln -s $basedir/etc/xinetd.d/vista-vistalink /etc/xinetd.d/$instance-vista-vistalink
-ln -s $basedir/etc/xinetd.d/vista-hl7 /etc/xinetd.d/$instance-vista-hl7
-if $rpmsScripts; then
-    ln -s $basedir/etc/xinetd.d/vista-bmxnet /etc/xinetd.d/$instance-vista-bmxnet
-    ln -s $basedir/etc/xinetd.d/vista-cia /etc/xinetd.d/$instance-vista-cia
-fi
-
 # Create startup service
+# /etc/init.d is not present by default on RHEL 9; create it so start.sh
+# can invoke the vista init script by path.
+mkdir -p /etc/init.d
 ln -s $basedir/etc/init.d/vista /etc/init.d/${instance}vista
-
-# Install init script
-if [[ $ubuntu || -z $RHEL ]]; then
-    update-rc.d ${instance}vista defaults
-fi
-
-if [[ $RHEL || -z $ubuntu ]]; then
-    chkconfig --add ${instance}vista
-fi
 
 # Symlink libs
 su $instance -c "ln -s $gtm_dist $basedir/lib/gtm"
@@ -277,16 +275,25 @@ chmod +x $basedir/bin/tied.sh
 # create startup script used by docker
 echo "#!/bin/bash"                                           > $basedir/bin/start.sh
 echo 'trap "/etc/init.d/'${instance}'vista stop; /etc/init.d/'${instance}'vista-ydbgui stop" SIGTERM'   >> $basedir/bin/start.sh
-echo 'echo "Starting xinetd"'                               >> $basedir/bin/start.sh
-echo "/usr/sbin/xinetd"                                     >> $basedir/bin/start.sh
+echo 'echo "Starting VistA TCP listeners (socat)"'          >> $basedir/bin/start.sh
+echo "for svc in $basedir/etc/socat.d/*; do"                >> $basedir/bin/start.sh
+echo '  [ -x "$svc" ] || continue'                          >> $basedir/bin/start.sh
+echo '  "$svc" &'                                           >> $basedir/bin/start.sh
+echo 'done'                                                 >> $basedir/bin/start.sh
+echo '# Set passwords for tied/prog users (env override or random)' >> $basedir/bin/start.sh
+echo 'TIED_PASSWORD=${TIED_PASSWORD:-$(openssl rand -base64 12)}'   >> $basedir/bin/start.sh
+echo 'PROG_PASSWORD=${PROG_PASSWORD:-$(openssl rand -base64 12)}'   >> $basedir/bin/start.sh
+echo "echo \"${instance}tied:\$TIED_PASSWORD\" | chpasswd"          >> $basedir/bin/start.sh
+echo "echo \"${instance}prog:\$PROG_PASSWORD\" | chpasswd"          >> $basedir/bin/start.sh
+echo 'echo "==================================================="'  >> $basedir/bin/start.sh
+echo 'echo "VistA account passwords for this container:"'          >> $basedir/bin/start.sh
+echo "echo \"  ${instance}tied  \$TIED_PASSWORD\""                  >> $basedir/bin/start.sh
+echo "echo \"  ${instance}prog  \$PROG_PASSWORD\""                  >> $basedir/bin/start.sh
+echo 'echo "==================================================="'  >> $basedir/bin/start.sh
 echo 'echo "Starting sshd"'                                 >> $basedir/bin/start.sh
 echo "/usr/sbin/sshd"                                       >> $basedir/bin/start.sh
 echo 'echo "Starting vista processes"'                      >> $basedir/bin/start.sh
 echo "/etc/init.d/${instance}vista start"                   >> $basedir/bin/start.sh
-echo "if [ -f /etc/init.d/${instance}vista-qewd ] ; then"   >> $basedir/bin/start.sh
-echo '	echo "Starting QEWD process"'                       >> $basedir/bin/start.sh
-echo "	/etc/init.d/${instance}vista-qewd start"            >> $basedir/bin/start.sh
-echo 'fi'                                                   >> $basedir/bin/start.sh
 echo "if [ -f /etc/init.d/${instance}vista-ydbgui ] ; then" >> $basedir/bin/start.sh
 echo "	/etc/init.d/${instance}vista-ydbgui start"          >> $basedir/bin/start.sh
 echo 'fi'                                                   >> $basedir/bin/start.sh

@@ -41,7 +41,7 @@ usage()
 
     DEFAULTS:
       GT.M Version = V7.0-005
-      YottaDB Version = r2.02
+      YottaDB Version = r2.06
 
     OPTIONS:
       -h    Show this message
@@ -86,7 +86,7 @@ fi
 
 # YottaDB
 if [ $installYottaDB ] && [ -z $gtm_ver ]; then
-    gtm_ver="r2.02"
+    gtm_ver="r2.06"
 fi
 
 if $source; then
@@ -107,9 +107,8 @@ else
     gtm_arch=$arch
 fi
 
-# Install requirements for YDB Source/Octo/YDBGUI
-yum --enablerepo=powertools install -y cmake vim-common bison flex readline-devel libconfig-devel openssl-devel epel-release tcsh ncurses-devel elfutils-libelf-devel gawk libgcrypt-devel nodejs gpgme-devel jansson jansson-devel
-yum install -y libsodium-devel # Must install epel-release first
+# YDB Source/Octo/YDBGUI build requirements come from the unified package
+# install in the Dockerfile / autoInstaller.sh bootstrap section.
 
 # Download ydbinstall
 if $source; then

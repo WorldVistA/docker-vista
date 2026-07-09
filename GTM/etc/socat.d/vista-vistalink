@@ -1,0 +1,6 @@
+#!/bin/bash
+# VistA VistALink TCP listener (port 8001)
+# Replaces xinetd.d/vista-vistalink. Launched by bin/start.sh.
+exec socat \
+    TCP-LISTEN:8001,fork,reuseaddr \
+    SYSTEM:'REMOTE_HOST="$SOCAT_PEERADDR" exec /home/foia/bin/vistalink.sh',su=foia,stderr

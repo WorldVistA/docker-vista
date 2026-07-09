@@ -63,11 +63,14 @@ if [[ -z $extractOnly ]]; then
     extractOnly=false
 fi
 
-# This is oddly needed... yum install doesn't do it.
-mkdir /run/php-fpm
+# NOTE: this legacy Rocky-9 ViViaN pathway is deprecated. New builds should use
+# ViViaN/docker-vivian/ (self-contained InterSystems IRIS Community image).
+# No yum install here anymore — the Rocky pathway's unified package list in
+# the Dockerfile / autoInstaller.sh bootstrap does not carry ViViaN-specific
+# packages (httpd, graphviz, java-1.8.0-openjdk-devel, php, php-fpm, rust,
+# cargo, python3.12, freetype-devel).
 
-# Install needed packages
-yum install -y httpd graphviz java-1.8.0-openjdk-devel php rust cargo openssl-devel php-fpm python3.12 python3.12-pip python3.12-devel freetype-devel
+mkdir /run/php-fpm
 
 if [[ -f /home/$instance/etc/env ]]; then
   basedir=/home/$instance

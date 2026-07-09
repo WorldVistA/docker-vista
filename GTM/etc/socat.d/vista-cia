@@ -1,0 +1,6 @@
+#!/bin/bash
+# VistA CIA Broker TCP listener (port 9100)
+# Replaces xinetd.d/vista-cia. Launched by bin/start.sh.
+exec socat \
+    TCP-LISTEN:9100,fork,reuseaddr \
+    SYSTEM:'REMOTE_HOST="$SOCAT_PEERADDR" exec /home/foia/bin/cia.sh',su=foia,stderr

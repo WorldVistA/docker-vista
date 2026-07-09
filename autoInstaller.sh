@@ -55,7 +55,6 @@ usage()
 
     DEFAULTS:
       Alternate VistA-M repo = https://github.com/WorldVistA/VistA-M.git
-      Install EWD.js = false
       Create Development Directories = false
       Instance Name = FOIA
       Post Install hook = none
@@ -68,12 +67,10 @@ usage()
       -b    Skip bootstrapping system (used for docker)
       -c    Use Caché
       -d    Create development directories (s & p) (GT.M and YottaDB only)
-      -e    Install QEWD (assumes development directories)
       -f    Apply Kernel-GTM fixes after import
       -g    Use GT.M
       -h    Show this message
       -i    Instance name (Namespace/Database for Caché)
-      -m    Install Panorama (assumes development directories and QEWD)
       -n    Install YottaDB GUI
       -o    Install YottaDB from latest master source
       -p    Post install hook (path to script)
@@ -91,12 +88,12 @@ usage()
     NOTE:
     The Caché install only supports using .DAT files for the VistA DB, and
     installs using minimal security. Most other options are not valid for
-    Caché installation including EWD, Panorama, and development directories.
+    Caché installation including development directories.
 
 EOF
 }
 
-while getopts ":ha:cbxemndufgi:vop:str:wyqz" option
+while getopts ":ha:cbxndufgi:vop:str:wyqz" option
 do
     case $option in
         h)
@@ -115,17 +112,8 @@ do
         d)
             developmentDirectories=true
             ;;
-        e)
-            installEWD=true
-            developmentDirectories=true
-            ;;
         f)
             kernelGTMFixes=true
-            ;;
-        m)
-            installEWD=true
-            developmentDirectories=true
-            installPanorama=true
             ;;
         n)
             installYottaDBGUI=true
@@ -199,14 +187,6 @@ fi
 
 if [[ -z $developmentDirectories ]]; then
     developmentDirectories=false
-fi
-
-if [[ -z $installEWD ]]; then
-    installEWD=false
-fi
-
-if [[ -z $installPanorama ]]; then
-    installPanorama=false
 fi
 
 if [[ -z $installYottaDBGUI ]]; then
@@ -291,8 +271,6 @@ fi
 echo "Using $repoPath for routines and globals"
 echo "Create development directories: $developmentDirectories"
 echo "Installing an instance named: $instance"
-echo "Installing QEWD: $installEWD"
-echo "Installing Panorama: $installPanorama"
 echo "Installing SQL Mapping: $installSQL"
 echo "Post install hook: $postInstallScript"
 echo "Skip Testing: $skipTests"
@@ -326,44 +304,63 @@ test -d /home/$instance/g &&
 { echo "VistA already Installed. Aborting."; exit 0; }
 
 # Bootstrap does all the stuff that is normally done by the Dockerfile
+# Keep the package list here in sync with the identical list in the Dockerfile.
 if $bootstrap; then
     echo "Updating operating system"
     yum update -y > /dev/null
-    yum install -y \
-                       coreutils \
-                       util-linux \
-                       gcc-c++ \
-                       git \
-                       xinetd \
-                       perl \
-                       curl \
-		       libcurl-devel \
-                       python \
-                       openssh-server \
-                       openssh-clients \
-                       expect \
-                       man \
-                       python-argparse \
-                       sshpass \
-                       wget \
-                       make \
+    yum install -y epel-release > /dev/null
+    yum install --enablerepo=crb -y \
+                       bind-utils \
+                       bison \
+                       bzip2 \
                        cmake \
                        dos2unix \
-                       which \
+                       elfutils-libelf-devel \
+                       expect \
                        file \
-                       unzip \
-                       net-tools \
+                       flex \
+                       gawk \
+                       gcc-c++ \
+                       git \
+                       gpgme-devel \
+                       gzip \
+                       httpd \
+                       iproute \
+                       jansson \
+                       jansson-devel \
                        java-devel \
+                       libconfig-devel \
+                       libcurl-devel \
+                       libgcrypt-devel \
                        libicu \
                        libicu-devel \
-                       recode \
-                       bzip2 \
+                       libsodium-devel \
                        lsof \
-                       openssl \ 
-                       gzip \
-                       vim \
-                       bind-utils \
+                       make \
+                       man \
+                       ncurses-devel \
+                       net-tools \
+                       nodejs \
+                       openssh-clients \
+                       openssh-server \
+                       openssl \
+                       openssl-devel \
+                       perl \
                        perl-Digest-SHA \
+                       procps-ng \
+                       python3 \
+                       python3-pip \
+                       readline-devel \
+                       recode \
+                       socat \
+                       sshpass \
+                       tcsh \
+                       unzip \
+                       util-linux \
+                       vim \
+                       vim-common \
+                       wget \
+                       which \
                        > /dev/null
     package-cleanup --cleandupes
     yum  -y clean all
@@ -380,10 +377,9 @@ if [ -d /vagrant ]; then
 
     # Fix line endings
     find /vagrant -name \"*.sh\" -type f -print0 | xargs -0 dos2unix > /dev/null 2>&1
-    dos2unix /vagrant/EWD/etc/init.d/ewdjs > /dev/null 2>&1
     dos2unix /vagrant/GTM/etc/init.d/vista > /dev/null 2>&1
-    dos2unix /vagrant/GTM/etc/xinetd.d/vista-rpcbroker > /dev/null 2>&1
-    dos2unix /vagrant/GTM/etc/xinetd.d/vista-vistalink > /dev/null 2>&1
+    dos2unix /vagrant/GTM/etc/socat.d/vista-rpcbroker > /dev/null 2>&1
+    dos2unix /vagrant/GTM/etc/socat.d/vista-vistalink > /dev/null 2>&1
     dos2unix /vagrant/GTM/gtminstall_SHA1 > /dev/null 2>&1
 else
     if $bootstrap; then
@@ -531,9 +527,6 @@ if $installgtm || $installYottaDB; then
       su $instance -c "source $basedir/etc/env && mkdir -p $basedir/Dashboard"
       cd $basedir/Dashboard
 
-      echo "Installing pip"
-      yum install python3-pip
-
       echo "Downloading OSEHRA VistA Tester Repo"
       curl -fsSL --progress-bar https://github.com/WorldVistA/VistA/archive/master.zip -o VistA-master.zip
       #curl -fsSL --progress-bar https://github.com/josephsnyder/VistA/archive/master.zip -o VistA-master.zip # for testing only!
@@ -590,33 +583,22 @@ if $installgtm || $installYottaDB; then
 fi
 
 # if we are running on docker we must shutdown gracefully or else corruption will occur
-# there is also no need to restart xinetd if we are running in docker as we are going to
-# shut it down
+# there is also no need to start socat listeners if we are running in docker as we are going to
+# shut it down (docker start.sh launches them itself)
 if $bootstrap && ($installgtm || $installYottaDB); then
-    # Restart xinetd
-    service xinetd restart
+    # Start VistA TCP listeners (socat replaces xinetd on RHEL 9)
+    for svc in /home/$instance/etc/socat.d/*; do
+        [ -x "$svc" ] || continue
+        nohup "$svc" >/dev/null 2>&1 &
+    done
 elif ($installgtm || $installYottaDB); then
-    service ${instance}vista stop
+    /etc/init.d/${instance}vista stop
 fi
 
 # Add p and s directories to gtmroutines environment variable
 if $developmentDirectories && ($installgtm || $installYottaDB); then
     su $instance -c "mkdir $basedir/{p,p/$gtmver,s,s/$gtmver}"
     perl -pi -e 's#export gtmroutines=\"#export gtmroutines=\"\$basedir/p/\$gtmver*\(\$basedir/p\) \$basedir/s/\$gtmver*\(\$basedir/s\) #' $basedir/etc/env
-fi
-
-# Install QEWD
-if $installEWD && ($installgtm || $installYottaDB); then
-    cd $scriptdir/EWD
-    ./ewdjs.sh -f
-    cd $basedir
-fi
-
-# Install Panorama
-if $installPanorama && ($installgtm || $installYottaDB); then
-    cd $scriptdir/EWD
-    ./panorama.sh -f
-    cd $basedir
 fi
 
 # Install YottaDB GUI

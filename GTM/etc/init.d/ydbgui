@@ -16,7 +16,7 @@
 # limitations under the License.
 #---------------------------------------------------------------------------
 
-# init script for QEWD
+# init script for YottaDB GUI
 
 # Debian LSB info
 ### BEGIN INIT INFO

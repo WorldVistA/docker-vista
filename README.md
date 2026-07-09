@@ -33,20 +33,20 @@ for running them are available on the URL, including usernames/passwords:
 
 ## Quick Reference for building & running images
 
-Default: "OSEHRA VistA (YottaDB, no bootstrap, with QEWD and Panorama)"
+Default: "OSEHRA VistA (YottaDB, no bootstrap)"
 
     docker build -t foia .
-    docker run -d -p 9430:9430 -p 8001:8001 -p 2222:22 -p 8080:8080 -p 9080:9080 --name=foia foia
+    docker run -d -p 9430:9430 -p 8001:8001 -p 2222:22 -p 9080:9080 --name=foia foia
 
-Plan VI (Internationalized Version) OSEHRA VistA (YottaDB, UTF-8 enabled, no bootstrap, with QEWD and Panorama)
+Plan VI (Internationalized Version) OSEHRA VistA (YottaDB, UTF-8 enabled, no bootstrap)
 
-    docker build --build-arg flags="-byuma https://github.com/WorldVistA/VistA-M/archive/plan-vi.zip -p ./Common/ov6piko.sh" --build-arg instance="ov6" -t ov6 .
-    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=ov6 ov6
+    docker build --build-arg flags="-byua https://github.com/WorldVistA/VistA-M/archive/plan-vi.zip -p ./Common/ov6piko.sh" --build-arg instance="ov6" -t ov6 .
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 9080:9080 --name=ov6 ov6
 
-WorldVistA (YottaDB, Panorama, no boostrap, skip testing):
+WorldVistA (YottaDB, no boostrap, skip testing):
 
-    docker build --build-arg flags="-bymsa http://opensourcevista.net/NancysVistAServer/BetaWVEHR-3.0-Ver2-16Without-CPT-20181004/FileForDockerBuildWVEHR3.0WithoutCPT.zip -p Common/wvDemopi.sh" --build-arg instance="wv" -t wv .
-    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=wv wv
+    docker build --build-arg flags="-bysa http://opensourcevista.net/NancysVistAServer/BetaWVEHR-3.0-Ver2-16Without-CPT-20181004/FileForDockerBuildWVEHR3.0WithoutCPT.zip -p Common/wvDemopi.sh" --build-arg instance="wv" -t wv .
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 9080:9080 --name=wv wv
 
 VEHU (YottaDB with GUI, no bootstrap, skip testing, SQL Access)
 
@@ -58,10 +58,10 @@ VEHU (YottaDB with GUI, build YottaDB from source, SQL Access)
     docker build --build-arg flags="-obsqna https://github.com/WorldVistA/VistA-VEHU-M/archive/master.zip" --build-arg instance="vehu" -t vehu .
     docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 1338:1338 -p 8089-8090:8089-8090 --name=vehu vehu
 
-VEHU Plan VI (Internationalized Version) (YottaDB, UTF-8 enabled, no bootstrap, skip testing, Panorama)
+VEHU Plan VI (Internationalized Version) (YottaDB, UTF-8 enabled, no bootstrap, skip testing)
 
-    docker build --build-arg flags="-bysuma https://github.com/WorldVistA/VistA-VEHU-M/archive/plan-vi.zip" --build-arg instance="vehu6" -t worldvista/vehu6:201808 -t worldvista/vehu6:latest .
-    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 8080:8080 -p 9080:9080 --name=vehu worldvista/vehu6
+    docker build --build-arg flags="-bysua https://github.com/WorldVistA/VistA-VEHU-M/archive/plan-vi.zip" --build-arg instance="vehu6" -t worldvista/vehu6:201808 -t worldvista/vehu6:latest .
+    docker run -d -p 2222:22 -p 8001:8001 -p 9430:9430 -p 9080:9080 --name=vehu worldvista/vehu6
 
 RPMS (RPMS, YottaDB, no boostrap, skip testing, and do post-install as well)
 
@@ -101,16 +101,36 @@ The exported ports are as follows:
 | Docker Port | Mapped To? | Purpose         | Applicable to?    |
 | ----------- | ---------- | -------         | ----------------- |
 | 22          | 2222       | SSH             | All               |
-| 9430        | 9430       | XWB  (CPRS etc) | VistA             |
-| 8080        | 8080       | Panorama        | VistA             |
+| 1338        | 1338       | SQL Listener Port | YottaDB         |
+| 5001        | 5001       | HL7 Classic     | VistA             |
 | 8001        | 8001       | VistALink       | VistA             |
+| 8089        | 8089       | YottaDB GUI     | YottaDB           |
+| 8090        | 8090       | YottaDB GUI Socket Server  | YottaDB           |
 | 9080        | 9080       | M Web Server    | VistA             |
 | 9100        | 9100       | CIA (RPMS-EHR)  | RPMS              |
 | 9101        | 9101       | BMX (iCare etc) | RPMS              |
+| 9430        | 9430       | XWB  (CPRS etc) | VistA             |
 | 57772       | 57772      | IRIS Web Portal | IRIS            |
-| 1338        | 1338       | SQL Listener Port | YottaDB         |
-| 8089        | 8089       | YottaDB GUI     | YottaDB           |
-| 8090        | 8090       | YottaDB GUI Socket Server  | YottaDB           |
+
+### Account passwords
+
+For GT.M/YottaDB images, the two shell accounts (`${instance}tied` and
+`${instance}prog`, used for TCP-tied SSH logins into VistA) get fresh
+passwords every time the container starts. Two ways to supply them:
+
+* **Random (default)** — a base64 password is generated for each account and
+  printed to the container log. Retrieve them with:
+
+        docker logs <container-name> | grep -A3 "VistA account passwords"
+
+* **Fixed via environment variables** — pass `TIED_PASSWORD` and/or
+  `PROG_PASSWORD` on `docker run`:
+
+        docker run -d -e TIED_PASSWORD=mytied -e PROG_PASSWORD=myprog \
+            -p 2222:22 -p 8001:8001 -p 9430:9430 --name=foia foia
+
+Either password can be set independently; the other falls back to a random
+value. Passwords are never baked into the image.
 
 ## Detailed Discussion and Reference
 
@@ -122,9 +142,8 @@ allow customization of the built image.
 
 IRIS will not have any pre-built images due to license restrictions.  The
 IRIS install assumes that you are using a pre-built IRIS.DAT. The default
-install is done with "minimal" security.  Also, some options (EWD, Panorama,
-etc) are not valid for IRIS installs and will be ignored. The IRIS Steps are
-as follows:
+install is done with "minimal" security.  Also, some options are not valid
+for IRIS installs and will be ignored. The IRIS Steps are as follows:
 
 1) Copy the IRIS installer (.tar.gz RHEL kit) to the root of this repository
 2) Copy your iris.key to the iris-files directory of this repository (optional)
@@ -154,12 +173,10 @@ as follows:
 | b      | n/a     | Skip bootstrapping system (used for docker) |
 | c      | n/a     | Use IRIS |
 | d      | n/a     | Create development directories (s & p) (GT.M and YottaDB only) |
-| e      | n/a     | Install QEWD (assumes development directories) |
 | f      | n/a     | Apply Kernel-GTM fixes after import |
 | g      | n/a     | Use GT.M |
 | h      | n/a     | Show the list of options |
 | i      | osehra  | Instance name (Namespace/Database for IRIS) |
-| m      | n/a     | Install Panorama (assumes development directories and QEWD) |
 | n      | n/a     | Install YottaDB GUI. |
 | o      | n/a     | Install YottaDB from source. Will also enable -y (YottaDB) |
 | p      | n/a     | Post install hook (path to script) |
@@ -222,26 +239,8 @@ downloaded gzipped).
 
 ### Building ViViaN and DOX with Docker
 
-Utilizing the "-v" argument flag, the system will attempt to execute the tasks which will
-install a MUMPS environment, execute tasks to gather data, generate HTML pages, and finally
-set up a web server on the container to display the data.  The scripts are designed to
-take and process a M[UMPS] system that is supplied by the user in one of two formats.
-
-|     Platform      |                       Required Files                           |
-| :---------------: | -------------------------------------------------------------- |
-|   GT.M/YottaDB    | Not supported.                                                 |
-|      IRIS         | The files used as part of the install will be used again. You need to supply your own IRIS.DAT and .tar.gz installer for RHEL 8.  These files need to be added to the iris-files directory.         |
-
-``-v`` and ``-b`` options need to be combined together when the docker build
-command is instantiated.
-
-For a IRIS instance, the command would look as follows:
-
-    docker build --progress=plain --no-cache --build-arg flags="-c -b -v -p ./Common/vivianPostInstall.sh" --build-arg entry="/opt/irissys" --build-arg instance="foia" -t irisviv .
-    docker run -p 2222:22 -p 57772:57772 -p 3080:80 -d -P --name=irisviv irisviv
-
-Once the container is running, the ViViaN and DOX pages can be accessed via
-a web browser at http://localhost:3080/vivian and http://localhost:3080/dox
+Vivian production process has changed in 2026 to use an IRIS Docker Image. Look at
+the README in the ViViaN folder.
 
 ### Post Installs that you can apply with -p flag
 

@@ -78,8 +78,8 @@ if [[ -z $rpms ]]; then
     rpms=false
 fi
 
-# Install Apache and ip command
-yum install -y httpd iproute
+# Apache (httpd) and iproute come from the unified package install in the
+# Dockerfile / autoInstaller.sh bootstrap section.
 
 # Hack for Rocky Linux - Pretend to be RHEL, we undo that below
 cp /etc/os-release{,.orig}

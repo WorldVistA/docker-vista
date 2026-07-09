@@ -19,9 +19,6 @@ Vagrant.configure("2") do |config|
   # accessing "localhost:8080" will access port 80 on the guest machine.
   config.vm.network :forwarded_port, guest: 9430, host: 9430 # RPC Broker
   config.vm.network :forwarded_port, guest: 8001, host: 8001 # VistALink
-  config.vm.network :forwarded_port, guest: 8080, host: 8080 # EWD.js
-  config.vm.network :forwarded_port, guest: 8000, host: 8000 # EWD.js Webservices
-  config.vm.network :forwarded_port, guest: 8081, host: 8081 # EWD VistA Term
 
 
   # Create a private network, which allows host-only access to the machine

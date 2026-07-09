@@ -1,0 +1,6 @@
+#!/bin/bash
+# VistA BMXNET Broker TCP listener (port 9101)
+# Replaces xinetd.d/vista-bmxnet. Launched by bin/start.sh.
+exec socat \
+    TCP-LISTEN:9101,fork,reuseaddr \
+    SYSTEM:'REMOTE_HOST="$SOCAT_PEERADDR" exec /home/foia/bin/bmxnet.sh',su=foia,stderr

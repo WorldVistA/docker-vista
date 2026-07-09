@@ -65,7 +65,7 @@ fi
 mkdir -p /YDBGUI/certs
 openssl genrsa -aes128 -passout pass:ydbgui -out /YDBGUI/certs/ydbgui.key 2048
 openssl req -new -key /YDBGUI/certs/ydbgui.key -passin pass:ydbgui -subj '/C=US/ST=Pennsylvania/L=Malvern/CN=localhost' -out /YDBGUI/certs/ydbgui.csr
-openssl req -x509 -days 365 -sha256 -in /YDBGUI/certs/ydbgui.csr -key /YDBGUI/certs/ydbgui.key -passin pass:ydbgui -out /YDBGUI/certs/ydbgui.pem
+openssl x509 -req -days 365 -sha256 -in /YDBGUI/certs/ydbgui.csr -signkey /YDBGUI/certs/ydbgui.key -passin pass:ydbgui -copy_extensions none -out /YDBGUI/certs/ydbgui.pem
 
 # YottaDB Certificate Config
 cat <<EOF >> /YDBGUI/certs/ydbgui.ydbcrypt
@@ -108,15 +108,10 @@ chown $instance:$instance $basedir/etc/users.json
 
 # Modify init.d scripts to reflect $instance
 perl -pi -e 's#/home/foia#'$basedir'#g' $basedir/etc/init.d/ydbgui
+# /etc/init.d is not present by default on RHEL 9; ensure it exists so start.sh
+# can invoke this init script by path.
+mkdir -p /etc/init.d
 ln -s $basedir/etc/init.d/ydbgui /etc/init.d/${instance}vista-ydbgui
-
-if [[ $ubuntu || -z $RHEL ]]; then
-    update-rc.d ${instance}vista-ydbgui defaults
-fi
-
-if [[ $RHEL || -z $ubuntu ]]; then
-    chkconfig --add ${instance}vista-ydbgui
-fi
 
 # Add firewall rules
 if $firewall; then
