@@ -1,163 +1,83 @@
 #!/usr/bin/env bash
 #---------------------------------------------------------------------------
 # Copyright 2018-2019 The Open Source Electronic Health Record Alliance
-# Copyright 2020-2025 Sam Habiel
+# Copyright 2020-2026 Sam Habiel
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 #---------------------------------------------------------------------------
+# Ubuntu-adapted derivative of ViViaN/vivianInstall.sh:118-260. Runs inside
+# the iris-community image against a live IRIS with the FOIA namespace
+# already merged in.
+#
+# PIPELINE_MODE (env):
+#   full     - default; run everything (~2 hours)
+#   extract  - stop after VistAMComponentExtractor
+#   skip     - drop stub artifacts only (~seconds, for fast Dockerfile iteration)
 
-usage()
-{
-    cat << EOF
-    usage: $0 options
+set -e
 
-    OPTIONS:
-      -h    Show this message
-      -s    Script Directory
-      -i    Instance name (Namespace/Database for Caché)
+namespace=FOIA
+basedir=/usr/irissys
+connectionArg="-S 1 -CN FOIA"
 
+: "${PIPELINE_MODE:=full}"
+
+timestamp() { date +"%Y-%m-%d-%H:%M:%S"; }
+
+if [[ "$PIPELINE_MODE" == "skip" ]]; then
+    echo "PIPELINE_MODE=skip: creating stub artifacts"
+    mkdir -p /var/www/html/vivian /var/www/html/vivian-data /var/www/html/dox
+    cat > /var/www/html/vivian/index.php <<'EOF'
+<h1>ViViaN stub (PIPELINE_MODE=skip)</h1>
+<p>PHP: <?php echo PHP_VERSION; ?></p>
 EOF
-}
-
-while getopts ":h:xi:s:" option
-do
-    case $option in
-        h)
-            usage
-            exit 1
-            ;;
-        s)
-            scriptdir=$OPTARG
-            ;;
-        i)
-            instance=$(echo $OPTARG |tr '[:upper:]' '[:lower:]')
-            ;;
-        x)
-            extractOnly=true
-            ;;
-    esac
-done
-
-timestamp() {
-    date +"%Y-%m-%d-%H:%M:%S"
-}
-
-if [[ -z $instance ]]; then
-    instance=osehra
+    exit 0
 fi
 
-if [[ -z $scriptdir ]]; then
-    scriptdir=/opt/vista
-fi
-if [[ -z $extractOnly ]]; then
-    extractOnly=false
-fi
-
-# NOTE: this legacy Rocky-9 ViViaN pathway is deprecated. New builds should use
-# ViViaN/docker-vivian/ (self-contained InterSystems IRIS Community image).
-# No yum install here anymore — the Rocky pathway's unified package list in
-# the Dockerfile / autoInstaller.sh bootstrap does not carry ViViaN-specific
-# packages (httpd, graphviz, java-1.8.0-openjdk-devel, php, php-fpm, rust,
-# cargo, python3.12, freetype-devel).
-
-mkdir /run/php-fpm
-
-if [[ -f /home/$instance/etc/env ]]; then
-  basedir=/home/$instance
-  connectionArg="-S 2 -ro $basedir/r/"
-  source /home/$instance/etc/env
-
-  # unzip a zip of the single .DAT with a directory of routines
-  # and place them in the $basedir
-  echo "Using local files found in ./GTM/"
-  cd $scriptdir
-  #
-  unzip -q ./GTM/VistA.zip -d /tmp/gtmout
-  pushd /tmp/gtmout/VistA/g/
-  # Capture the eventual name
-  datFile="$basedir/g/"`ls *.dat`
-  #move all .dat files and routine files
-  rm -rf $basedir/g
-  rm -rf $basedir/r/*.m
-  mv /tmp/gtmout/VistA/g $basedir
-  mv /tmp/gtmout/VistA/r/* $basedir/r
-  # execute GDE to change the default globals to the newly placed file
-  # and rundown the file to ensure that it can be accessed
-  echo "change -s DEFAULT -f=\"$datFile\"" | mumps -run GDE
-  mupip rundown -R DEFAULT
-  popd
-else
-  namespace=$(echo $instance |tr '[:lower:]' '[:upper:]')
-  basedir=/opt/irissys/$instance
-  echo "
+# Append the FOIA namespace value to the CMakeCache we shipped
+echo "
 //Cache namespace to store VistA
-VISTA_CACHE_NAMESPACE:STRING=$namespace" >> $scriptdir/ViViaN/CMakeCache.txt
-  connectionArg="-S 1 -CN $namespace"
-  sh $basedir/bin/start.sh &
-  if [[ ! -f $basedir/mgr/iris.key ]]; then
-    serialExport="-sx"
-  fi
-fi
+VISTA_CACHE_NAMESPACE:STRING=$namespace" >> /tmp/CMakeCache.txt
 
-# Add apache and php-fpm to start.sh
-# php-fpm needed for run PHP from Apache starting in RHEL 8
-sed -i '5i echo "Starting Apache"' $basedir/bin/start.sh
-sed -i '6i /usr/sbin/php-fpm' $basedir/bin/start.sh
-sed -i '7i /usr/sbin/apachectl' $basedir/bin/start.sh
-# Fix start.sh permissions
-chown root:irisusr $basedir/bin/start.sh
-chmod +x $basedir/bin/start.sh
-
-mkdir -p /opt/VistA-docs
-mkdir -p /opt/viv-out
-pushd /opt
-
-echo "Acquiring DBIA/ICR Information from https://foia-vista.worldvista.org/VistA_Integration_Agreement/"
-curl -fsSL --progress-bar https://foia-vista.worldvista.org/VistA_Integration_Agreement/2025_July_11_IA_Listings_Description.txt -o ICRDescription.txt
+mkdir -p /opt/VistA-docs /opt/viv-out
+cd /opt
 
 echo "Downloading OSEHRA VistA Testing Repository"
-curl -fsSL --progress-bar https://github.com/WorldVistA/VistA/archive/master.zip -o VistA-master.zip
-
+curl -fsSL https://github.com/WorldVistA/VistA/archive/master.zip -o VistA-master.zip
 dir=$(zipinfo -1 VistA-master.zip | head -1 | cut -d/ -f1)
 unzip -q VistA-master.zip
 rm VistA-master.zip
-mv $dir VistA
+mv "$dir" VistA
+
 echo "Generating VistA-M-like directory"
 mkdir -p /opt/VistA-M/Packages
 cp /opt/VistA/Packages.csv /opt/VistA-M/
 
-# Get MRoutineAnalyzer Repo
+# MRoutineAnalyzer
 git clone https://github.com/WorldVistA/rgivistatools.git /opt/VistA-docs/rgivistatools
 
+# Python virtual env for pipeline scripts
 # To activate venv if you do a docker exec -it, do this:
 # > cd /opt/
 # > . vivian-venv/bin/activate
-
-python3.12 -m venv vivian-venv
+python3 -m venv vivian-venv
 . vivian-venv/bin/activate
 
 # Install requirements from Testing repository
 pip3 install -r /opt/VistA/requirements.txt
 
-# Clone ViViaN repository
 echo "Cloning ViViaN Repository"
-curl -fsSL --progress-bar https://github.com/WorldVistA/vivian/archive/master.zip -o vivian-master.zip
+curl -fsSL https://github.com/WorldVistA/vivian/archive/master.zip -o vivian-master.zip
 dir=$(zipinfo -1 vivian-master.zip | head -1 | cut -d/ -f1)
 unzip -q vivian-master.zip
 rm vivian-master.zip
-mv $dir /var/www/html/vivian
+mv "$dir" /var/www/html/vivian
 
-# Vivan Step 1: Export Routines and Globals first.
+# Step 1: Export routines and globals via IRIS
 # Uses IRIS. The ZGO routine makes sure not to exceed the job limit (8 jobs)
 # To monitor, look at /tmp/VistAPExpect.log and worklist.log
 # ZGO takes about 10 minutes
@@ -165,35 +85,39 @@ mv $dir /var/www/html/vivian
 echo "Starting VistAMComponentExtractor at:" $(timestamp)
 python3 /opt/VistA/Scripts/VistAMComponentExtractor.py $connectionArg -r /opt/VistA-M/ -o /tmp/ -l /tmp/
 echo "Ending VistAMComponentExtractor at:" $(timestamp)
+
 # Uncomment to debug VistAMComponentExtractor
 # @TODO Make debugging a script option
 #echo "Start of Log Dump:"
 # cat /tmp/VistAPExpect.log
 #echo "End of Log Dump"
-# Exit if the files don't exist... something went wrong
+
 if [ ! -f /tmp/Globals/DD.zwr ] || [ ! -f /tmp/Routines.ro ]; then
-  echo "VistAMComponentExtractor failed!"
-  exit 1
+    echo "VistAMComponentExtractor failed!"
+    exit 1
 fi
 
-if $extractOnly; then
-  exit 0
+if [[ "$PIPELINE_MODE" == "extract" ]]; then
+    echo "PIPELINE_MODE=extract: stopping after VistAMComponentExtractor"
+    deactivate
+    exit 0
 fi
 
-pushd VistA-docs
-cp $scriptdir/ViViaN/CMakeCache.txt /opt/VistA-docs
+cd VistA-docs
+cp /tmp/CMakeCache.txt /opt/VistA-docs/CMakeCache.txt
 /usr/bin/cmake .
-mkdir /var/www/html/vivian-data
-# =====================================================
+mkdir -p /var/www/html/vivian-data
+
 echo "Starting CTest at:" $(timestamp)
 
-# Vivian Step 2: Install enhanced XINDEX patch
+# Step 2: XINDEX patch install
 # Uses IRIS. Now uses DefaultKIDSInstaller.py instead of PatchSequenceApply.py
 # Instant
 echo "Installing XINDEX patch"
 /usr/bin/ctest -V -R "XINDEX"
 
-# Vivian Step 3: Run XINDEX on all the routines and on the package entry + package files (probably from Packages.csv)
+# Step 3: XINDEX reports (CALLERGRAPH) — ~100 min
+# Run XINDEX on all the routines and on the package entry + package files (probably from Packages.csv)
 # Runs on IRIS
 # Single user IRIS allows 8 jobs (and thus -j 8)
 #
@@ -244,20 +168,19 @@ echo "Executing XINDEX reports"
 # - GraphGenerator (614.21s = 10 minutes)
 # Generate Graphs for DOX pages. Relies on a lot of the previous steps. Needs to be run alone. Multiprocessor!
 # Maybe convert over to each one manually
+#
+# Steps 4-11: FileMan schema, MRoutineAnalyzer, ICR parser, GraphGenerator, etc.
 echo "Executing data-gathering tasks"
 /usr/bin/ctest -V -E "CALLERGRAPH|XINDEX|WebPageGenerator"
 
-# Vivian Step 12:
+# Step 12: Web page generation
 # - WebPageGenerator (about 500 seconds)
 # Create the webpages
-
 echo "Generating ViViaN and DOX HTML"
 /usr/bin/ctest -V -R "WebPageGenerator"
 echo "Ending CTest at:" $(timestamp)
-# =====================================================
-pushd /var/www/html/vivian/scripts
-python3 setup.py -fd /var/www/html/vivian-data -dd /var/www/html/dox
-rm /etc/httpd/conf.d/welcome.conf
 
-# Deactivate venv
+cd /var/www/html/vivian/scripts
+python3 setup.py -fd /var/www/html/vivian-data -dd /var/www/html/dox
+
 deactivate

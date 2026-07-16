@@ -1,0 +1,37 @@
+#---------------------------------------------------------------------------
+# Copyright 2026 Sam Habiel
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#---------------------------------------------------------------------------
+[Actions]
+CreateResource:Name=%DB_FOIA,Description="VistA database resource"
+CreateDatabase:Name=FOIA,Directory=/usr/irissys/mgr/FOIA,ResourceName=%DB_FOIA
+CreateNamespace:Name=FOIA,Globals=FOIA,Routines=FOIA,Interop=0
+
+CreateMapGlobal:Namespace=FOIA,Name="%Z*",Database=FOIA
+CreateMapGlobal:Namespace=FOIA,Name="%ut",Database=FOIA
+CreateMapGlobal:Namespace=FOIA,Name="%Serenj*",Database=FOIA
+CreateMapGlobal:Namespace=FOIA,Name="HLTMP",Database=IRISTEMP
+CreateMapGlobal:Namespace=FOIA,Name="TMP",Database=IRISTEMP
+CreateMapGlobal:Namespace=FOIA,Name="UTILITY",Database=IRISTEMP
+CreateMapGlobal:Namespace=FOIA,Name="XTMP",Database=IRISTEMP
+CreateMapGlobal:Namespace=FOIA,Name="XUTL",Database=IRISTEMP
+
+CreateMapRoutine:Namespace=FOIA,Name="%DT*",Database=FOIA
+CreateMapRoutine:Namespace=FOIA,Name="%RCR",Database=FOIA
+CreateMapRoutine:Namespace=FOIA,Name="%XUCI",Database=FOIA
+CreateMapRoutine:Namespace=FOIA,Name="%",Database=FOIA
+CreateMapRoutine:Namespace=FOIA,Name="%Z*",Database=FOIA
+CreateMapRoutine:Namespace=FOIA,Name="%KIDS",Database=FOIA
+CreateMapRoutine:Namespace=FOIA,Name="%ut*",Database=FOIA
+CreateMapRoutine:Namespace=FOIA,Name="%Serenj*",Database=FOIA

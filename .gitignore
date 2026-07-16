@@ -2,4 +2,9 @@ iris-files/cache-*
 iris-files/cache.dat
 iris-files/CACHE.DAT
 iris-files/cache.key
+IRIS/docker-iris/password.txt
 zwr-zip/*.zip
+ViViaN/DBA_VISTA_FOIA_*
+ViViaN/ICRDescription.txt
+ViViaN/IRIS.DAT
+ViViaN/viv-out/
