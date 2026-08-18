@@ -114,4 +114,9 @@ echo "Loading VistA SQL functions"
 su $instance -c "source $basedir/etc/env && octo -v -f $basedir/YDBOctoVistA/_YDBOCTOVISTAF.sql > $basedir/log/OctoFunctionsImport.log 2>&1"
 echo "Done Loading VistA SQL functions"
 
+# Load Lab Chem Result DDL
+echo "Loading Lab Chem Result DDL"
+su $instance -c "source $basedir/etc/env && octo -v -f $basedir/YDBOctoVistA/lab_chem_result.sql > $basedir/log/OctoLabChemResultImport.log 2>&1"
+echo "Done Loading Lab Chem Result DDL"
+
 echo "Done installing Octo"
